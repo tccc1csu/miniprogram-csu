@@ -1,0 +1,29 @@
+<!--pages/collaboration/collaboration.wxml-->
+<view class="container">
+  <view class="square-header">
+    <view>
+      <view class="square-title">协作广场</view>
+      <view class="square-meta">{{userInfo.name}} · {{roleLabel}}<text wx:if="{{userInfo.department}}"> · {{userInfo.department}}</text></view>
+    </view>
+  </view>
+
+  <view class="module-list">
+    <view class="module-card" bindtap="goSuggestions">
+      <view class="module-icon activity-icon">活</view>
+      <view class="module-body">
+        <view class="module-title">活动建议</view>
+        <view class="module-meta">活动</view>
+      </view>
+      <view class="module-arrow">›</view>
+    </view>
+
+    <view class="module-card" bindtap="goHandoffs">
+      <view class="module-icon handoff-icon">协</view>
+      <view class="module-body">
+        <view class="module-title">采编办公协同</view>
+        <view class="module-meta">采编部 × 办公部</view>
+      </view>
+      <view class="module-arrow">›</view>
+    </view>
+  </view>
+</view>

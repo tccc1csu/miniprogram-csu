@@ -1,0 +1,153 @@
+<!--pages/suggestions/suggestions.wxml-->
+<view class="container">
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'suggestions' ? 'active' : ''}}" bindtap="switchTab" data-tab="suggestions">
+      <text>活动建议</text>
+    </view>
+    <view class="tab-item {{activeTab === 'votes' ? 'active' : ''}}" bindtap="switchTab" data-tab="votes">
+      <text>时间投票</text>
+    </view>
+    <view class="tab-item {{activeTab === 'notices' ? 'active' : ''}}" bindtap="switchTab" data-tab="notices">
+      <text>活动通知</text>
+    </view>
+  </view>
+
+  <!-- 活动建议列表 -->
+  <view wx:if="{{activeTab === 'suggestions'}}">
+    <view class="filter-bar">
+      <picker bindchange="onStatusChange" value="{{statusIndex}}" range="{{statusOptions}}">
+        <view class="filter-picker">
+          <text class="filter-label">
+            {{statusFilter === 'all' ? '全部状态' : (statusFilter === 'pending' ? '待审核' : (statusFilter === 'approved' ? '已通过' : '已驳回'))}}
+          </text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="suggestion-list">
+      <view class="suggestion-card card" wx:for="{{suggestions}}" wx:key="_id">
+        <view class="suggestion-header">
+          <view class="suggestion-title">{{item.title}}</view>
+          <view class="status-tag status-{{item.status}}">
+            {{item.status === 'pending' ? '待审核' : (item.status === 'approved' ? '已通过' : '已驳回')}}
+          </view>
+        </view>
+        <view class="suggestion-desc" wx:if="{{item.description}}">{{item.description}}</view>
+        <view class="suggestion-meta">
+          <text>提交人：{{item.submitterName}}</text>
+          <text>{{item.createTime}}</text>
+        </view>
+        <!-- 管理员操作 -->
+        <view class="admin-actions" wx:if="{{role === 'admin' && item.status === 'pending'}}">
+          <button class="btn-primary small" bindtap="showApprove" data-id="{{item._id}}">审核通过</button>
+          <button class="btn-secondary small" bindtap="rejectSuggestion" data-id="{{item._id}}">驳回</button>
+        </view>
+      </view>
+
+      <view class="empty-state" wx:if="{{suggestions.length === 0}}">
+        <view class="empty-icon">💡</view>
+        <view class="empty-text">暂无活动建议</view>
+        <view class="empty-hint">点击下方 + 提交你的活动想法</view>
+      </view>
+    </view>
+
+    <view class="fab-btn" bindtap="showSubmit">+</view>
+  </view>
+
+  <!-- 投票列表 -->
+  <view wx:if="{{activeTab === 'votes'}}">
+    <view class="vote-list">
+      <view class="vote-card card" wx:for="{{votes}}" wx:key="_id">
+        <view class="vote-header">
+          <view class="vote-title">{{item.title}}</view>
+          <view class="vote-status {{item.status}}">{{item.status === 'active' ? '进行中' : '已结束'}}</view>
+        </view>
+        <view class="vote-options">
+          <view class="vote-option {{item.myVote === index ? 'voted' : ''}}"
+                wx:for="{{item.options}}" wx:for-item="opt" wx:for-index="index" wx:key="index"
+                bindtap="castVote" data-voteid="{{item._id}}" data-index="{{index}}">
+            <view class="option-info">
+              <text class="option-text">{{opt.text}}</text>
+              <text class="option-count">{{opt.count}} 票</text>
+            </view>
+            <view class="option-bar-bg">
+              <view class="option-bar" style="width: {{opt.percent}}%"></view>
+            </view>
+            <text class="vote-check" wx:if="{{item.myVote === index}}">✓</text>
+          </view>
+        </view>
+        <view class="vote-meta">
+          <text>共 {{item.totalVotes}} 人参与</text>
+          <text wx:if="{{item.deadline}}">截止：{{item.deadline}}</text>
+        </view>
+        <view class="admin-actions" wx:if="{{role === 'admin' && item.status === 'active'}}">
+          <button class="btn-secondary small" bindtap="closeVote" data-voteid="{{item._id}}">结束投票</button>
+        </view>
+      </view>
+
+      <view class="empty-state" wx:if="{{votes.length === 0}}">
+        <view class="empty-icon">🗳️</view>
+        <view class="empty-text">暂无进行中的投票</view>
+        <view class="empty-hint">管理员审核通过活动建议后会创建投票</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 通知列表 -->
+  <view wx:if="{{activeTab === 'notices'}}">
+    <view class="notice-list">
+      <view class="notice-card card" wx:for="{{notifications}}" wx:key="_id">
+        <view class="notice-title">{{item.title}}</view>
+        <view class="notice-content" wx:if="{{item.content}}">{{item.content}}</view>
+        <view class="notice-time">{{item.createTime}}</view>
+      </view>
+
+      <view class="empty-state" wx:if="{{notifications.length === 0}}">
+        <view class="empty-icon">📢</view>
+        <view class="empty-text">暂无通知</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交建议弹窗 -->
+  <view class="modal-mask" wx:if="{{showSubmitModal}}" bindtap="hideSubmitModal"></view>
+  <view class="modal-panel" wx:if="{{showSubmitModal}}">
+    <view class="modal-title">提交活动建议</view>
+    <view class="form-row vertical">
+      <text class="form-label">活动标题</text>
+      <input class="form-input" placeholder="例如：春季摄影采风" value="{{submitForm.title}}" data-field="title" bindinput="onSubmitInput" />
+    </view>
+    <view class="form-row vertical">
+      <text class="form-label">活动描述</text>
+      <textarea class="form-textarea" placeholder="请描述活动的具体内容和想法..." value="{{submitForm.description}}" data-field="description" bindinput="onSubmitInput"></textarea>
+    </view>
+    <view class="modal-btns">
+      <button class="btn-secondary" bindtap="hideSubmitModal">取消</button>
+      <button class="btn-primary" bindtap="submitSuggestion">提交</button>
+    </view>
+  </view>
+
+  <!-- 审核弹窗 -->
+  <view class="modal-mask" wx:if="{{showApproveModal}}" bindtap="hideApproveModal"></view>
+  <view class="modal-panel" wx:if="{{showApproveModal}}">
+    <view class="modal-title">审核通过并创建投票</view>
+    <view class="form-row vertical">
+      <text class="form-label">投票标题</text>
+      <input class="form-input" value="{{approveForm.voteTitle}}" data-field="voteTitle" bindinput="onApproveInput" />
+    </view>
+    <view class="form-row vertical">
+      <text class="form-label">投票选项（每行一个）</text>
+      <textarea class="form-textarea" value="{{approveForm.voteOptions}}" data-field="voteOptions" bindinput="onApproveInput" rows="4"></textarea>
+    </view>
+    <view class="form-row vertical">
+      <text class="form-label">截止时间（可选）</text>
+      <input class="form-input" placeholder="例如：2024-06-30" value="{{approveForm.deadline}}" data-field="deadline" bindinput="onApproveInput" />
+    </view>
+    <view class="modal-btns">
+      <button class="btn-secondary" bindtap="hideApproveModal">取消</button>
+      <button class="btn-primary" bindtap="approveSuggestion">确认通过</button>
+    </view>
+  </view>
+</view>

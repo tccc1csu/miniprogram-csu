@@ -1,0 +1,261 @@
+// pages/handoffs/handoffs.js - 采编部与办公部协同流程
+const app = getApp()
+const { callFunction } = require('../../utils/db')
+const { showToast, showLoading, hideLoading } = require('../../utils/util')
+
+Page({
+  data: {
+    role: '',
+    department: '',
+    canCreate: false,
+    activeTab: 'active',
+    tabs: [
+      { key: 'active', label: '流转中' },
+      { key: 'mine', label: '我的' },
+      { key: 'archive', label: '归档' },
+      { key: 'flow', label: '流程图' }
+    ],
+    handoffs: [],
+    officeMembers: [],
+    articleTypeOptions: ['原创稿件', '转载稿件'],
+    createForm: {
+      title: '',
+      articleNames: '',
+      articleType: 'original',
+      articleTypeIndex: 0,
+      targetSites: '院网、升华网、学工网',
+      note: ''
+    },
+    showAssignModal: false,
+    assignTarget: null,
+    assigneeIndex: 0,
+    showCompleteModal: false,
+    completeTarget: null,
+    syncResult: '',
+    showReviewModal: false,
+    reviewTarget: null,
+    reviewComment: '',
+    loading: false
+  },
+
+  onShow: function () {
+    if (!app.checkLogin()) return
+    const role = app.globalData.role
+    const department = app.globalData.department || ''
+    this.setData({
+      role,
+      department,
+      canCreate: role === 'admin' || department === '采编部'
+    })
+    this.loadHandoffs()
+  },
+
+  stopTap: function () {},
+
+  switchTab: function (e) {
+    const tab = e.currentTarget.dataset.tab
+    this.setData({ activeTab: tab })
+    if (tab !== 'flow') {
+      this.loadHandoffs()
+    }
+  },
+
+  loadHandoffs: function () {
+    if (this.data.activeTab === 'flow') return
+    this.setData({ loading: true })
+    showLoading('加载中...')
+    callFunction('manageHandoffs', {
+      action: 'getHandoffs',
+      scope: this.data.activeTab
+    }).then(list => {
+      hideLoading()
+      this.setData({
+        handoffs: list || [],
+        loading: false
+      })
+    }).catch(err => {
+      hideLoading()
+      this.setData({ loading: false })
+      showToast(err.message || '加载失败')
+    })
+  },
+
+  onCreateTitleInput: function (e) {
+    this.setData({ 'createForm.title': e.detail.value })
+  },
+
+  onArticleInput: function (e) {
+    this.setData({ 'createForm.articleNames': e.detail.value })
+  },
+
+  onArticleTypeChange: function (e) {
+    const index = Number(e.detail.value) || 0
+    this.setData({
+      'createForm.articleTypeIndex': index,
+      'createForm.articleType': index === 1 ? 'reprint' : 'original'
+    })
+  },
+
+  onSitesInput: function (e) {
+    this.setData({ 'createForm.targetSites': e.detail.value })
+  },
+
+  onNoteInput: function (e) {
+    this.setData({ 'createForm.note': e.detail.value })
+  },
+
+  submitCreate: function () {
+    const form = this.data.createForm
+    if (!form.title.trim()) { showToast('请填写需求标题'); return }
+    if (!form.articleNames.trim()) { showToast('请填写稿件名称'); return }
+
+    showLoading('提交中...')
+    callFunction('manageHandoffs', Object.assign({ action: 'createHandoff' }, form)).then(() => {
+      hideLoading()
+      showToast('已提交给办公部', 'success')
+      this.setData({
+        createForm: {
+          title: '',
+          articleNames: '',
+          articleType: 'original',
+          articleTypeIndex: 0,
+          targetSites: '院网、升华网、学工网',
+          note: ''
+        }
+      })
+      this.loadHandoffs()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '提交失败')
+    })
+  },
+
+  openAssignModal: function (e) {
+    const item = e.currentTarget.dataset.item
+    showLoading('加载干事...')
+    callFunction('manageData', { action: 'getMembers', department: '办公部' }).then(members => {
+      hideLoading()
+      const list = (members || []).filter(member => member.department === '办公部')
+      if (list.length === 0) {
+        showToast('办公部暂无成员')
+        return
+      }
+      this.setData({
+        officeMembers: list,
+        assignTarget: item,
+        assigneeIndex: 0,
+        showAssignModal: true
+      })
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '加载失败')
+    })
+  },
+
+  onAssigneeChange: function (e) {
+    this.setData({ assigneeIndex: e.detail.value })
+  },
+
+  closeAssignModal: function () {
+    this.setData({ showAssignModal: false, assignTarget: null })
+  },
+
+  confirmAssign: function () {
+    const member = this.data.officeMembers[this.data.assigneeIndex]
+    if (!this.data.assignTarget || !member) return
+
+    showLoading('派发中...')
+    callFunction('manageHandoffs', {
+      action: 'assignHandoff',
+      handoffId: this.data.assignTarget._id,
+      assigneeName: member.name
+    }).then(() => {
+      hideLoading()
+      showToast('派发成功', 'success')
+      this.closeAssignModal()
+      this.loadHandoffs()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '派发失败')
+    })
+  },
+
+  openCompleteModal: function (e) {
+    const item = e.currentTarget.dataset.item
+    this.setData({
+      showCompleteModal: true,
+      completeTarget: item,
+      syncResult: item.syncResult || ''
+    })
+  },
+
+  onSyncResultInput: function (e) {
+    this.setData({ syncResult: e.detail.value })
+  },
+
+  closeCompleteModal: function () {
+    this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' })
+  },
+
+  confirmComplete: function () {
+    if (!this.data.syncResult.trim()) {
+      showToast('请填写同步结果')
+      return
+    }
+    showLoading('提交中...')
+    callFunction('manageHandoffs', {
+      action: 'completeHandoff',
+      handoffId: this.data.completeTarget._id,
+      syncResult: this.data.syncResult.trim()
+    }).then(() => {
+      hideLoading()
+      showToast('已发送给管理员审核', 'success')
+      this.closeCompleteModal()
+      this.loadHandoffs()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '提交失败')
+    })
+  },
+
+  openReviewModal: function (e) {
+    this.setData({
+      showReviewModal: true,
+      reviewTarget: e.currentTarget.dataset.item,
+      reviewComment: ''
+    })
+  },
+
+  onReviewCommentInput: function (e) {
+    this.setData({ reviewComment: e.detail.value })
+  },
+
+  closeReviewModal: function () {
+    this.setData({ showReviewModal: false, reviewTarget: null, reviewComment: '' })
+  },
+
+  confirmReview: function (e) {
+    const approvedValue = e.currentTarget.dataset.approved
+    const approved = approvedValue === true || approvedValue === 'true'
+    showLoading('审核中...')
+    callFunction('manageHandoffs', {
+      action: 'reviewHandoff',
+      handoffId: this.data.reviewTarget._id,
+      approved,
+      reviewComment: this.data.reviewComment.trim()
+    }).then(() => {
+      hideLoading()
+      showToast(approved ? '已归档' : '已退回', 'success')
+      this.closeReviewModal()
+      this.loadHandoffs()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '审核失败')
+    })
+  },
+
+  onPullDownRefresh: function () {
+    this.loadHandoffs()
+    setTimeout(() => wx.stopPullDownRefresh(), 1000)
+  }
+})

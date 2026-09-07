@@ -1,0 +1,203 @@
+/* pages/weeklyTable/weeklyTable.wxss */
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.week-selector {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.picker-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 2rpx solid #4A90D9;
+  border-radius: 10rpx;
+  padding: 16rpx 24rpx;
+  font-size: 28rpx;
+  color: #4A90D9;
+  font-weight: 500;
+}
+
+.week-text {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.btn-share {
+  background: #4A90D9;
+  color: #fff;
+  border: none;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  padding: 16rpx 30rpx;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.week-range-text {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+  padding: 0 10rpx;
+}
+
+.summary-bar {
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+  padding: 30rpx;
+}
+
+.summary-bar .stat-value {
+  color: #fff;
+}
+
+.summary-bar .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.dept-section {
+  overflow: hidden;
+  padding: 0;
+}
+
+.dept-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  background: #E8F4FD;
+  border-bottom: 2rpx solid #D6E8F7;
+}
+
+.dept-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #357ABD;
+}
+
+.dept-summary {
+  display: flex;
+  align-items: center;
+}
+
+.dept-summary text {
+  font-size: 24rpx;
+  color: #666;
+  margin-left: 20rpx;
+}
+
+.dept-allowance {
+  color: #E74C3C !important;
+  font-weight: 600;
+}
+
+/* 表格 */
+.table {
+  width: 100%;
+}
+
+.table-header {
+  display: flex;
+  background: #F5F6FA;
+}
+
+.table-header .table-cell {
+  padding: 16rpx 10rpx;
+  font-size: 22rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.table-row {
+  display: flex;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.table-row .table-cell {
+  padding: 18rpx 10rpx;
+  font-size: 24rpx;
+  color: #333;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.col-name {
+  width: 100rpx;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.col-type {
+  width: 108rpx;
+  flex-shrink: 0;
+  font-size: 22rpx !important;
+}
+
+.col-content {
+  flex: 1;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  padding: 18rpx 16rpx !important;
+  line-height: 1.5;
+  font-size: 23rpx !important;
+  color: #555 !important;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.col-workload {
+  width: 92rpx;
+  flex-shrink: 0;
+}
+
+.col-allowance {
+  width: 92rpx;
+  flex-shrink: 0;
+  color: #E74C3C !important;
+}
+
+/* 总计行 */
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFF8E1;
+  padding: 28rpx;
+}
+
+.total-label {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #D88820;
+}
+
+.total-detail {
+  display: flex;
+  align-items: center;
+}
+
+.total-detail text {
+  font-size: 28rpx;
+  color: #666;
+  margin-left: 24rpx;
+}
+
+.total-money {
+  color: #E74C3C !important;
+  font-weight: 700;
+  font-size: 32rpx !important;
+}
