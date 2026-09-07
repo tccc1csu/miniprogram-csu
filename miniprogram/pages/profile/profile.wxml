@@ -36,6 +36,11 @@
         <view class="tool-icon icon-collab">协</view>
         <text>协作</text>
       </view>
+      <!-- 采编部/办公部协同记录入口 -->
+      <view class="tool-item" wx:if="{{userInfo.department == '采编部' || userInfo.department == '办公部'}}" bindtap="goHandoffHistory">
+        <view class="tool-icon icon-handoff">同</view>
+        <text>协同记录</text>
+      </view>
     </view>
   </view>
 
@@ -57,6 +62,33 @@
       <text class="info-label">当前周次</text>
       <text class="info-value">{{currentWeek}}</text>
     </view>
+  </view>
+
+  <!-- 采编部/办公部协同流程图例 -->
+  <view class="info-card card" wx:if="{{userInfo.department == '采编部' || userInfo.department == '办公部'}}">
+    <view class="card-title">采编办公协同流程</view>
+    <view class="flow-mini">
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '采编部' ? 'dot-mine' : ''}}">1</view>
+        <text>采编部报备稿件</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '办公部' ? 'dot-mine' : ''}}">2</view>
+        <text>办公部派发干事</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '办公部' ? 'dot-mine' : ''}}">3</view>
+        <text>干事完成同步</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot">4</view>
+        <text>管理员审核归档</text>
+      </view>
+    </view>
+    <view class="handoff-hint" bindtap="goHandoffHistory">点击「协同记录」查看我的参与记录 →</view>
   </view>
 
   <view class="logout-area">

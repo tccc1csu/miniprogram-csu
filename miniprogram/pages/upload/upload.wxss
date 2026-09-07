@@ -143,6 +143,12 @@
   background: #F0FFF4;
 }
 
+/* 待津贴高亮 */
+.row-allowance-pending {
+  background: #FFF8E1;
+  border-left: 6rpx solid #FF9800;
+}
+
 .td {
   display: flex;
   flex-direction: column;
@@ -182,6 +188,17 @@
 .status-pending {
   background: #F8D7DA;
   color: #721C24;
+}
+
+.allowance-tag {
+  display: inline-block;
+  font-size: 18rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  margin-top: 6rpx;
+  background: #FFE0B2;
+  color: #E65100;
+  font-weight: 600;
 }
 
 .td-content {
@@ -235,6 +252,12 @@
   border-radius: 8rpx;
 }
 
+/* 待津贴输入框高亮 */
+.input-pending {
+  background: #FFF3E0;
+  border: 2rpx solid #FF9800;
+}
+
 /* 操作栏 */
 .action-bar {
   display: flex;
@@ -254,4 +277,117 @@
 
 .btn-submit {
   flex: 1;
+}
+
+/* 一键补津贴按钮 */
+.btn-allowance {
+  width: 200rpx;
+  background: #FFF3E0;
+  color: #E65100;
+  border: 2rpx solid #FF9800;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  padding: 22rpx 0;
+  font-weight: 600;
+}
+
+/* 弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 86%;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16rpx;
+  color: #333;
+}
+
+.modal-desc {
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 30rpx;
+}
+
+.modal-actions .btn-secondary,
+.modal-actions .modal-confirm {
+  flex: 1;
+}
+
+/* 快捷预设 */
+.preset-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.preset-btn {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  background: #F5F6FA;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 通用表单 */
+.form-group {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.form-input {
+  width: 100%;
+  background: #F5F6FA;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 10rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120rpx;
+  background: #F5F6FA;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 10rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-sizing: border-box;
 }

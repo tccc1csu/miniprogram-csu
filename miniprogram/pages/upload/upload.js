@@ -24,14 +24,18 @@ Page({
       hasRecord: false
     },
     // 成员列表（含表单数据）
-    memberForms: [],   // [{ member, workType, workContent, workload, allowance, remark, hasRecord, recordId, status }]
+    memberForms: [],   // [{ member, workType, workContent, workload, allowance, remark, hasRecord, recordId, status, allowancePending }]
     // 汇总
     totalMembers: 0,
     uploadedCount: 0,
     totalWorkload: 0,
     totalAllowance: 0,
+    pendingAllowanceCount: 0,
     submitting: false,
-    submitProgress: ''
+    submitProgress: '',
+    // 一键补津贴
+    showAllowanceModal: false,
+    batchAllowanceAmount: ''
   },
 
   onLoad: function (options) {
@@ -83,18 +87,25 @@ Page({
 
       const memberForms = (members || []).map(m => {
         const rec = recordMap[m.name]
+        const workContent = rec ? rec.workContent : ''
+        const workload = rec ? String(rec.workload) : ''
+        const allowance = rec ? String(rec.allowance) : ''
+        const allowanceStatus = rec ? (rec.allowanceStatus || (parseFloat(rec.allowance) > 0 ? 'set' : 'pending')) : 'pending'
+        // 有工作内容但津贴为空或为0时，标记为待补津贴。
+        const allowancePending = !!(rec && workContent && (!allowance || allowance === '0' || allowanceStatus === 'pending'))
         return {
           memberId: m._id || '',
           memberName: m.name,
           workType: rec ? (rec.workType || getDefaultWorkType(department)) : getDefaultWorkType(department),
           workTypeIndex: getWorkTypeIndex(rec ? rec.workType : getDefaultWorkType(department)),
-          workContent: rec ? rec.workContent : '',
-          workload: rec ? String(rec.workload) : '',
-          allowance: rec ? String(rec.allowance) : '',
+          workContent: workContent,
+          workload: workload,
+          allowance: allowance,
           remark: rec ? (rec.remark || '') : '',
           hasRecord: !!rec,
           recordId: rec ? rec._id : '',
-          status: rec ? '已上传' : '待填写'
+          status: rec ? '已上传' : '待填写',
+          allowancePending: allowancePending
         }
       })
 
@@ -115,6 +126,7 @@ Page({
     callFunction('getRecords', { week: selectedWeek }).then(records => {
       hideLoading()
       const record = (records || [])[0]
+      const allowanceStatus = record ? (record.allowanceStatus || (parseFloat(record.allowance) > 0 ? 'set' : 'pending')) : 'pending'
       this.setData({
         selfForm: {
           recordId: record ? record._id : '',
@@ -124,7 +136,7 @@ Page({
           workload: record ? String(record.workload || '') : '',
           remark: record ? (record.remark || '') : '',
           allowance: record ? (record.allowance || 0) : 0,
-          allowanceStatusLabel: record ? (record.allowanceStatusLabel || '待部长填写') : '待部长填写',
+          allowanceStatusLabel: allowanceStatus === 'set' ? '已填写津贴' : '待部长填写',
           hasRecord: !!record
         },
         uploadedCount: record ? 1 : 0,
@@ -149,16 +161,21 @@ Page({
 
   // 更新汇总数据
   updateSummary: function (forms) {
-    let uploaded = 0, workload = 0, allowance = 0
+    let uploaded = 0, workload = 0, allowance = 0, pendingAllowance = 0
     forms.forEach(f => {
       if (f.hasRecord || f.workContent) uploaded++
       workload += parseFloat(f.workload) || 0
       allowance += parseFloat(f.allowance) || 0
+      // 统计待补津贴数量：有工作内容但津贴为空或为0。
+      if ((f.hasRecord || f.workContent) && (!f.allowance || f.allowance === '0' || f.allowancePending)) {
+        pendingAllowance++
+      }
     })
     this.setData({
       uploadedCount: uploaded,
       totalWorkload: workload.toFixed(1),
-      totalAllowance: allowance.toFixed(0)
+      totalAllowance: allowance.toFixed(0),
+      pendingAllowanceCount: pendingAllowance
     })
   },
 
@@ -169,6 +186,7 @@ Page({
     const forms = this.data.memberForms
     forms[idx].workContent = val
     forms[idx].status = val ? '已填写' : '待填写'
+    forms[idx].allowancePending = !!(val && (!forms[idx].allowance || forms[idx].allowance === '0'))
     this.setData({ memberForms: forms })
     this.updateSummary(forms)
   },
@@ -196,6 +214,7 @@ Page({
     let val = e.detail.value.replace(/[^\d.]/g, '')
     const forms = this.data.memberForms
     forms[idx].allowance = val
+    forms[idx].allowancePending = !!((forms[idx].hasRecord || forms[idx].workContent) && (!val || val === '0'))
     this.setData({ memberForms: forms })
     this.updateSummary(forms)
   },
@@ -248,7 +267,7 @@ Page({
       remark: selfForm.remark.trim()
     }).then(() => {
       hideLoading()
-      showToast('上报成功', 'success')
+      showToast('上报成功，津贴待部长填写', 'success')
       this.setData({ submitting: false })
       this.loadSelfRecord()
     }).catch(err => {
@@ -330,7 +349,8 @@ Page({
             workload: '',
             allowance: '',
             remark: '',
-            status: '待填写'
+            status: '待填写',
+            allowancePending: false
           }))
           that.setData({ memberForms: forms })
           that.updateSummary(forms)
@@ -338,6 +358,48 @@ Page({
         }
       }
     })
+  },
+
+  // === 一键补津贴 ===
+  openAllowanceModal: function () {
+    this.setData({ showAllowanceModal: true, batchAllowanceAmount: '' })
+  },
+
+  closeAllowanceModal: function () {
+    this.setData({ showAllowanceModal: false, batchAllowanceAmount: '' })
+  },
+
+  stopTap: function () {},
+
+  onBatchAllowanceInput: function (e) {
+    this.setData({ batchAllowanceAmount: e.detail.value.replace(/[^\d.]/g, '') })
+  },
+
+  setPresetAllowance: function (e) {
+    const amount = e.currentTarget.dataset.amount
+    this.setData({ batchAllowanceAmount: String(amount) })
+  },
+
+  confirmBatchAllowance: function () {
+    const amount = parseFloat(this.data.batchAllowanceAmount)
+    if (!amount || amount <= 0) {
+      showToast('请输入有效金额')
+      return
+    }
+
+    const forms = this.data.memberForms.map(f => {
+      if (f.allowancePending) {
+        return Object.assign({}, f, {
+          allowance: String(amount),
+          allowancePending: false
+        })
+      }
+      return f
+    })
+
+    this.setData({ memberForms: forms, showAllowanceModal: false })
+    this.updateSummary(forms)
+    showToast('已为待补津贴成员填写 ' + amount + ' 元', 'success')
   }
 })
 

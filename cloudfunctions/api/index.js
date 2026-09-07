@@ -85,6 +85,14 @@ exports.main = async (event) => {
   const functionName = event.functionName || event.name || event.type
 
   try {
+    // 定时器触发器：检查截止日期并发送提醒。
+    const triggerName = event.TriggerName || event.triggerName || ''
+    const isTimerTrigger = event.Trigger || event.Type === 'Timer' || event.type === 'timer' || triggerName.indexOf('deadline') >= 0
+    if (isTimerTrigger) {
+      await ensureCollectionStructure()
+      return await checkDeadlinesInternal()
+    }
+
     await ensureCollections({ seed: shouldSeedForFunction(functionName) })
 
     if (functionName === 'wechatLogin') {
@@ -1489,6 +1497,7 @@ async function handleManageHandoffs(event, user, openid) {
         targetSites,
         articleType,
         note: trim(event.note),
+        deadline: trim(event.deadline) || '',
         sourceDepartment: '采编部',
         targetDepartment: '办公部',
         submitterName: user.name,
@@ -1621,7 +1630,98 @@ async function handleManageHandoffs(event, user, openid) {
     return success({ updated: 1, archived: approved })
   }
 
+  if (action === 'checkDeadlines') {
+    requireAdmin(user)
+    const allHandoffs = await getAll(COLLECTIONS.HANDOFFS, {})
+    const now = new Date()
+    const reminders = []
+
+    for (const item of allHandoffs) {
+      if (!item.deadline || ['archived', 'rejected'].includes(item.status)) continue
+
+      const dueDate = new Date(item.deadline)
+      if (isNaN(dueDate.getTime())) continue
+
+      const diffHours = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+      // 24小时内到期且未发过提醒。
+      if (diffHours > 0 && diffHours <= 24 && !item.deadlineReminderSent) {
+        const dept = item.status === 'submitted' ? '办公部' : (item.assigneeName ? '办公部' : '采编部')
+        await addWorkflowNotification({
+          title: '任务即将到期提醒',
+          content: '「' + item.title + '」将在 ' + Math.ceil(diffHours) + ' 小时后到期，请尽快处理。',
+          targetDept: dept
+        })
+        await handoffs.doc(item._id).update({
+          data: { deadlineReminderSent: true, updateTime: now }
+        })
+        reminders.push(item._id)
+      }
+
+      // 已过期。
+      if (diffHours <= 0 && !item.deadlineExpiredSent) {
+        const dept = item.status === 'submitted' ? '办公部' : (item.assigneeName ? '办公部' : '采编部')
+        await addWorkflowNotification({
+          title: '任务已过期提醒',
+          content: '「' + item.title + '」已超过截止日期，请尽快处理。',
+          targetDept: dept
+        })
+        await handoffs.doc(item._id).update({
+          data: { deadlineExpiredSent: true, updateTime: now }
+        })
+        reminders.push(item._id)
+      }
+    }
+
+    return success({ checked: allHandoffs.length, reminders: reminders.length, reminderIds: reminders })
+  }
+
   return fail('未知操作：' + action)
+}
+
+// 定时器触发的截止日期检查（无需用户认证）。
+async function checkDeadlinesInternal() {
+  const handoffs = db.collection(COLLECTIONS.HANDOFFS)
+  const allHandoffs = await getAll(COLLECTIONS.HANDOFFS, {})
+  const now = new Date()
+  const reminders = []
+
+  for (const item of allHandoffs) {
+    if (!item.deadline || ['archived', 'rejected'].includes(item.status)) continue
+
+    const dueDate = new Date(item.deadline)
+    if (isNaN(dueDate.getTime())) continue
+
+    const diffHours = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+    // 24小时内到期且未发过提醒。
+    if (diffHours > 0 && diffHours <= 24 && !item.deadlineReminderSent) {
+      await addWorkflowNotification({
+        title: '任务即将到期提醒',
+        content: '「' + item.title + '」将在 ' + Math.ceil(diffHours) + ' 小时后到期，请尽快处理。',
+        targetDept: '办公部'
+      })
+      await handoffs.doc(item._id).update({
+        data: { deadlineReminderSent: true, updateTime: now }
+      })
+      reminders.push(item._id)
+    }
+
+    // 已过期。
+    if (diffHours <= 0 && !item.deadlineExpiredSent) {
+      await addWorkflowNotification({
+        title: '任务已过期提醒',
+        content: '「' + item.title + '」已超过截止日期，请尽快处理。',
+        targetDept: '办公部'
+      })
+      await handoffs.doc(item._id).update({
+        data: { deadlineExpiredSent: true, updateTime: now }
+      })
+      reminders.push(item._id)
+    }
+  }
+
+  return success({ checked: allHandoffs.length, reminders: reminders.length, reminderIds: reminders })
 }
 
 async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewerOpenid) {
@@ -1813,7 +1913,10 @@ async function getVisibleHandoffs(user, openid, scope) {
         item.submitterName === user.name ||
         item.assigneeName === user.name
     }
-    return true
+    if (user.department === item.sourceDepartment || user.department === item.targetDepartment) {
+      return true
+    }
+    return item.submitterOpenid === openid || item.assigneeOpenid === openid
   })
 }
 
@@ -2339,7 +2442,10 @@ function formatHandoff(handoff, user, openid) {
     assignedTime: formatDateTime(handoff.assignedTime),
     completedTime: formatDateTime(handoff.completedTime),
     reviewedTime: formatDateTime(handoff.reviewedTime),
-    archivedTime: formatDateTime(handoff.archivedTime)
+    archivedTime: formatDateTime(handoff.archivedTime),
+    deadline: handoff.deadline || '',
+    deadlineReminderSent: !!handoff.deadlineReminderSent,
+    deadlineExpiredSent: !!handoff.deadlineExpiredSent
   }
 }
 

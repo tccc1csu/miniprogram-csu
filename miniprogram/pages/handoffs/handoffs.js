@@ -24,7 +24,9 @@ Page({
       articleType: 'original',
       articleTypeIndex: 0,
       targetSites: '院网、升华网、学工网',
-      note: ''
+      note: '',
+      deadline: '',
+      deadlineLabel: ''
     },
     showAssignModal: false,
     assignTarget: null,
@@ -38,6 +40,12 @@ Page({
     loading: false
   },
 
+  onLoad: function (options) {
+    if (options && options.tab) {
+      this.setData({ activeTab: options.tab })
+    }
+  },
+
   onShow: function () {
     if (!app.checkLogin()) return
     const role = app.globalData.role
@@ -48,6 +56,7 @@ Page({
       canCreate: role === 'admin' || department === '采编部'
     })
     this.loadHandoffs()
+    this.updateCountdowns()
   },
 
   stopTap: function () {},
@@ -69,8 +78,11 @@ Page({
       scope: this.data.activeTab
     }).then(list => {
       hideLoading()
+      const handoffs = (list || []).map(item => {
+        return Object.assign({}, item, this.computeCountdown(item.deadline))
+      })
       this.setData({
-        handoffs: list || [],
+        handoffs: handoffs,
         loading: false
       })
     }).catch(err => {
@@ -78,6 +90,30 @@ Page({
       this.setData({ loading: false })
       showToast(err.message || '加载失败')
     })
+  },
+
+  // 计算倒计时
+  updateCountdowns: function () {
+    const handoffs = this.data.handoffs.map(item => {
+      return Object.assign({}, item, this.computeCountdown(item.deadline))
+    })
+    this.setData({ handoffs: handoffs })
+  },
+
+  computeCountdown: function (deadline) {
+    if (!deadline) return { countdown: '', countdownUrgent: false }
+    const now = new Date()
+    const due = new Date(deadline)
+    if (isNaN(due.getTime())) return { countdown: '', countdownUrgent: false }
+    const diff = due.getTime() - now.getTime()
+    if (diff <= 0) return { countdown: '已过期', countdownUrgent: true }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    if (days > 0) {
+      return { countdown: '剩余' + days + '天' + hours + '小时', countdownUrgent: days <= 1 }
+    }
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return { countdown: '剩余' + hours + '小时' + mins + '分', countdownUrgent: true }
   },
 
   onCreateTitleInput: function (e) {
@@ -104,6 +140,14 @@ Page({
     this.setData({ 'createForm.note': e.detail.value })
   },
 
+  onDeadlineChange: function (e) {
+    const val = e.detail.value
+    this.setData({
+      'createForm.deadline': val,
+      'createForm.deadlineLabel': val
+    })
+  },
+
   submitCreate: function () {
     const form = this.data.createForm
     if (!form.title.trim()) { showToast('请填写需求标题'); return }
@@ -120,7 +164,9 @@ Page({
           articleType: 'original',
           articleTypeIndex: 0,
           targetSites: '院网、升华网、学工网',
-          note: ''
+          note: '',
+          deadline: '',
+          deadlineLabel: ''
         }
       })
       this.loadHandoffs()

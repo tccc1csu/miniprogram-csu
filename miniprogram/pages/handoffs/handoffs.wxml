@@ -14,7 +14,7 @@
       <view class="step-index">1</view>
       <view class="step-body">
         <view class="step-title">采编部提交稿件需求</view>
-        <view class="step-text">采编部完成稿件后，在小程序登记标题、稿件名称、原创/转载类型和投稿平台。</view>
+        <view class="step-text">采编部完成稿件后，在小程序登记标题、稿件名称、原创/转载类型和投稿平台，可设置截止日期。</view>
       </view>
     </view>
     <view class="flow-step">
@@ -65,6 +65,15 @@
         <input class="form-input" value="{{createForm.targetSites}}" bindinput="onSitesInput" />
       </view>
       <view class="form-group">
+        <text class="form-label">截止日期（可选）</text>
+        <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
+          <view class="form-picker">
+            <text>{{createForm.deadlineLabel || '选择日期'}}</text>
+            <text>▾</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-group">
         <text class="form-label">备注</text>
         <input class="form-input" placeholder="可选" value="{{createForm.note}}" bindinput="onNoteInput" />
       </view>
@@ -80,6 +89,13 @@
           <view class="handoff-meta">{{item.sourceDepartment}} → {{item.targetDepartment}} · {{item.createTime}}</view>
         </view>
         <view class="status status-{{item.status}}">{{item.statusLabel}}</view>
+      </view>
+
+      <!-- 截止日期倒计时 -->
+      <view class="deadline-bar" wx:if="{{item.deadline}}">
+        <view class="deadline-icon">⏰</view>
+        <text class="deadline-text {{item.countdownUrgent ? 'deadline-urgent' : ''}}">{{item.countdown || '计算中...'}}</text>
+        <text class="deadline-date">截止：{{item.deadline}}</text>
       </view>
       <view class="handoff-section">
         <view class="section-label">稿件</view>

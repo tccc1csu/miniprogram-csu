@@ -1,5 +1,12 @@
 {
   "permissions": {
     "openapi": []
-  }
+  },
+  "triggers": [
+    {
+      "name": "deadlineChecker",
+      "type": "timer",
+      "config": "0 0 9,12,18 * * * *"
+    }
+  ]
 }

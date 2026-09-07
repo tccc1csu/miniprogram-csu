@@ -46,6 +46,11 @@ Page({
     wx.switchTab({ url: '/pages/collaboration/collaboration' })
   },
 
+  // 跳转到协同记录（采编部/办公部）
+  goHandoffHistory: function () {
+    wx.navigateTo({ url: '/pages/handoffs/handoffs?tab=mine' })
+  },
+
   // 退出登录
   handleLogout: function () {
     wx.showModal({

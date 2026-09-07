@@ -17,7 +17,7 @@
       <view class="module-arrow">›</view>
     </view>
 
-    <view class="module-card" bindtap="goHandoffs">
+    <view class="module-card {{canUseHandoff ? '' : 'disabled'}}" bindtap="goHandoffs">
       <view class="module-icon handoff-icon">协</view>
       <view class="module-body">
         <view class="module-title">采编办公协同</view>
