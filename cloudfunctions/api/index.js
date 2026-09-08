@@ -82,6 +82,7 @@ const HANDOFF_STATUS_LABELS = {
 }
 
 const ALLOWANCE_SETTINGS_KEY = '__settings__'
+const COLLECTION_STRUCTURE_KEY = '__collection_structure_20260908__'
 
 // Word 制度只给出工时，金额由管理员在“津贴规则”中配置。
 const DEFAULT_ALLOWANCE_RULES = [
@@ -132,7 +133,11 @@ exports.main = async (event) => {
       return await checkDeadlinesInternal()
     }
 
-    await ensureCollections({ seed: shouldSeedForFunction(functionName) })
+    // 登录必须尽快返回。演示账号和演示业务数据只能由显式初始化操作生成，
+    // 不能跟随每一次账密登录执行，否则云函数冷启动时很容易超过小程序调用时限。
+    if (!isLightweightAuthFunction(functionName)) {
+      await ensureCollections({ seed: shouldSeedForFunction(functionName) })
+    }
 
     if (functionName === 'wechatLogin') {
       return await handleWechatLogin(event, openid)
@@ -218,7 +223,11 @@ exports.main = async (event) => {
 }
 
 function shouldSeedForFunction(functionName) {
-  return ['initCloud', 'seedTestAccounts', 'accountLogin', 'login'].includes(functionName)
+  return ['initCloud', 'seedTestAccounts'].includes(functionName)
+}
+
+function isLightweightAuthFunction(functionName) {
+  return ['wechatLogin', 'accountLogin', 'login', 'bindWechat', 'checkSession'].includes(functionName)
 }
 
 async function ensureCollections(options) {
@@ -247,41 +256,75 @@ async function ensureCollectionStructure() {
 }
 
 async function doEnsureCollectionStructure() {
+  // 云函数实例会随时冷启动。已完成初始化的环境只读取一次标记，
+  // 避免每次冷启动都重复请求所有集合和默认规则。
+  try {
+    const marker = await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS)
+      .where({ key: COLLECTION_STRUCTURE_KEY })
+      .limit(1)
+      .get()
+    if (first(marker)) {
+      return
+    }
+  } catch (err) {
+    // 标记集合尚未创建时，继续执行完整初始化。
+  }
+
   const collectionNames = Object.keys(COLLECTIONS).map(key => COLLECTIONS[key])
-  for (let i = 0; i < collectionNames.length; i++) {
+  await Promise.all(collectionNames.map(async name => {
     try {
-      await db.createCollection(collectionNames[i])
+      await db.createCollection(name)
     } catch (err) {
       // 集合已存在时会进入 catch，这种情况可以忽略。
     }
-  }
+  }))
 
-  const existingDepartments = await getAll(COLLECTIONS.DEPARTMENTS, {})
+  const defaults = await Promise.all([
+    getAll(COLLECTIONS.DEPARTMENTS, {}),
+    getAll(COLLECTIONS.ALLOWANCE_RULES, {}),
+    getAll(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, {})
+  ])
+  await Promise.all([
+    ensureDefaultDepartments(defaults[0]),
+    ensureDefaultAllowanceRules(defaults[1]),
+    ensureDefaultResponsibilities(defaults[2])
+  ])
+  await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS).add({
+    data: {
+      key: COLLECTION_STRUCTURE_KEY,
+      recordType: 'system',
+      createTime: new Date(),
+      updateTime: new Date()
+    }
+  })
+}
+
+async function ensureDefaultDepartments(existingDepartments) {
   const existingNames = {}
-  existingDepartments.forEach(item => {
+  ;(existingDepartments || []).forEach(item => {
     if (item.name) existingNames[item.name] = true
   })
   const now = new Date()
-  for (let i = 0; i < DEFAULT_DEPARTMENTS.length; i++) {
-    if (existingNames[DEFAULT_DEPARTMENTS[i]]) continue
-    await db.collection(COLLECTIONS.DEPARTMENTS).add({
-      data: {
-        name: DEFAULT_DEPARTMENTS[i],
-        createTime: now,
-        updateTime: now
-      }
-    })
-  }
-
-  await ensureDefaultAllowanceRules()
-  await ensureDefaultResponsibilities()
+  const missing = DEFAULT_DEPARTMENTS.filter(name => !existingNames[name])
+  await Promise.all(missing.map(name => db.collection(COLLECTIONS.DEPARTMENTS).add({
+    data: {
+      name,
+      createTime: now,
+      updateTime: now
+    }
+  })))
 }
 
-async function ensureDefaultAllowanceRules() {
+async function ensureDefaultAllowanceRules(existingRows) {
   const collection = db.collection(COLLECTIONS.ALLOWANCE_RULES)
-  const settingsRes = await collection.where({ key: ALLOWANCE_SETTINGS_KEY }).limit(1).get()
-  if (!first(settingsRes)) {
-    await collection.add({
+  const rows = existingRows || await getAll(COLLECTIONS.ALLOWANCE_RULES, {})
+  const existingKeys = {}
+  rows.forEach(item => {
+    if (item.key) existingKeys[item.key] = true
+  })
+  const inserts = []
+  if (!existingKeys[ALLOWANCE_SETTINGS_KEY]) {
+    inserts.push(collection.add({
       data: {
         key: ALLOWANCE_SETTINGS_KEY,
         recordType: 'settings',
@@ -291,35 +334,36 @@ async function ensureDefaultAllowanceRules() {
         createTime: new Date(),
         updateTime: new Date()
       }
-    })
+    }))
   }
-  for (let i = 0; i < DEFAULT_ALLOWANCE_RULES.length; i++) {
-    const item = DEFAULT_ALLOWANCE_RULES[i]
-    const existRes = await collection.where({ key: item.key }).limit(1).get()
-    if (first(existRes)) continue
-    await collection.add({
+  DEFAULT_ALLOWANCE_RULES.forEach(item => {
+    if (existingKeys[item.key]) return
+    inserts.push(collection.add({
       data: Object.assign({}, item, {
         recordType: 'rule',
         createTime: new Date(),
         updateTime: new Date()
       })
-    })
-  }
+    }))
+  })
+  await Promise.all(inserts)
 }
 
-async function ensureDefaultResponsibilities() {
+async function ensureDefaultResponsibilities(existingRows) {
   const collection = db.collection(COLLECTIONS.WORKFLOW_RESPONSIBILITIES)
-  for (let i = 0; i < DEFAULT_WORKFLOW_RESPONSIBILITIES.length; i++) {
-    const item = DEFAULT_WORKFLOW_RESPONSIBILITIES[i]
-    const existRes = await collection.where({ key: item.key }).limit(1).get()
-    if (first(existRes)) continue
-    await collection.add({
+  const existingKeys = {}
+  ;(existingRows || await getAll(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, {})).forEach(item => {
+    if (item.key) existingKeys[item.key] = true
+  })
+  const inserts = DEFAULT_WORKFLOW_RESPONSIBILITIES
+    .filter(item => !existingKeys[item.key])
+    .map(item => collection.add({
       data: Object.assign({}, item, {
         createTime: new Date(),
         updateTime: new Date()
       })
-    })
-  }
+    }))
+  await Promise.all(inserts)
 }
 
 async function ensureSeedData() {
@@ -342,8 +386,10 @@ async function ensureSeedData() {
 
 async function doEnsureSeedData() {
   await ensureTestAccounts()
-  await ensureNotificationSettings()
-  await ensureDemoData()
+  await Promise.all([
+    ensureNotificationSettings(),
+    ensureDemoData()
+  ])
 }
 
 async function handleLogin(event, openid) {
@@ -405,9 +451,13 @@ async function verifyPasswordLogin(event) {
     return { ok: false, message: '姓名和密码不能为空' }
   }
 
-  const users = db.collection(COLLECTIONS.USERS)
-  const existRes = await users.where({ name }).limit(1).get()
-  const exist = first(existRes)
+  let exist = await findUserByName(name)
+
+  // 新环境尚未执行演示数据初始化时，允许用一个测试账号直接进入。
+  // 这里只创建本次登录所需的账号及成员资料，不再同步构建整套演示数据。
+  if (!exist && isDefaultTestCredential(name, password)) {
+    exist = await ensureRequestedTestAccount(name)
+  }
 
   if (!exist) {
     return { ok: false, message: '用户不存在，请先注册' }
@@ -419,6 +469,40 @@ async function verifyPasswordLogin(event) {
   }
 
   return { ok: true, user: exist }
+}
+
+async function findUserByName(name) {
+  try {
+    const result = await db.collection(COLLECTIONS.USERS).where({ name }).limit(1).get()
+    return first(result)
+  } catch (err) {
+    return null
+  }
+}
+
+function isDefaultTestCredential(name, password) {
+  return ENABLE_TEST_ACCOUNTS && password === TEST_ACCOUNT_PASSWORD &&
+    TEST_ACCOUNTS.some(account => account.name === name)
+}
+
+async function ensureRequestedTestAccount(name) {
+  const account = TEST_ACCOUNTS.find(item => item.name === name)
+  if (!account) return null
+
+  try {
+    await db.createCollection(COLLECTIONS.USERS)
+  } catch (err) {
+    // users 集合已存在时会进入 catch。
+  }
+  if (account.department) {
+    try {
+      await db.createCollection(COLLECTIONS.MEMBERS)
+    } catch (err) {
+      // members 集合已存在时会进入 catch。
+    }
+  }
+
+  return await ensureTestAccount(account, hashPassword(TEST_ACCOUNT_PASSWORD), new Date())
 }
 
 function isTestLoginUser(user, password) {
@@ -539,69 +623,79 @@ async function ensureTestAccounts() {
   const passwordHash = hashPassword(TEST_ACCOUNT_PASSWORD)
   const now = new Date()
 
-  for (let i = 0; i < TEST_ACCOUNTS.length; i++) {
-    const account = TEST_ACCOUNTS[i]
-    const existRes = await users.where({ name: account.name }).limit(1).get()
-    const exist = first(existRes)
-    if (exist && !exist.isTestAccount) {
-      continue
-    }
+  await Promise.all(TEST_ACCOUNTS.map(account => ensureTestAccount(account, passwordHash, now, users)))
+}
 
-    if (exist) {
-      await users.doc(exist._id).update({
-        data: {
-          role: account.role,
-          department: account.department,
-          passwordHash,
-          password: null,
-          isTestAccount: true,
-          wechatBound: false,
-          seedUpdateTime: now
-        }
-      })
-      if (account.role !== 'admin') {
-        await upsertMemberForUser({
-          _id: exist._id,
-          openid: exist.openid || '',
-          name: account.name,
-          role: account.role,
-          department: account.department,
-          isTestAccount: true
-        })
-      }
-      continue
-    }
+async function ensureTestAccount(account, passwordHash, now, usersCollection) {
+  const users = usersCollection || db.collection(COLLECTIONS.USERS)
+  const existRes = await users.where({ name: account.name }).limit(1).get()
+  const exist = first(existRes)
+  if (exist && !exist.isTestAccount) {
+    return exist
+  }
 
-    const addRes = await users.add({
+  if (exist) {
+    await users.doc(exist._id).update({
       data: {
-        openid: '',
-        sessionOpenid: '',
-        name: account.name,
-        passwordHash,
-        password: null,
         role: account.role,
         department: account.department,
-        token: '',
-        tokenExpireAt: null,
-        wechatBound: false,
-        wxProfile: null,
+        passwordHash,
+        password: null,
         isTestAccount: true,
-        createTime: now,
-        updateTime: now
+        wechatBound: false,
+        seedUpdateTime: now
       }
     })
-
     if (account.role !== 'admin') {
       await upsertMemberForUser({
-        _id: addRes._id,
-        openid: '',
+        _id: exist._id,
+        openid: exist.openid || '',
         name: account.name,
         role: account.role,
         department: account.department,
         isTestAccount: true
       })
     }
+    return Object.assign({}, exist, {
+      role: account.role,
+      department: account.department,
+      passwordHash,
+      isTestAccount: true
+    })
   }
+
+  const addRes = await users.add({
+    data: {
+      openid: '',
+      sessionOpenid: '',
+      name: account.name,
+      passwordHash,
+      password: null,
+      role: account.role,
+      department: account.department,
+      token: '',
+      tokenExpireAt: null,
+      wechatBound: false,
+      wxProfile: null,
+      isTestAccount: true,
+      createTime: now,
+      updateTime: now
+    }
+  })
+
+  const user = {
+    _id: addRes._id,
+    openid: '',
+    name: account.name,
+    role: account.role,
+    department: account.department,
+    passwordHash,
+    isTestAccount: true
+  }
+  if (account.role !== 'admin') {
+    await upsertMemberForUser(user)
+  }
+  return user
 }
 
 async function ensureNotificationSettings() {
@@ -633,8 +727,10 @@ async function ensureDemoData() {
     return
   }
 
-  await ensureDemoWorkRecords()
-  await ensureDemoHandoffs()
+  await Promise.all([
+    ensureDemoWorkRecords(),
+    ensureDemoHandoffs()
+  ])
 }
 
 async function ensureDemoWorkRecords() {
@@ -703,11 +799,16 @@ async function ensureDemoWorkRecords() {
     }
   ]
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]
+  const members = await getAll(COLLECTIONS.MEMBERS, {})
+  const memberByNameAndDepartment = {}
+  members.forEach(member => {
+    memberByNameAndDepartment[member.name + '|' + member.department] = member
+  })
+
+  await Promise.all(rows.map((row, index) => {
     const workType = normalizeWorkType(row.workType)
-    const member = await findMember('', row.memberName, row.department)
-    await db.collection(COLLECTIONS.RECORDS).add({
+    const member = memberByNameAndDepartment[row.memberName + '|' + row.department]
+    return db.collection(COLLECTIONS.RECORDS).add({
       data: Object.assign({}, row, {
         memberId: member ? member._id : '',
         memberOpenid: member ? (member.openid || '') : '',
@@ -716,11 +817,11 @@ async function ensureDemoWorkRecords() {
         uploaderOpenid: '',
         remark: row.allowanceStatus === 'pending' ? '成员已上报，等待部长填写津贴' : '演示数据',
         seedTag: DEMO_SEED_TAG,
-        createTime: new Date(now.getTime() - i * 3600 * 1000),
+        createTime: new Date(now.getTime() - index * 3600 * 1000),
         updateTime: now
       })
     })
-  }
+  }))
 }
 
 async function ensureDemoHandoffs() {
@@ -937,34 +1038,20 @@ async function ensureDemoHandoffs() {
     }
   ]
 
-  for (let i = 0; i < rows.length; i++) {
-    await ensureDemoHandoffRow(rows[i])
-  }
-}
-
-async function ensureDemoHandoffRow(row) {
-  const keyed = await getAll(COLLECTIONS.HANDOFFS, {
-    seedTag: DEMO_SEED_TAG,
-    demoKey: row.demoKey
+  const existing = await getAll(COLLECTIONS.HANDOFFS, { seedTag: DEMO_SEED_TAG })
+  const existingKeys = {}
+  const existingTitles = {}
+  existing.forEach(item => {
+    if (item.demoKey) existingKeys[item.demoKey] = true
+    if (item.title) existingTitles[item.title] = true
   })
-  if (keyed.length > 0) {
-    return
-  }
-
-  const sameTitle = await getAll(COLLECTIONS.HANDOFFS, {
-    seedTag: DEMO_SEED_TAG,
-    title: row.title
-  })
-  if (sameTitle.length > 0) {
-    return
-  }
-
-  await db.collection(COLLECTIONS.HANDOFFS).add({
+  const missing = rows.filter(row => !existingKeys[row.demoKey] && !existingTitles[row.title])
+  await Promise.all(missing.map(row => db.collection(COLLECTIONS.HANDOFFS).add({
     data: Object.assign({
       workflowType: 'editorialOfficeHandoff',
       reminderLeadHours: 24
     }, row)
-  })
+  })))
 }
 
 async function getWechatBoundUser(openid) {
