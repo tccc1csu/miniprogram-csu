@@ -7,6 +7,7 @@ Page({
   data: {
     role: '',
     department: '',
+    departmentFilter: 'all',
     canCreate: false,
     activeTab: 'active',
     tabs: [
@@ -24,6 +25,7 @@ Page({
       articleType: 'original',
       articleTypeIndex: 0,
       targetSites: '院网、升华网、学工网',
+      reviewerNames: '',
       note: '',
       deadline: '',
       deadlineLabel: ''
@@ -43,6 +45,9 @@ Page({
   onLoad: function (options) {
     if (options && options.tab) {
       this.setData({ activeTab: options.tab })
+    }
+    if (options && options.departmentFilter) {
+      this.setData({ departmentFilter: options.departmentFilter })
     }
   },
 
@@ -75,7 +80,8 @@ Page({
     showLoading('加载中...')
     callFunction('manageHandoffs', {
       action: 'getHandoffs',
-      scope: this.data.activeTab
+      scope: this.data.activeTab,
+      departmentFilter: this.data.departmentFilter
     }).then(list => {
       hideLoading()
       const handoffs = (list || []).map(item => {
@@ -136,6 +142,10 @@ Page({
     this.setData({ 'createForm.targetSites': e.detail.value })
   },
 
+  onReviewerNamesInput: function (e) {
+    this.setData({ 'createForm.reviewerNames': e.detail.value })
+  },
+
   onNoteInput: function (e) {
     this.setData({ 'createForm.note': e.detail.value })
   },
@@ -164,6 +174,7 @@ Page({
           articleType: 'original',
           articleTypeIndex: 0,
           targetSites: '院网、升华网、学工网',
+          reviewerNames: '',
           note: '',
           deadline: '',
           deadlineLabel: ''

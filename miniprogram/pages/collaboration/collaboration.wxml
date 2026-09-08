@@ -7,23 +7,26 @@
     </view>
   </view>
 
-  <view class="module-list">
-    <view class="module-card" bindtap="goSuggestions">
-      <view class="module-icon activity-icon">活</view>
-      <view class="module-body">
-        <view class="module-title">活动建议</view>
-        <view class="module-meta">活动</view>
-      </view>
-      <view class="module-arrow">›</view>
-    </view>
-
-    <view class="module-card {{canUseHandoff ? '' : 'disabled'}}" bindtap="goHandoffs">
-      <view class="module-icon handoff-icon">协</view>
-      <view class="module-body">
-        <view class="module-title">采编办公协同</view>
-        <view class="module-meta">采编部 × 办公部</view>
-      </view>
-      <view class="module-arrow">›</view>
+  <view class="filter-bar">
+    <text class="filter-label">流程范围</text>
+    <view class="filter-switch">
+      <view class="filter-option {{departmentFilter === 'all' ? 'active' : ''}}" data-filter="all" bindtap="switchDepartmentFilter">查看全部</view>
+      <view class="filter-option {{departmentFilter === 'mine' ? 'active' : ''}}" data-filter="mine" bindtap="switchDepartmentFilter">仅看本部门</view>
     </view>
   </view>
+
+  <view class="module-list">
+    <block wx:for="{{modules}}" wx:key="key">
+      <view wx:if="{{item.visible}}" class="module-card" data-action="{{item.action}}" bindtap="goModule">
+        <view class="module-icon {{item.iconClass}}">{{item.icon}}</view>
+        <view class="module-body">
+          <view class="module-title">{{item.title}}</view>
+          <view class="module-meta">{{item.meta}}</view>
+        </view>
+        <view class="module-arrow">›</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="empty" wx:if="{{modules.length > 0 && !hasVisibleModule}}">本部门暂无关联协作流程</view>
 </view>

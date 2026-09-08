@@ -27,6 +27,38 @@
   gap: 20rpx;
 }
 
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.filter-label {
+  color: #666;
+  font-size: 25rpx;
+}
+
+.filter-switch {
+  display: flex;
+  padding: 4rpx;
+  background: #E8EDF5;
+  border-radius: 10rpx;
+}
+
+.filter-option {
+  padding: 12rpx 18rpx;
+  color: #667085;
+  font-size: 24rpx;
+  border-radius: 8rpx;
+}
+
+.filter-option.active {
+  color: #245F9E;
+  background: #fff;
+  font-weight: 600;
+}
+
 .module-card {
   display: flex;
   align-items: center;
@@ -59,6 +91,10 @@
 
 .handoff-icon {
   background: linear-gradient(135deg, #4A90D9, #357ABD);
+}
+
+.production-icon {
+  background: linear-gradient(135deg, #E98952, #C75B37);
 }
 
 .module-body {

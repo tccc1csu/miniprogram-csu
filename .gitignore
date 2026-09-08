@@ -4,6 +4,7 @@ project.private.config.json
 # Local archives and generated files
 *.zip
 *.7z
+*.docx
 *.log
 
 # Node dependencies

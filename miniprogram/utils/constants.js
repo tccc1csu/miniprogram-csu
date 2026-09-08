@@ -52,7 +52,9 @@ const COLLECTIONS = {
   VOTES: 'votes',
   VOTE_RECORDS: 'vote_records',
   NOTIFICATIONS: 'notifications',
-  HANDOFFS: 'handoffs'
+  HANDOFFS: 'handoffs',
+  ALLOWANCE_RULES: 'allowance_rules',
+  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities'
 }
 
 module.exports = {

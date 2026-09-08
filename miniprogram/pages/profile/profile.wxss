@@ -81,6 +81,8 @@
 .icon-manage { background: linear-gradient(135deg, #9B59B6, #8E44AD); }
 .icon-collab { background: linear-gradient(135deg, #5A6FEC, #4A5ED0); }
 .icon-handoff { background: linear-gradient(135deg, #26A69A, #00897B); }
+.icon-rules { background: linear-gradient(135deg, #E98952, #C75B37); }
+.icon-duty { background: linear-gradient(135deg, #667085, #475467); }
 
 .info-card {
   padding: 30rpx;

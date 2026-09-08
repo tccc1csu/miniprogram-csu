@@ -17,7 +17,9 @@ const COLLECTIONS = {
   VOTES: 'votes',
   VOTE_RECORDS: 'vote_records',
   NOTIFICATIONS: 'notifications',
-  HANDOFFS: 'handoffs'
+  HANDOFFS: 'handoffs',
+  ALLOWANCE_RULES: 'allowance_rules',
+  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities'
 }
 
 const DEFAULT_DEPARTMENTS = [
@@ -70,9 +72,42 @@ const HANDOFF_STATUS_LABELS = {
   submitted: '待办公部派发',
   assigned: '待干事同步',
   completed: '待管理员审核',
+  archive_assigned: '待办公部归档',
   rejected: '审核退回',
   archived: '已归档'
 }
+
+const ALLOWANCE_SETTINGS_KEY = '__settings__'
+
+// Word 制度只给出工时，金额由管理员在“津贴规则”中配置。
+const DEFAULT_ALLOWANCE_RULES = [
+  { key: 'editorial_news_creator', name: '新闻稿创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 5, allowance: 0 },
+  { key: 'editorial_news_reviewer', name: '新闻稿审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 2, allowance: 0 },
+  { key: 'editorial_book_creator', name: '书推创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 4, allowance: 0 },
+  { key: 'editorial_book_reviewer', name: '书推审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 3, allowance: 0 },
+  { key: 'editorial_interview_reviewer', name: '人物专访审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 2.5, allowance: 0 },
+  { key: 'editorial_video_creator', name: '视频制作', department: '采编部', role: '创作者', workType: '视频制作', unit: '篇', hours: 4, allowance: 0 },
+  { key: 'editorial_record_creator', name: '纪录时刻创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 4, allowance: 0 },
+  { key: 'editorial_record_reviewer', name: '纪录时刻审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 3, allowance: 0 },
+  { key: 'design_basic', name: '美编基础设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 3, allowance: 0 },
+  { key: 'design_complex', name: '美编复杂设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 6, allowance: 0 },
+  { key: 'design_large', name: '美编大型设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 9, allowance: 0 },
+  { key: 'design_basic_reviewer', name: '美编基础审核', department: '美编部', role: '审核', workType: '美编设计', unit: '篇', hours: 1, allowance: 0 },
+  { key: 'design_large_reviewer', name: '美编大型审核', department: '美编部', role: '审核', workType: '美编设计', unit: '篇', hours: 2, allowance: 0 },
+  { key: 'office_activity_planner', name: '大型活动策划', department: '办公部', role: '策划负责人', workType: '日常办公', unit: '次', hours: 4, allowance: 0 },
+  { key: 'office_activity_organizer', name: '大型活动组织', department: '办公部', role: '组织者', workType: '日常办公', unit: '次', hours: 3.5, allowance: 0 },
+  { key: 'office_regular_review', name: '常规审核或归档', department: '办公部', role: '审核人员', workType: '日常办公', unit: '人次', hours: 2, allowance: 0 },
+  { key: 'office_handoff_sync', name: '采编办公对接', department: '办公部', role: '对接干事', workType: '日常办公', unit: '学期', hours: 4, allowance: 0 },
+  { key: 'production_video_member', name: '摄制任务完成', department: '摄制部', role: '摄制干事', workType: '视频制作', unit: '次', hours: 4, allowance: 0 },
+  { key: 'production_archive_review', name: '摄制任务归档', department: '办公部', role: '归档人员', workType: '日常办公', unit: '人次', hours: 2, allowance: 0 },
+  { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '次', hours: 2, allowance: 0 }
+]
+
+const DEFAULT_WORKFLOW_RESPONSIBILITIES = [
+  { key: 'editorialOfficeHandoff', name: '采编办公协同', description: '采编部报备，办公部派发与同步', departments: ['采编部', '办公部'] },
+  { key: 'productionReservation', name: '摄制预约协作', description: '预约人发起，摄制部完成，办公部归档', departments: ['摄制部', '办公部'] },
+  { key: 'activitySuggestions', name: '活动建议', description: '活动建议、投票和通知', departments: DEFAULT_DEPARTMENTS.slice() }
+]
 
 let collectionStructureReady = false
 let collectionStructurePromise = null
@@ -156,6 +191,12 @@ exports.main = async (event) => {
     if (functionName === 'manageHandoffs') {
       return await handleManageHandoffs(event, user, openid)
     }
+    if (functionName === 'manageAllowanceRules') {
+      return await handleManageAllowanceRules(event, user)
+    }
+    if (functionName === 'manageResponsibilities') {
+      return await handleManageResponsibilities(event, user)
+    }
     return fail('未知云函数操作：' + functionName)
   } catch (err) {
     console.error('api error', functionName, err)
@@ -216,6 +257,54 @@ async function doEnsureCollectionStructure() {
         createTime: now,
         updateTime: now
       }
+    })
+  }
+
+  await ensureDefaultAllowanceRules()
+  await ensureDefaultResponsibilities()
+}
+
+async function ensureDefaultAllowanceRules() {
+  const collection = db.collection(COLLECTIONS.ALLOWANCE_RULES)
+  const settingsRes = await collection.where({ key: ALLOWANCE_SETTINGS_KEY }).limit(1).get()
+  if (!first(settingsRes)) {
+    await collection.add({
+      data: {
+        key: ALLOWANCE_SETTINGS_KEY,
+        recordType: 'settings',
+        name: '全局设置',
+        urgentThresholdDays: 2,
+        urgentMultiplier: 1.5,
+        createTime: new Date(),
+        updateTime: new Date()
+      }
+    })
+  }
+  for (let i = 0; i < DEFAULT_ALLOWANCE_RULES.length; i++) {
+    const item = DEFAULT_ALLOWANCE_RULES[i]
+    const existRes = await collection.where({ key: item.key }).limit(1).get()
+    if (first(existRes)) continue
+    await collection.add({
+      data: Object.assign({}, item, {
+        recordType: 'rule',
+        createTime: new Date(),
+        updateTime: new Date()
+      })
+    })
+  }
+}
+
+async function ensureDefaultResponsibilities() {
+  const collection = db.collection(COLLECTIONS.WORKFLOW_RESPONSIBILITIES)
+  for (let i = 0; i < DEFAULT_WORKFLOW_RESPONSIBILITIES.length; i++) {
+    const item = DEFAULT_WORKFLOW_RESPONSIBILITIES[i]
+    const existRes = await collection.where({ key: item.key }).limit(1).get()
+    if (first(existRes)) continue
+    await collection.add({
+      data: Object.assign({}, item, {
+        createTime: new Date(),
+        updateTime: new Date()
+      })
     })
   }
 }
@@ -1187,6 +1276,130 @@ async function handleManageData(event, user, openid) {
   return fail('未知操作：' + action)
 }
 
+async function handleManageAllowanceRules(event, user) {
+  const rules = db.collection(COLLECTIONS.ALLOWANCE_RULES)
+  if (event.action === 'getRules') {
+    const rows = await getAll(COLLECTIONS.ALLOWANCE_RULES, {})
+    rows.sort((a, b) => String(a.department || '').localeCompare(String(b.department || '')) || String(a.name || '').localeCompare(String(b.name || '')))
+    const settings = rows.find(item => item.key === ALLOWANCE_SETTINGS_KEY) || {
+      urgentThresholdDays: 2,
+      urgentMultiplier: 1.5
+    }
+    return success({
+      settings: {
+        urgentThresholdDays: toNumber(settings.urgentThresholdDays) || 2,
+        urgentMultiplier: toNumber(settings.urgentMultiplier) || 1.5
+      },
+      rules: rows.filter(item => item.recordType === 'rule').map(formatAllowanceRule)
+    })
+  }
+
+  requireAdmin(user)
+  if (event.action === 'updateSettings') {
+    const settingsRes = await rules.where({ key: ALLOWANCE_SETTINGS_KEY }).limit(1).get()
+    const settings = first(settingsRes)
+    const thresholdText = trim(event.urgentThresholdDays)
+    const multiplierText = trim(event.urgentMultiplier)
+    const urgentThresholdDays = Number(thresholdText)
+    const urgentMultiplier = Number(multiplierText)
+    if (!settings || !thresholdText || !multiplierText ||
+      !Number.isFinite(urgentThresholdDays) || !Number.isFinite(urgentMultiplier) ||
+      urgentThresholdDays <= 0 || urgentMultiplier <= 0) {
+      return fail('加急阈值和加急倍率必须大于0')
+    }
+    await rules.doc(settings._id).update({
+      data: { urgentThresholdDays, urgentMultiplier, updateTime: new Date() }
+    })
+    return success({ updated: 1 })
+  }
+
+  if (event.action === 'updateRule') {
+    const rule = await getDoc(COLLECTIONS.ALLOWANCE_RULES, event.ruleId)
+    if (!rule || rule.recordType !== 'rule') return fail('津贴规则不存在')
+    const department = trim(event.department) || rule.department
+    const hoursText = trim(event.hours)
+    const allowanceText = trim(event.allowance)
+    const hours = Number(hoursText)
+    const allowance = Number(allowanceText)
+    if (!hoursText || !allowanceText || !Number.isFinite(hours) || !Number.isFinite(allowance) || hours < 0 || allowance < 0) return fail('工时和津贴必须是大于等于0的数字')
+    await rules.doc(event.ruleId).update({
+      data: {
+        name: trim(event.name) || rule.name,
+        department,
+        role: trim(event.role) || rule.role,
+        workType: normalizeWorkType(event.workType, department),
+        unit: trim(event.unit) || rule.unit,
+        hours,
+        allowance,
+        updateTime: new Date()
+      }
+    })
+    return success({ updated: 1 })
+  }
+
+  if (event.action === 'addRule') {
+    const name = trim(event.name)
+    const department = trim(event.department)
+    if (!name || !department) return fail('规则名称和部门不能为空')
+    const hoursText = trim(event.hours)
+    const allowanceText = trim(event.allowance)
+    const hours = Number(hoursText)
+    const allowance = Number(allowanceText)
+    if (!hoursText || !allowanceText || !Number.isFinite(hours) || !Number.isFinite(allowance) || hours < 0 || allowance < 0) return fail('工时和津贴必须是大于等于0的数字')
+    const now = new Date()
+    const key = 'custom_' + Date.now().toString(36)
+    const res = await rules.add({
+      data: {
+        key,
+        recordType: 'rule',
+        name,
+        department,
+        role: trim(event.role) || '参与人员',
+        workType: normalizeWorkType(event.workType, department),
+        unit: trim(event.unit) || '次',
+        hours,
+        allowance,
+        createTime: now,
+        updateTime: now
+      }
+    })
+    return success({ _id: res._id })
+  }
+
+  if (event.action === 'deleteRule') {
+    const rule = await getDoc(COLLECTIONS.ALLOWANCE_RULES, event.ruleId)
+    if (!rule || rule.recordType !== 'rule') return fail('津贴规则不存在')
+    const res = await rules.doc(event.ruleId).remove()
+    return success({ removed: getRemovedCount(res) })
+  }
+
+  return fail('未知操作：' + event.action)
+}
+
+async function handleManageResponsibilities(event, user) {
+  const collection = db.collection(COLLECTIONS.WORKFLOW_RESPONSIBILITIES)
+  if (event.action === 'getResponsibilities') {
+    const rows = await getAll(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, {})
+    return success(rows.map(formatResponsibility))
+  }
+  requireAdmin(user)
+  if (event.action !== 'updateResponsibility') return fail('未知操作：' + event.action)
+  const item = await getDoc(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, event.responsibilityId)
+  if (!item) return fail('协作流程不存在')
+  const departments = Array.isArray(event.departments)
+    ? event.departments.map(item => trim(item)).filter(Boolean)
+    : []
+  if (departments.length === 0) return fail('至少选择一个相关部门')
+  const existingDepartments = await getAll(COLLECTIONS.DEPARTMENTS, {})
+  const validDepartments = existingDepartments.map(item => trim(item.name)).filter(Boolean)
+  const invalidDepartments = unique(departments).filter(name => !validDepartments.includes(name))
+  if (invalidDepartments.length > 0) return fail('存在无效部门：' + invalidDepartments.join('、'))
+  await collection.doc(item._id).update({
+    data: { departments: unique(departments), updateTime: new Date() }
+  })
+  return success({ updated: 1 })
+}
+
 async function handleManageContacts(event, user) {
   const action = event.action
   const contacts = db.collection(COLLECTIONS.CONTACTS)
@@ -1469,9 +1682,25 @@ async function handleManageHandoffs(event, user, openid) {
   const action = event.action
   const handoffs = db.collection(COLLECTIONS.HANDOFFS)
 
+  if (action === 'getProductionOptions') {
+    const members = await getAll(COLLECTIONS.MEMBERS, { department: '办公部' })
+    const allowanceSettings = await getAllowanceSettings()
+    let defaultArchiveMember = ''
+    if (user.department === '摄制部') {
+      const currentMember = await findMember('', user.name, '摄制部')
+      defaultArchiveMember = currentMember && currentMember.defaultArchiveMemberName ? currentMember.defaultArchiveMemberName : ''
+    }
+    return success({
+      officeMembers: members.sort(sortByDepartmentAndName).map(formatMember),
+      defaultArchiveMember,
+      urgentThresholdDays: allowanceSettings.urgentThresholdDays,
+      urgentMultiplier: allowanceSettings.urgentMultiplier
+    })
+  }
+
   if (action === 'getHandoffs') {
     const scope = event.scope || 'active'
-    const rows = await getVisibleHandoffs(user, openid, scope)
+    const rows = await getVisibleHandoffs(user, openid, scope, event.departmentFilter)
     rows.sort(sortByUpdateTimeDesc)
     return success(rows.map(item => formatHandoff(item, user, openid)))
   }
@@ -1485,6 +1714,7 @@ async function handleManageHandoffs(event, user, openid) {
     const articleNames = trim(event.articleNames)
     const targetSites = trim(event.targetSites) || '院网、升华网、学工网'
     const articleType = normalizeArticleType(event.articleType)
+    const reviewerNames = normalizeNameList(event.reviewerNames)
     if (!title || !articleNames) {
       return fail('请填写标题和稿件名称')
     }
@@ -1496,6 +1726,8 @@ async function handleManageHandoffs(event, user, openid) {
         articleNames,
         targetSites,
         articleType,
+        workflowType: 'editorialOfficeHandoff',
+        reviewerNames,
         note: trim(event.note),
         deadline: trim(event.deadline) || '',
         sourceDepartment: '采编部',
@@ -1522,6 +1754,52 @@ async function handleManageHandoffs(event, user, openid) {
     return success({ _id: addRes._id })
   }
 
+  if (action === 'createProductionReservation') {
+    const taskName = trim(event.taskName)
+    const scheduledAt = trim(event.scheduledAt)
+    const location = trim(event.location)
+    if (!taskName || !scheduledAt || !location) return fail('请填写任务名称、预约时间和地点')
+    const scheduledDate = parseProductionDateTime(scheduledAt)
+    if (isNaN(scheduledDate.getTime())) return fail('预约时间格式无效')
+    const now = new Date()
+    if (scheduledDate.getTime() <= now.getTime()) return fail('预约时间必须晚于当前时间')
+    const settings = await getAllowanceSettings()
+    const urgent = scheduledDate.getTime() - now.getTime() < settings.urgentThresholdDays * 24 * 60 * 60 * 1000
+    const addRes = await handoffs.add({
+      data: {
+        title: taskName,
+        taskName,
+        scheduledAt,
+        location,
+        note: trim(event.note),
+        workflowType: 'productionReservation',
+        sourceDepartment: '摄制部',
+        targetDepartment: '摄制部',
+        submitterName: user.name,
+        submitterOpenid: openid,
+        assigneeName: '',
+        assigneeOpenid: '',
+        assignedBy: '',
+        archiveMemberName: '',
+        archiveMemberOpenid: '',
+        status: 'submitted',
+        statusLabel: HANDOFF_STATUS_LABELS.submitted,
+        isUrgent: urgent,
+        urgentMultiplier: urgent ? settings.urgentMultiplier : 1,
+        syncResult: '',
+        reviewComment: '',
+        createTime: now,
+        updateTime: now
+      }
+    })
+    await addWorkflowNotification({
+      title: '新的摄制预约',
+      content: taskName + ' 已提交给摄制部部长，请安排干事。',
+      targetDept: '摄制部'
+    })
+    return success({ _id: addRes._id, isUrgent: urgent })
+  }
+
   if (action === 'assignHandoff') {
     const handoff = await getDoc(COLLECTIONS.HANDOFFS, event.handoffId)
     if (!handoff) {
@@ -1538,7 +1816,9 @@ async function handleManageHandoffs(event, user, openid) {
     if (!assigneeName) {
       return fail('请选择承接干事')
     }
-    const assignee = await findMember('', assigneeName, '办公部')
+    const targetDepartment = handoff.workflowType === 'productionReservation' ? '摄制部' : handoff.targetDepartment
+    const assignee = await findMember('', assigneeName, targetDepartment)
+    if (!assignee) return fail('请选择有效的本部门干事')
     const now = new Date()
     await handoffs.doc(event.handoffId).update({
       data: {
@@ -1552,9 +1832,9 @@ async function handleManageHandoffs(event, user, openid) {
       }
     })
     await addWorkflowNotification({
-      title: '办公部任务已派发',
+      title: handoff.workflowType === 'productionReservation' ? '摄制部任务已派发' : '办公部任务已派发',
       content: handoff.title + ' 已派发给 ' + assigneeName + '。',
-      targetDept: '办公部'
+      targetDept: targetDepartment
     })
     return success({ updated: 1 })
   }
@@ -1576,6 +1856,42 @@ async function handleManageHandoffs(event, user, openid) {
       return fail('请填写同步结果或反馈说明')
     }
     const now = new Date()
+    if (handoff.workflowType === 'productionReservation') {
+      const archiveMemberName = trim(event.archiveMemberName)
+      const archiveMember = await findMember('', archiveMemberName, '办公部')
+      const productionMember = await findMember('', user.name, '摄制部')
+      const selectedArchiveMember = archiveMember || (productionMember && productionMember.defaultArchiveMemberName
+        ? await findMember('', productionMember.defaultArchiveMemberName, '办公部')
+        : null)
+      if (!selectedArchiveMember) return fail('请选择负责归档的办公部成员')
+      if (productionMember && archiveMember) {
+        await db.collection(COLLECTIONS.MEMBERS).doc(productionMember._id).update({
+          data: {
+            defaultArchiveMemberName: archiveMember.name,
+            defaultArchiveMemberOpenid: archiveMember.openid || '',
+            updateTime: now
+          }
+        })
+      }
+      await handoffs.doc(event.handoffId).update({
+        data: {
+          syncResult,
+          completedBy: user.name,
+          archiveMemberName: selectedArchiveMember.name,
+          archiveMemberOpenid: selectedArchiveMember.openid || '',
+          status: 'archive_assigned',
+          statusLabel: HANDOFF_STATUS_LABELS.archive_assigned,
+          completedTime: now,
+          updateTime: now
+        }
+      })
+      await addWorkflowNotification({
+        title: '摄制任务待归档',
+        content: handoff.title + ' 已完成，请 ' + selectedArchiveMember.name + ' 负责归档。',
+        targetDept: '办公部'
+      })
+      return success({ updated: 1, archiveMemberName: selectedArchiveMember.name })
+    }
     await handoffs.doc(event.handoffId).update({
       data: {
         syncResult,
@@ -1628,6 +1944,37 @@ async function handleManageHandoffs(event, user, openid) {
       targetDept: approved ? '采编部' : '办公部'
     })
     return success({ updated: 1, archived: approved })
+  }
+
+  if (action === 'archiveProductionTask') {
+    const handoff = await getDoc(COLLECTIONS.HANDOFFS, event.handoffId)
+    if (!handoff || handoff.workflowType !== 'productionReservation') return fail('摄制预约不存在')
+    if (handoff.status !== 'archive_assigned') return fail('当前状态不能归档')
+    if (user.role !== 'admin' && !(user.department === '办公部' && (handoff.archiveMemberName === user.name || handoff.archiveMemberOpenid === openid))) {
+      return fail('只有指定办公部成员或管理员可以归档')
+    }
+    const archiveNote = trim(event.archiveNote)
+    const now = new Date()
+    const settledRecords = await settleProductionWorkload(event.handoffId, handoff, now, user, openid, archiveNote)
+    await handoffs.doc(event.handoffId).update({
+      data: {
+        archiveNote,
+        status: 'archived',
+        statusLabel: HANDOFF_STATUS_LABELS.archived,
+        reviewerName: user.name,
+        reviewedTime: now,
+        archivedTime: now,
+        workloadSettled: true,
+        settledRecords,
+        updateTime: now
+      }
+    })
+    await addWorkflowNotification({
+      title: '摄制预约已归档',
+      content: handoff.title + ' 已归档，相关工作量与津贴已自动写入统计。',
+      targetDept: ''
+    })
+    return success({ updated: 1, archived: true })
   }
 
   if (action === 'checkDeadlines') {
@@ -1727,17 +2074,23 @@ async function checkDeadlinesInternal() {
 async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewerOpenid) {
   const articleType = normalizeArticleType(handoff.articleType)
   const articleNames = trim(handoff.articleNames || handoff.title)
+  const quantity = countWorkUnits(articleNames)
+  const rules = await getAllowanceRules()
   const settled = []
 
   if (articleType === 'original' && trim(handoff.submitterName)) {
+    const creatorRule = findAllowanceRule(rules, 'editorial_news_creator', '采编部', '稿件写作')
+    const creatorQuantity = getRuleQuantity(creatorRule, quantity)
     const editorialRecord = await upsertWorkflowWorkloadRecord({
       sourceHandoffId: handoffId,
       memberName: trim(handoff.submitterName),
       memberOpenid: trim(handoff.submitterOpenid),
       department: '采编部',
-      workType: '稿件写作',
-      workload: 4,
+      workType: creatorRule ? creatorRule.workType : '稿件写作',
+      workload: (creatorRule ? creatorRule.hours : 5) * creatorQuantity,
+      allowance: (creatorRule ? creatorRule.allowance : 0) * creatorQuantity,
       content: '稿件写作：' + articleNames,
+      allowanceStatus: 'set',
       remark: '采编办公协同归档自动核算，可由部长调整',
       now,
       reviewer,
@@ -1747,22 +2100,105 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
   }
 
   if (trim(handoff.assigneeName)) {
-    const officeRecord = await upsertWorkflowWorkloadRecord({
-      sourceHandoffId: handoffId,
-      memberName: trim(handoff.assigneeName),
-      memberOpenid: trim(handoff.assigneeOpenid),
-      department: '办公部',
-      workType: '日常办公',
-      workload: 1,
-      content: '稿件同步：' + articleNames + (handoff.targetSites ? '（' + handoff.targetSites + '）' : ''),
+    const syncRule = findAllowanceRule(rules, 'office_handoff_sync', '办公部', '日常办公')
+    const syncUnit = syncRule ? trim(syncRule.unit) : '学期'
+    const syncSourceId = syncUnit === '学期'
+      ? 'allowance:office_handoff_sync:' + getCurrentSemesterLabel(now)
+      : handoffId
+    const alreadySettled = syncUnit === '学期' && await hasWorkflowSource(
+      trim(handoff.assigneeName),
+      '办公部',
+      syncSourceId
+    )
+    if (!alreadySettled) {
+      const syncQuantity = getRuleQuantity(syncRule, quantity)
+      const officeRecord = await upsertWorkflowWorkloadRecord({
+        sourceHandoffId: syncSourceId,
+        memberName: trim(handoff.assigneeName),
+        memberOpenid: trim(handoff.assigneeOpenid),
+        department: '办公部',
+        workType: syncRule ? syncRule.workType : '日常办公',
+        workload: (syncRule ? syncRule.hours : 4) * syncQuantity,
+        allowance: (syncRule ? syncRule.allowance : 0) * syncQuantity,
+        content: '稿件同步：' + articleNames + (handoff.targetSites ? '（' + handoff.targetSites + '）' : ''),
+        allowanceStatus: 'set',
+        remark: syncUnit === '学期'
+          ? '采编办公协同对接按学期自动核算，可由部长调整'
+          : '采编办公协同归档自动核算，可由部长调整',
+        now,
+        reviewer,
+        reviewerOpenid
+      })
+      settled.push(officeRecord)
+    }
+  }
+
+  const reviewerNames = normalizeNameList(handoff.reviewerNames)
+  const reviewerRule = findAllowanceRule(rules, 'office_regular_review', '办公部', '日常办公')
+  for (let i = 0; i < reviewerNames.length; i++) {
+    const member = await findMemberByName(reviewerNames[i])
+    const department = member && member.department ? member.department : '采编部'
+    const reviewRecord = await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId + ':review:' + i,
+      memberName: reviewerNames[i],
+      memberOpenid: member ? (member.openid || '') : '',
+      department,
+      workType: reviewerRule ? reviewerRule.workType : '日常办公',
+      workload: reviewerRule ? reviewerRule.hours : 2,
+      allowance: reviewerRule ? reviewerRule.allowance : 0,
+      content: '稿件审核：' + articleNames,
+      allowanceStatus: 'set',
       remark: '采编办公协同归档自动核算，可由部长调整',
       now,
       reviewer,
       reviewerOpenid
     })
-    settled.push(officeRecord)
+    settled.push(reviewRecord)
   }
 
+  return settled
+}
+
+async function settleProductionWorkload(handoffId, handoff, now, reviewer, reviewerOpenid, archiveNote) {
+  const rules = await getAllowanceRules()
+  const multiplier = toNumber(handoff.urgentMultiplier) || 1
+  const productionRule = findAllowanceRule(rules, 'production_video_member', '摄制部', '视频制作')
+  const archiveRule = findAllowanceRule(rules, 'production_archive_review', '办公部', '日常办公')
+  const settled = []
+  if (trim(handoff.assigneeName)) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId,
+      memberName: handoff.assigneeName,
+      memberOpenid: handoff.assigneeOpenid,
+      department: '摄制部',
+      workType: productionRule ? productionRule.workType : '视频制作',
+      workload: (productionRule ? productionRule.hours : 4) * multiplier,
+      allowance: productionRule ? productionRule.allowance : 0,
+      allowanceStatus: 'set',
+      content: '摄制任务：' + (handoff.taskName || handoff.title),
+      remark: (handoff.isUrgent ? '加急任务，工时按 ' + multiplier + ' 倍计算；' : '') + (archiveNote || '预约任务归档自动核算，可由部长调整'),
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
+  if (trim(handoff.archiveMemberName)) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId + ':archive',
+      memberName: handoff.archiveMemberName,
+      memberOpenid: handoff.archiveMemberOpenid,
+      department: '办公部',
+      workType: archiveRule ? archiveRule.workType : '日常办公',
+      workload: (archiveRule ? archiveRule.hours : 2) * multiplier,
+      allowance: archiveRule ? archiveRule.allowance : 0,
+      allowanceStatus: 'set',
+      content: '摄制任务归档：' + (handoff.taskName || handoff.title),
+      remark: (handoff.isUrgent ? '加急任务，工时按 ' + multiplier + ' 倍计算；' : '') + '预约任务归档自动核算，可由部长调整',
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
   return settled
 }
 
@@ -1803,8 +2239,8 @@ async function upsertWorkflowWorkloadRecord(options) {
         workTypes,
         workContent: appendUniqueLine(exist.workContent, content),
         workload: toNumber(exist.workload) + workload,
-        allowance: toNumber(exist.allowance),
-        allowanceStatus: 'pending',
+        allowance: options.allowanceStatus === 'set' ? toNumber(exist.allowance) + toNumber(options.allowance) : toNumber(exist.allowance),
+        allowanceStatus: options.allowanceStatus || 'pending',
         remark: appendUniqueLine(exist.remark, trim(options.remark)),
         uploadedBy: exist.uploadedBy || (options.reviewer && options.reviewer.name ? options.reviewer.name : '协作归档'),
         uploaderOpenid: exist.uploaderOpenid || options.reviewerOpenid || '',
@@ -1836,8 +2272,8 @@ async function upsertWorkflowWorkloadRecord(options) {
       workTypes: [workType],
       workContent: content,
       workload,
-      allowance: 0,
-      allowanceStatus: 'pending',
+      allowance: toNumber(options.allowance),
+      allowanceStatus: options.allowanceStatus || 'pending',
       remark: trim(options.remark),
       uploadedBy: options.reviewer && options.reviewer.name ? options.reviewer.name : '协作归档',
       uploaderOpenid: options.reviewerOpenid || '',
@@ -1895,8 +2331,11 @@ async function handleGenericDataAction(event) {
   return fail('未知通用操作')
 }
 
-async function getVisibleHandoffs(user, openid, scope) {
+async function getVisibleHandoffs(user, openid, scope, departmentFilter) {
   const rows = await getAll(COLLECTIONS.HANDOFFS, {})
+  const responsibilities = await getAll(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, {})
+  const responsibilityMap = {}
+  responsibilities.forEach(item => { responsibilityMap[item.key] = item })
   return rows.filter(item => {
     if (scope === 'archive' && item.status !== 'archived') {
       return false
@@ -1904,19 +2343,29 @@ async function getVisibleHandoffs(user, openid, scope) {
     if (scope !== 'archive' && item.status === 'archived') {
       return false
     }
-    if (user.role === 'admin') {
-      return true
+    const workflowKey = item.workflowType || 'editorialOfficeHandoff'
+    const responsibility = responsibilityMap[workflowKey]
+    const departmentRelated = !responsibility || (responsibility.departments || []).includes(user.department)
+    if (departmentFilter === 'mine' && user.role !== 'admin' && !departmentRelated) {
+      return false
     }
     if (scope === 'mine') {
       return item.submitterOpenid === openid ||
         item.assigneeOpenid === openid ||
         item.submitterName === user.name ||
-        item.assigneeName === user.name
+        item.assigneeName === user.name ||
+        item.archiveMemberName === user.name ||
+        item.archiveMemberOpenid === openid
     }
-    if (user.department === item.sourceDepartment || user.department === item.targetDepartment) {
+    if (user.role === 'admin') {
       return true
     }
-    return item.submitterOpenid === openid || item.assigneeOpenid === openid
+    if (departmentRelated && (user.department === item.sourceDepartment || user.department === item.targetDepartment ||
+      (responsibility && (responsibility.departments || []).includes(user.department)))) {
+      return true
+    }
+    return item.submitterOpenid === openid || item.assigneeOpenid === openid ||
+      item.archiveMemberName === user.name || item.archiveMemberOpenid === openid
   })
 }
 
@@ -1930,6 +2379,11 @@ function canAssignHandoff(user, handoff) {
 function canCompleteHandoff(user, openid, handoff) {
   if (user.role === 'admin') {
     return true
+  }
+  if (handoff.workflowType === 'productionReservation') {
+    return user.department === '摄制部' && (
+      handoff.assigneeOpenid === openid || handoff.assigneeName === user.name
+    )
   }
   if (user.role === 'minister' && user.department === handoff.targetDepartment) {
     return true
@@ -2032,6 +2486,74 @@ async function findMember(memberId, name, department) {
   }
   const res = await db.collection(COLLECTIONS.MEMBERS).where({ name, department }).limit(1).get()
   return first(res)
+}
+
+async function findMemberByName(name) {
+  const cleanName = trim(name)
+  if (!cleanName) return null
+  const res = await db.collection(COLLECTIONS.MEMBERS).where({ name: cleanName }).limit(1).get()
+  return first(res)
+}
+
+async function getAllowanceSettings() {
+  const res = await db.collection(COLLECTIONS.ALLOWANCE_RULES).where({ key: ALLOWANCE_SETTINGS_KEY }).limit(1).get()
+  const settings = first(res)
+  return {
+    urgentThresholdDays: toNumber(settings && settings.urgentThresholdDays) || 2,
+    urgentMultiplier: toNumber(settings && settings.urgentMultiplier) || 1.5
+  }
+}
+
+async function getAllowanceRules() {
+  const rows = await getAll(COLLECTIONS.ALLOWANCE_RULES, {})
+  return rows.filter(item => item.recordType === 'rule')
+}
+
+function findAllowanceRule(rules, key, department, workType) {
+  return rules.find(item => item.key === key) ||
+    rules.find(item => item.department === department && item.workType === workType)
+}
+
+function getRuleQuantity(rule, fallbackQuantity) {
+  const unit = trim(rule && rule.unit)
+  return ['篇', '件'].includes(unit) ? fallbackQuantity : 1
+}
+
+function getCurrentSemesterLabel(date) {
+  const value = date instanceof Date ? date : new Date(date)
+  return value.getFullYear() + '-' + (value.getMonth() < 6 ? '上学期' : '下学期')
+}
+
+// 小程序 picker 传入的是本地时间，显式按中国标准时间解析，避免云函数运行时区不同造成偏差。
+function parseProductionDateTime(value) {
+  const text = trim(value)
+  if (!text) return new Date(NaN)
+  const normalized = text.replace('T', ' ')
+  const match = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?$/)
+  if (!match) return new Date(text)
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const hour = Number(match[4] || 0)
+  const minute = Number(match[5] || 0)
+  return new Date(Date.UTC(year, month - 1, day, hour - 8, minute, 0, 0))
+}
+
+async function hasWorkflowSource(memberName, department, sourceId) {
+  const rows = await getAll(COLLECTIONS.RECORDS, { memberName, department })
+  return rows.some(item => normalizeIdList(item.sourceHandoffIds).includes(sourceId))
+}
+
+function normalizeNameList(value) {
+  if (Array.isArray(value)) {
+    return unique(value.map(item => trim(item)).filter(Boolean))
+  }
+  return unique(String(value || '').split(/[,，\n、]/).map(item => trim(item)).filter(Boolean))
+}
+
+function countWorkUnits(value) {
+  const items = String(value || '').split(/\n/).map(item => trim(item)).filter(Boolean)
+  return Math.max(1, items.length)
 }
 
 async function getRecordsByRole(event, user, openid) {
@@ -2412,13 +2934,50 @@ function formatVote(vote) {
   }
 }
 
+function formatAllowanceRule(item) {
+  return {
+    _id: item._id,
+    key: item.key || '',
+    name: item.name || '',
+    department: item.department || '',
+    role: item.role || '',
+    workType: item.workType || DEFAULT_WORK_TYPE,
+    unit: item.unit || '次',
+    hours: toNumber(item.hours),
+    allowance: toNumber(item.allowance)
+  }
+}
+
+function formatResponsibility(item) {
+  return {
+    _id: item._id,
+    key: item.key || '',
+    name: item.name || '',
+    description: item.description || '',
+    departments: Array.isArray(item.departments) ? item.departments : []
+  }
+}
+
 function formatHandoff(handoff, user, openid) {
   const status = handoff.status || 'submitted'
+  const workflowType = handoff.workflowType || 'editorialOfficeHandoff'
+  const statusLabel = workflowType === 'productionReservation' && status === 'submitted'
+    ? '待摄制部部长派发'
+    : HANDOFF_STATUS_LABELS[status] || handoff.statusLabel || ''
   return {
     _id: handoff._id,
     title: handoff.title || '',
     articleNames: handoff.articleNames || '',
     targetSites: handoff.targetSites || '',
+    workflowType,
+    taskName: handoff.taskName || handoff.title || '',
+    scheduledAt: handoff.scheduledAt || '',
+    location: handoff.location || '',
+    isUrgent: !!handoff.isUrgent,
+    urgentMultiplier: toNumber(handoff.urgentMultiplier) || 1,
+    archiveMemberName: handoff.archiveMemberName || '',
+    archiveNote: handoff.archiveNote || '',
+    reviewerNames: normalizeNameList(handoff.reviewerNames),
     articleType: normalizeArticleType(handoff.articleType),
     articleTypeLabel: getArticleTypeLabel(handoff.articleType),
     note: handoff.note || '',
@@ -2433,9 +2992,12 @@ function formatHandoff(handoff, user, openid) {
     workloadSettled: !!handoff.workloadSettled,
     settledRecords: handoff.settledRecords || [],
     status,
-    statusLabel: HANDOFF_STATUS_LABELS[status] || handoff.statusLabel || '',
+    statusLabel,
     canAssign: ['submitted', 'rejected'].includes(status) && canAssignHandoff(user, handoff),
     canComplete: ['assigned', 'rejected'].includes(status) && canCompleteHandoff(user, openid, handoff),
+    canArchive: status === 'archive_assigned' && workflowType === 'productionReservation' &&
+      (user.role === 'admin' || (user.department === '办公部' &&
+        (handoff.archiveMemberName === user.name || handoff.archiveMemberOpenid === openid))),
     canReview: status === 'completed' && user.role === 'admin',
     createTime: formatDateTime(handoff.createTime),
     updateTime: formatDateTime(handoff.updateTime),

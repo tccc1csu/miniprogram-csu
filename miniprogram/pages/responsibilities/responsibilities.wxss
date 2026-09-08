@@ -1,0 +1,15 @@
+/* pages/responsibilities/responsibilities.wxss */
+.page-intro { padding: 28rpx; }
+.intro-text, .responsibility-desc { color: #777; font-size: 24rpx; line-height: 1.6; }
+.readonly-tip { padding: 18rpx 22rpx; margin-bottom: 24rpx; color: #667085; background: #EEF2F7; border-radius: 10rpx; font-size: 24rpx; }
+.responsibility-card { padding: 26rpx; }
+.responsibility-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.responsibility-name { color: #333; font-size: 31rpx; font-weight: 600; }
+.responsibility-key { color: #999; font-size: 21rpx; }
+.responsibility-desc { margin-top: 10rpx; }
+.department-list { display: flex; flex-wrap: wrap; margin: 20rpx -8rpx 4rpx; }
+.department-option { display: flex; align-items: center; width: 50%; padding: 10rpx 8rpx; color: #555; font-size: 25rpx; }
+.check-box { width: 36rpx; height: 36rpx; line-height: 32rpx; margin-right: 10rpx; text-align: center; color: transparent; border: 2rpx solid #CBD5E1; border-radius: 6rpx; font-size: 24rpx; }
+.check-box.checked { color: #fff; background: #4A90D9; border-color: #4A90D9; }
+.department-option.selected text { color: #245F9E; font-weight: 600; }
+.save-btn { margin-top: 18rpx; padding: 18rpx 0; font-size: 26rpx; }

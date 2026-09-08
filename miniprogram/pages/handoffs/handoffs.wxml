@@ -65,6 +65,10 @@
         <input class="form-input" value="{{createForm.targetSites}}" bindinput="onSitesInput" />
       </view>
       <view class="form-group">
+        <text class="form-label">审核人员（可选）</text>
+        <textarea class="form-textarea compact-textarea" placeholder="填写参与审核的成员姓名，多个姓名用逗号、顿号或换行分隔" value="{{createForm.reviewerNames}}" bindinput="onReviewerNamesInput" />
+      </view>
+      <view class="form-group">
         <text class="form-label">截止日期（可选）</text>
         <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
           <view class="form-picker">

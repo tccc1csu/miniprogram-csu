@@ -13,7 +13,10 @@
     "pages/profile/profile",
     "pages/contacts/contacts",
     "pages/suggestions/suggestions",
-    "pages/handoffs/handoffs"
+    "pages/handoffs/handoffs",
+    "pages/production/production",
+    "pages/allowanceRules/allowanceRules",
+    "pages/responsibilities/responsibilities"
   ],
   "window": {
     "backgroundTextStyle": "light",

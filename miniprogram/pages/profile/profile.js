@@ -51,6 +51,14 @@ Page({
     wx.navigateTo({ url: '/pages/handoffs/handoffs?tab=mine' })
   },
 
+  goAllowanceRules: function () {
+    wx.navigateTo({ url: '/pages/allowanceRules/allowanceRules' })
+  },
+
+  goResponsibilities: function () {
+    wx.navigateTo({ url: '/pages/responsibilities/responsibilities' })
+  },
+
   // 退出登录
   handleLogout: function () {
     wx.showModal({
