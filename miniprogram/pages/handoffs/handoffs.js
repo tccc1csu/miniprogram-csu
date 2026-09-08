@@ -2,6 +2,7 @@
 const app = getApp()
 const { callFunction } = require('../../utils/db')
 const { showToast, showLoading, hideLoading } = require('../../utils/util')
+const { requestNextTaskNotification } = require('../../utils/taskSubscription')
 
 Page({
   data: {
@@ -40,6 +41,12 @@ Page({
     showReviewModal: false,
     reviewTarget: null,
     reviewComment: '',
+    notificationSettings: null,
+    subscription: null,
+    requestingSubscription: false,
+    showReminderPrompt: false,
+    reminderPromptText: '',
+    focusHandoffId: '',
     loading: false
   },
 
@@ -49,6 +56,13 @@ Page({
     }
     if (options && options.departmentFilter) {
       this.setData({ departmentFilter: options.departmentFilter })
+    }
+    if (options && options.handoffId) {
+      this.setData({
+        focusHandoffId: options.handoffId,
+        showReminderPrompt: true,
+        reminderPromptText: '当前任务已打开，开启下一条重要提醒。'
+      })
     }
   },
 
@@ -62,6 +76,7 @@ Page({
       canCreate: role === 'admin' || department === '采编部'
     })
     this.loadHandoffs()
+    this.loadTaskNotificationSettings()
     this.updateCountdowns()
   },
 
@@ -87,7 +102,9 @@ Page({
     }).then(list => {
       hideLoading()
       const handoffs = (list || []).map(item => {
-        return Object.assign({}, item, this.computeCountdown(item.deadline))
+        return Object.assign({}, item, this.computeCountdown(item.deadline), {
+          focused: item._id === this.data.focusHandoffId
+        })
       })
       this.setData({
         handoffs: handoffs,
@@ -97,6 +114,46 @@ Page({
       hideLoading()
       this.setData({ loading: false })
       showToast(err.message || '加载失败')
+    })
+  },
+
+  loadTaskNotificationSettings: function () {
+    callFunction('manageTaskNotifications', { action: 'getSettings' }).then(result => {
+      this.setData({
+        notificationSettings: result && result.settings ? result.settings : null,
+        subscription: result ? result.subscription : null
+      })
+    }).catch(() => {})
+  },
+
+  showNextReminderPrompt: function (text) {
+    const settings = this.data.notificationSettings
+    const userInfo = app.globalData.userInfo || {}
+    const hasPendingSubscription = this.data.subscription && this.data.subscription.status === 'accept'
+    if (!settings || !settings.enabled || hasPendingSubscription || userInfo.temporarySession || userInfo.isTestAccount) return
+    this.setData({
+      showReminderPrompt: true,
+      reminderPromptText: text || '当前任务已处理，开启下一条重要提醒。'
+    })
+  },
+
+  closeReminderPrompt: function () {
+    if (!this.data.requestingSubscription) this.setData({ showReminderPrompt: false })
+  },
+
+  requestNextReminder: function () {
+    if (this.data.requestingSubscription) return
+    this.setData({ requestingSubscription: true })
+    requestNextTaskNotification(this.data.notificationSettings, app.globalData.userInfo || {}).then(result => {
+      this.setData({
+        requestingSubscription: false,
+        showReminderPrompt: !result.accepted,
+        subscription: { status: result.accepted ? 'accept' : 'reject' }
+      })
+      showToast(result.accepted ? '已开启下一条重要提醒' : '未开启微信提醒')
+    }).catch(err => {
+      this.setData({ requestingSubscription: false })
+      showToast(err.message || '未完成微信授权')
     })
   },
 
@@ -238,6 +295,7 @@ Page({
       showToast('派发成功', 'success')
       this.closeAssignModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('任务已派发，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '派发失败')
@@ -276,6 +334,7 @@ Page({
       showToast('已发送给管理员审核', 'success')
       this.closeCompleteModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('任务已提交，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '提交失败')
@@ -312,6 +371,7 @@ Page({
       showToast(approved ? '已归档' : '已退回', 'success')
       this.closeReviewModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('当前任务已处理，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '审核失败')

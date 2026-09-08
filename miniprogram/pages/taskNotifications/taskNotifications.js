@@ -1,6 +1,7 @@
 const app = getApp()
 const { callFunction } = require('../../utils/db')
 const { showToast, showLoading, hideLoading } = require('../../utils/util')
+const { requestNextTaskNotification } = require('../../utils/taskSubscription')
 
 Page({
   data: {
@@ -44,41 +45,14 @@ Page({
   requestSubscription: function () {
     const settings = this.data.settings
     const userInfo = app.globalData.userInfo || {}
-    if (!settings || !settings.enabled || !settings.templateId) {
-      showToast('管理员尚未配置微信通知模板')
-      return
-    }
-    if (userInfo.temporarySession || userInfo.isTestAccount) {
-      showToast('请用对应账号的微信授权登录后开启提醒')
-      return
-    }
-    if (!wx.requestSubscribeMessage) {
-      showToast('当前基础库不支持订阅消息')
-      return
-    }
-
     showLoading('请求微信授权...')
-    wx.requestSubscribeMessage({
-      tmplIds: [settings.templateId],
-      success: res => {
-        const accepted = res && res[settings.templateId] === 'accept'
-        callFunction('manageTaskNotifications', {
-          action: 'setSubscription',
-          templateId: settings.templateId,
-          accepted
-        }).then(() => {
-          hideLoading()
-          showToast(accepted ? '已开启下一条任务提醒' : '未开启微信提醒')
-          this.loadSettings()
-        }).catch(err => {
-          hideLoading()
-          showToast(err.message || '设置失败')
-        })
-      },
-      fail: err => {
-        hideLoading()
-        showToast((err && err.errMsg) || '未完成微信授权')
-      }
+    requestNextTaskNotification(settings, userInfo).then(result => {
+      hideLoading()
+      showToast(result.accepted ? '已开启下一条任务提醒' : '未开启微信提醒')
+      this.loadSettings()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '设置失败')
     })
   },
 

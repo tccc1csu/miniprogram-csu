@@ -21,7 +21,7 @@
       <switch checked="{{adminForm.enabled}}" color="#4A90D9" bindchange="onEnabledChange" />
     </view>
     <view class="form-group"><text class="form-label">订阅消息模板 ID</text><input class="form-input" placeholder="在微信公众平台复制模板 ID" value="{{adminForm.templateId}}" bindinput="onTemplateIdInput" /></view>
-    <view class="form-group"><text class="form-label">点击通知跳转页</text><input class="form-input" value="{{adminForm.page}}" bindinput="onPageInput" /></view>
+    <view class="form-group"><text class="form-label">点击通知默认跳转页</text><input class="form-input" value="{{adminForm.page}}" bindinput="onPageInput" /></view>
     <view class="field-grid">
       <view class="form-group"><text class="form-label">任务字段</text><input class="form-input" value="{{adminForm.titleField}}" bindinput="onTitleFieldInput" /></view>
       <view class="form-group"><text class="form-label">说明字段</text><input class="form-input" value="{{adminForm.contentField}}" bindinput="onContentFieldInput" /></view>

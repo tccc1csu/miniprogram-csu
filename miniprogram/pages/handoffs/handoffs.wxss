@@ -96,6 +96,50 @@
   padding: 28rpx;
 }
 
+.focused-handoff {
+  border: 2rpx solid #4A90D9;
+  box-shadow: 0 0 0 6rpx #E8F4FD;
+}
+
+.reminder-prompt {
+  border-left: 6rpx solid #4A90D9;
+}
+
+.reminder-prompt-title {
+  color: #245F9D;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.reminder-prompt-text {
+  margin-top: 10rpx;
+  color: #5B6F82;
+  font-size: 25rpx;
+}
+
+.reminder-prompt-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.reminder-prompt-actions button {
+  flex: 1;
+  font-size: 26rpx;
+}
+
+.reminder-skip {
+  color: #4A90D9;
+  background: #fff;
+  border: 2rpx solid #4A90D9;
+}
+
+.reminder-confirm {
+  color: #fff;
+  background: #4A90D9;
+  border: none;
+}
+
 .handoff-head {
   display: flex;
   justify-content: space-between;

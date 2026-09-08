@@ -2132,6 +2132,7 @@ async function handleManageHandoffs(event, user, openid) {
       title: '新的采编对接需求',
       content: title + ' 已提交给办公部，请办公部部长派发。',
       targetDept: '办公部',
+      page: getHandoffNotificationPage('editorialOfficeHandoff', addRes._id),
       recipientSpecs: [{ role: 'minister', department: '办公部' }]
     })
     return success({ _id: addRes._id })
@@ -2183,6 +2184,7 @@ async function handleManageHandoffs(event, user, openid) {
       title: '新的摄制预约',
       content: taskName + ' 已提交给摄制部部长，请安排干事。',
       targetDept: '摄制部',
+      page: getHandoffNotificationPage('productionReservation', addRes._id),
       recipientSpecs: [{ role: 'minister', department: '摄制部' }]
     })
     return success({ _id: addRes._id, isUrgent: urgent })
@@ -2223,6 +2225,7 @@ async function handleManageHandoffs(event, user, openid) {
       title: handoff.workflowType === 'productionReservation' ? '摄制部任务已派发' : '办公部任务已派发',
       content: handoff.title + ' 已派发给 ' + assigneeName + '。',
       targetDept: targetDepartment,
+      page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
       recipientSpecs: [{ name: assigneeName, department: targetDepartment }]
     })
     return success({ updated: 1 })
@@ -2278,6 +2281,7 @@ async function handleManageHandoffs(event, user, openid) {
         title: '摄制任务待归档',
         content: handoff.title + ' 已完成，请 ' + selectedArchiveMember.name + ' 负责归档。',
         targetDept: '办公部',
+        page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
         recipientSpecs: [{ name: selectedArchiveMember.name, department: '办公部' }]
       })
       return success({ updated: 1, archiveMemberName: selectedArchiveMember.name })
@@ -2296,6 +2300,7 @@ async function handleManageHandoffs(event, user, openid) {
       title: '协同需求待审核',
       content: handoff.title + ' 已完成同步，等待管理员老师审核。',
       targetDept: '',
+      page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
       recipientSpecs: [{ role: 'admin' }]
     })
     return success({ updated: 1 })
@@ -2333,6 +2338,7 @@ async function handleManageHandoffs(event, user, openid) {
       title: approved ? '协同需求已归档' : '协同需求审核退回',
       content: handoff.title + (approved ? ' 已审核通过并归档。' : ' 未通过审核，请办公部修改后重新提交。'),
       targetDept: approved ? '采编部' : '办公部',
+      page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
       // 审核退回后，下一个需要处理任务的是办公部部长。
       recipientSpecs: approved ? [] : [{ role: 'minister', department: '办公部' }]
     })
@@ -2399,6 +2405,7 @@ async function checkDeadlinesInternal() {
         title: '任务即将到期提醒',
         content: '「' + item.title + '」将在 ' + Math.ceil(diffHours) + ' 小时后到期，请尽快处理。',
         targetDept: recipient.department,
+        page: getHandoffNotificationPage(item.workflowType, item._id),
         recipientSpecs: recipient.specs
       })
       await handoffs.doc(item._id).update({
@@ -2412,6 +2419,7 @@ async function checkDeadlinesInternal() {
         title: '任务已过期提醒',
         content: '「' + item.title + '」已超过截止日期，请尽快处理。',
         targetDept: recipient.department,
+        page: getHandoffNotificationPage(item.workflowType, item._id),
         recipientSpecs: recipient.specs
       })
       await handoffs.doc(item._id).update({
@@ -2709,7 +2717,14 @@ async function getVisibleHandoffs(user, openid, scope, departmentFilter, workflo
       return false
     }
     if (scope === 'mine') {
-      return item.submitterOpenid === openid ||
+      const needsAssignment = ['submitted', 'rejected'].includes(item.status) && canAssignHandoff(user, item)
+      const needsCompletion = ['assigned', 'rejected'].includes(item.status) && canCompleteHandoff(user, openid, item)
+      const needsArchive = item.status === 'archive_assigned' && item.workflowType === 'productionReservation' &&
+        (user.role === 'admin' || (user.department === '办公部' &&
+          (item.archiveMemberName === user.name || item.archiveMemberOpenid === openid)))
+      const needsReview = item.status === 'completed' && user.role === 'admin'
+      return needsAssignment || needsCompletion || needsArchive || needsReview ||
+        item.submitterOpenid === openid ||
         item.assigneeOpenid === openid ||
         item.submitterName === user.name ||
         item.assigneeName === user.name ||
@@ -2790,6 +2805,7 @@ async function addWorkflowNotification(data) {
     content: trim(data.content),
     type: 'handoff',
     targetDept: data.targetDept || '',
+    page: trim(data.page),
     recipientIds,
     createTime: new Date()
   }
@@ -2799,6 +2815,7 @@ async function addWorkflowNotification(data) {
       content: notification.content,
       type: notification.type,
       targetDept: notification.targetDept,
+      page: notification.page,
       recipientIds,
       createTime: notification.createTime
     }
@@ -2863,7 +2880,7 @@ async function sendSubscribedTaskNotifications(notification, recipientIds) {
       await cloud.openapi.subscribeMessage.send({
         touser: user.openid,
         templateId: settings.templateId,
-        page: settings.page,
+        page: notification.page || settings.page,
         data
       })
       // 一次性订阅在成功发送后不再重复消费，下一次任务提醒需要用户再次授权。
@@ -2879,6 +2896,13 @@ async function sendSubscribedTaskNotifications(notification, recipientIds) {
 function clipSubscribeText(value, length) {
   const text = trim(value)
   return text.length > length ? text.slice(0, length - 1) + '…' : (text || '任务提醒')
+}
+
+function getHandoffNotificationPage(workflowType, handoffId) {
+  const page = workflowType === 'productionReservation'
+    ? 'pages/production/production'
+    : 'pages/handoffs/handoffs'
+  return page + '?tab=mine&handoffId=' + encodeURIComponent(String(handoffId || ''))
 }
 
 async function requireAuth(event, openid) {

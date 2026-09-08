@@ -5,6 +5,15 @@
     <view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 管理员审核 → 自动归档</view>
   </view>
 
+  <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
+    <view class="reminder-prompt-title">下一条重要提醒</view>
+    <view class="reminder-prompt-text">{{reminderPromptText}}</view>
+    <view class="reminder-prompt-actions">
+      <button class="reminder-skip" bindtap="closeReminderPrompt" disabled="{{requestingSubscription}}">稍后</button>
+      <button class="reminder-confirm" bindtap="requestNextReminder" loading="{{requestingSubscription}}" disabled="{{requestingSubscription}}">开启提醒</button>
+    </view>
+  </view>
+
   <view class="tab-bar">
     <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
   </view>
@@ -90,7 +99,7 @@
 
     <view class="empty" wx:if="{{!loading && handoffs.length === 0}}">暂无协同需求</view>
 
-    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card">
+    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card {{item.focused ? 'focused-handoff' : ''}}">
       <view class="handoff-head">
         <view>
           <view class="handoff-title">{{item.title}}</view>

@@ -5,6 +5,15 @@
     <view class="summary-path">预约人发起 → 摄制部部长派发 → 摄制干事完成 → 指定办公部成员归档</view>
   </view>
 
+  <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
+    <view class="reminder-prompt-title">下一条重要提醒</view>
+    <view class="reminder-prompt-text">{{reminderPromptText}}</view>
+    <view class="reminder-prompt-actions">
+      <button class="reminder-skip" bindtap="closeReminderPrompt" disabled="{{requestingSubscription}}">稍后</button>
+      <button class="reminder-confirm" bindtap="requestNextReminder" loading="{{requestingSubscription}}" disabled="{{requestingSubscription}}">开启提醒</button>
+    </view>
+  </view>
+
   <view class="filter-bar" wx:if="{{role !== 'admin'}}">
     <text class="filter-label">流程范围</text>
     <view class="filter-switch">
@@ -53,7 +62,7 @@
     </view>
 
     <view class="empty" wx:if="{{!loading && handoffs.length === 0}}">暂无摄制预约</view>
-    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card">
+    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card {{item.focused ? 'focused-handoff' : ''}}">
       <view class="handoff-head">
         <view><view class="handoff-title">{{item.taskName}}</view><view class="handoff-meta">{{item.submitterName}} 发起 · {{item.createTime}}</view></view>
         <view class="status status-{{item.status}}">{{item.statusLabel}}</view>

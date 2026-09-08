@@ -2,6 +2,7 @@
 const app = getApp()
 const { callFunction } = require('../../utils/db')
 const { showToast, showLoading, hideLoading } = require('../../utils/util')
+const { requestNextTaskNotification } = require('../../utils/taskSubscription')
 
 function pad(value) {
   return String(value).padStart(2, '0')
@@ -55,12 +56,25 @@ Page({
     showArchiveModal: false,
     archiveTarget: null,
     archiveNote: '',
+    notificationSettings: null,
+    subscription: null,
+    requestingSubscription: false,
+    showReminderPrompt: false,
+    reminderPromptText: '',
+    focusHandoffId: '',
     loading: false
   },
 
   onLoad: function (options) {
     if (options && options.tab) this.setData({ activeTab: options.tab })
     if (options && options.departmentFilter) this.setData({ departmentFilter: options.departmentFilter })
+    if (options && options.handoffId) {
+      this.setData({
+        focusHandoffId: options.handoffId,
+        showReminderPrompt: true,
+        reminderPromptText: '当前预约任务已打开，开启下一条重要提醒。'
+      })
+    }
   },
 
   onShow: function () {
@@ -71,6 +85,7 @@ Page({
     })
     this.loadProductionOptions()
     this.loadHandoffs()
+    this.loadTaskNotificationSettings()
   },
 
   stopTap: function () {},
@@ -110,13 +125,55 @@ Page({
     }).then(list => {
       hideLoading()
       this.setData({
-        handoffs: (list || []).map(item => Object.assign({}, item, this.computeCountdown(item.scheduledAt))),
+        handoffs: (list || []).map(item => Object.assign({}, item, this.computeCountdown(item.scheduledAt), {
+          focused: item._id === this.data.focusHandoffId
+        })),
         loading: false
       })
     }).catch(err => {
       hideLoading()
       this.setData({ loading: false })
       showToast(err.message || '加载失败')
+    })
+  },
+
+  loadTaskNotificationSettings: function () {
+    callFunction('manageTaskNotifications', { action: 'getSettings' }).then(result => {
+      this.setData({
+        notificationSettings: result && result.settings ? result.settings : null,
+        subscription: result ? result.subscription : null
+      })
+    }).catch(() => {})
+  },
+
+  showNextReminderPrompt: function (text) {
+    const settings = this.data.notificationSettings
+    const userInfo = app.globalData.userInfo || {}
+    const hasPendingSubscription = this.data.subscription && this.data.subscription.status === 'accept'
+    if (!settings || !settings.enabled || hasPendingSubscription || userInfo.temporarySession || userInfo.isTestAccount) return
+    this.setData({
+      showReminderPrompt: true,
+      reminderPromptText: text || '当前预约任务已处理，开启下一条重要提醒。'
+    })
+  },
+
+  closeReminderPrompt: function () {
+    if (!this.data.requestingSubscription) this.setData({ showReminderPrompt: false })
+  },
+
+  requestNextReminder: function () {
+    if (this.data.requestingSubscription) return
+    this.setData({ requestingSubscription: true })
+    requestNextTaskNotification(this.data.notificationSettings, app.globalData.userInfo || {}).then(result => {
+      this.setData({
+        requestingSubscription: false,
+        showReminderPrompt: !result.accepted,
+        subscription: { status: result.accepted ? 'accept' : 'reject' }
+      })
+      showToast(result.accepted ? '已开启下一条重要提醒' : '未开启微信提醒')
+    }).catch(err => {
+      this.setData({ requestingSubscription: false })
+      showToast(err.message || '未完成微信授权')
     })
   },
 
@@ -206,6 +263,7 @@ Page({
       showToast('已派发给摄制部干事', 'success')
       this.closeAssignModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('任务已派发，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '派发失败')
@@ -271,6 +329,7 @@ Page({
       showToast('已发送给办公部归档', 'success')
       this.closeCompleteModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('任务已提交，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '提交失败')
@@ -295,6 +354,7 @@ Page({
       showToast('已归档并写入津贴统计', 'success')
       this.closeArchiveModal()
       this.loadHandoffs()
+      this.showNextReminderPrompt('当前预约已归档，开启下一条重要提醒。')
     }).catch(err => {
       hideLoading()
       showToast(err.message || '归档失败')
