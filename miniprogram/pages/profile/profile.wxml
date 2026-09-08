@@ -49,6 +49,14 @@
         <view class="tool-icon icon-duty">责</view>
         <text>部门职责</text>
       </view>
+      <view class="tool-item" bindtap="goTaskNotifications">
+        <view class="tool-icon icon-notice">提</view>
+        <text>任务提醒</text>
+      </view>
+      <view class="tool-item" wx:if="{{userInfo.role == 'admin'}}" bindtap="resetDevelopmentData">
+        <view class="tool-icon icon-reset">测</view>
+        <text>重置测试数据</text>
+      </view>
     </view>
   </view>
 
@@ -101,6 +109,19 @@
 
   <view class="logout-area">
     <button class="btn-secondary logout-btn" bindtap="handleLogout">退出登录</button>
+    <button class="btn-secondary delete-btn" wx:if="{{!userInfo.isTestAccount}}" bindtap="openDeletePanel">注销账号</button>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showDeletePanel}}" bindtap="closeDeletePanel">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">注销账号</view>
+      <view class="modal-copy">注销后无法登录该账号；历史工作记录会保留。</view>
+      <input class="form-input" password="true" placeholder="输入当前密码确认" value="{{deletePassword}}" bindinput="onDeletePasswordInput" />
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeDeletePanel" disabled="{{deleting}}">取消</button>
+        <button class="btn-danger" bindtap="confirmDeleteAccount" loading="{{deleting}}" disabled="{{deleting}}">确认注销</button>
+      </view>
+    </view>
   </view>
 
   <view class="version-text">青年传媒中心工作统计系统 v1.0</view>

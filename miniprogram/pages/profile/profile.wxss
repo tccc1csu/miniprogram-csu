@@ -83,6 +83,8 @@
 .icon-handoff { background: linear-gradient(135deg, #26A69A, #00897B); }
 .icon-rules { background: linear-gradient(135deg, #E98952, #C75B37); }
 .icon-duty { background: linear-gradient(135deg, #667085, #475467); }
+.icon-notice { background: linear-gradient(135deg, #D85A72, #B33B55); }
+.icon-reset { background: linear-gradient(135deg, #C47B3A, #99561D); }
 
 .info-card {
   padding: 30rpx;
@@ -117,6 +119,59 @@
 .logout-btn {
   color: #E74C3C;
   border-color: #E74C3C;
+}
+
+.delete-btn {
+  margin-top: 16rpx;
+  color: #999;
+  border-color: #D8D8D8;
+}
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.modal-content {
+  width: 100%;
+  padding: 40rpx;
+  border-radius: 16rpx;
+  background: #fff;
+}
+
+.modal-title {
+  color: #222;
+  font-size: 34rpx;
+  font-weight: 600;
+  text-align: center;
+}
+
+.modal-copy {
+  margin: 20rpx 0 28rpx;
+  color: #777;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 28rpx;
+}
+
+.modal-actions button {
+  flex: 1;
+}
+
+.btn-danger {
+  color: #fff;
+  background: #E74C3C;
 }
 
 .version-text {

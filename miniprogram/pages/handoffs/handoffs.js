@@ -28,7 +28,8 @@ Page({
       reviewerNames: '',
       note: '',
       deadline: '',
-      deadlineLabel: ''
+      deadlineLabel: '',
+      reminderLeadHours: '24'
     },
     showAssignModal: false,
     assignTarget: null,
@@ -81,7 +82,8 @@ Page({
     callFunction('manageHandoffs', {
       action: 'getHandoffs',
       scope: this.data.activeTab,
-      departmentFilter: this.data.departmentFilter
+      departmentFilter: this.data.departmentFilter,
+      workflowType: 'editorialOfficeHandoff'
     }).then(list => {
       hideLoading()
       const handoffs = (list || []).map(item => {
@@ -158,6 +160,10 @@ Page({
     })
   },
 
+  onReminderLeadHoursInput: function (e) {
+    this.setData({ 'createForm.reminderLeadHours': e.detail.value })
+  },
+
   submitCreate: function () {
     const form = this.data.createForm
     if (!form.title.trim()) { showToast('请填写需求标题'); return }
@@ -177,7 +183,8 @@ Page({
           reviewerNames: '',
           note: '',
           deadline: '',
-          deadlineLabel: ''
+          deadlineLabel: '',
+          reminderLeadHours: '24'
         }
       })
       this.loadHandoffs()

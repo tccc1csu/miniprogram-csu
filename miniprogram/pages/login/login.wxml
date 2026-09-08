@@ -9,7 +9,7 @@
   <view class="login-form card">
     <button class="btn-primary" bindtap="handleWechatLogin" loading="{{loading}}" disabled="{{loading || bindLoading}}">微信授权登录</button>
     <view class="auth-tip">
-      {{showBindPanel ? '当前微信未绑定正式账号，可以输入账号密码登录。测试账号不会绑定微信。' : '已绑定正式账号可直接微信登录；测试或首次使用可输入账号密码。'}}
+      {{showBindPanel ? '当前微信未绑定账号，可直接使用姓名和密码登录或注册。' : '微信授权登录与账号密码登录均可使用；账号密码登录不会改变原有微信绑定。'}}
     </view>
 
     <view class="divider">

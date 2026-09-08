@@ -40,6 +40,8 @@ Page({
       date: getToday(),
       time: getCurrentTime(),
       location: '',
+      submitterContact: '',
+      reminderLeadHours: '24',
       note: ''
     },
     showAssignModal: false,
@@ -103,7 +105,8 @@ Page({
     callFunction('manageHandoffs', {
       action: 'getHandoffs',
       scope: this.data.activeTab,
-      departmentFilter: this.data.departmentFilter
+      departmentFilter: this.data.departmentFilter,
+      workflowType: 'productionReservation'
     }).then(list => {
       hideLoading()
       this.setData({
@@ -135,12 +138,14 @@ Page({
   onDateChange: function (e) { this.setData({ 'createForm.date': e.detail.value }) },
   onTimeChange: function (e) { this.setData({ 'createForm.time': e.detail.value }) },
   onLocationInput: function (e) { this.setData({ 'createForm.location': e.detail.value }) },
+  onSubmitterContactInput: function (e) { this.setData({ 'createForm.submitterContact': e.detail.value }) },
+  onReminderLeadHoursInput: function (e) { this.setData({ 'createForm.reminderLeadHours': e.detail.value }) },
   onNoteInput: function (e) { this.setData({ 'createForm.note': e.detail.value }) },
 
   submitCreate: function () {
     const form = this.data.createForm
-    if (!form.taskName.trim() || !form.date || !form.time || !form.location.trim()) {
-      showToast('请填写任务名称、预约时间和地点')
+    if (!form.taskName.trim() || !form.date || !form.time || !form.location.trim() || !form.submitterContact.trim()) {
+      showToast('请填写任务名称、预约时间、地点和联系方式')
       return
     }
     showLoading('提交中...')
@@ -149,12 +154,17 @@ Page({
       taskName: form.taskName.trim(),
       scheduledAt: form.date + ' ' + form.time,
       location: form.location.trim(),
+      submitterContact: form.submitterContact.trim(),
+      reminderLeadHours: form.reminderLeadHours,
       note: form.note.trim()
     }).then(result => {
       hideLoading()
       showToast(result && result.isUrgent ? '已提交，系统标记为加急' : '已提交给摄制部', 'success')
       this.setData({
-        createForm: { taskName: '', date: getToday(), time: getCurrentTime(), location: '', note: '' }
+        createForm: {
+          taskName: '', date: getToday(), time: getCurrentTime(), location: '',
+          submitterContact: '', reminderLeadHours: '24', note: ''
+        }
       })
       this.loadHandoffs()
     }).catch(err => {

@@ -78,6 +78,10 @@
         </picker>
       </view>
       <view class="form-group">
+        <text class="form-label">提前提醒（小时）</text>
+        <input class="form-input" type="number" placeholder="默认 24，填 0 关闭到期前提醒" value="{{createForm.reminderLeadHours}}" bindinput="onReminderLeadHoursInput" />
+      </view>
+      <view class="form-group">
         <text class="form-label">备注</text>
         <input class="form-input" placeholder="可选" value="{{createForm.note}}" bindinput="onNoteInput" />
       </view>

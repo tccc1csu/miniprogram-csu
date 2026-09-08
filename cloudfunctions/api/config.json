@@ -1,12 +1,12 @@
 {
   "permissions": {
-    "openapi": []
+    "openapi": ["subscribeMessage.send"]
   },
   "triggers": [
     {
       "name": "deadlineChecker",
       "type": "timer",
-      "config": "0 0 9,12,18 * * * *"
+      "config": "0 0 * * * * *"
     }
   ]
 }

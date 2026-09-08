@@ -16,7 +16,8 @@
     "pages/handoffs/handoffs",
     "pages/production/production",
     "pages/allowanceRules/allowanceRules",
-    "pages/responsibilities/responsibilities"
+    "pages/responsibilities/responsibilities",
+    "pages/taskNotifications/taskNotifications"
   ],
   "window": {
     "backgroundTextStyle": "light",

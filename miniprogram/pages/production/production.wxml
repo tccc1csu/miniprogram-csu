@@ -45,6 +45,8 @@
         <view class="form-group half"><text class="form-label">预约时间</text><picker mode="time" value="{{createForm.time}}" bindchange="onTimeChange"><view class="form-picker">{{createForm.time}}<text>▾</text></view></picker></view>
       </view>
       <view class="form-group"><text class="form-label">地点</text><input class="form-input" placeholder="填写拍摄地点" value="{{createForm.location}}" bindinput="onLocationInput" /></view>
+      <view class="form-group"><text class="form-label">预约人联系方式</text><input class="form-input" type="text" placeholder="手机号或微信号，方便摄制部确认" value="{{createForm.submitterContact}}" bindinput="onSubmitterContactInput" /></view>
+      <view class="form-group"><text class="form-label">提前提醒（小时）</text><input class="form-input" type="number" placeholder="默认 24，填 0 关闭到期前提醒" value="{{createForm.reminderLeadHours}}" bindinput="onReminderLeadHoursInput" /></view>
       <view class="form-group"><text class="form-label">备注</text><textarea class="form-textarea" placeholder="填写拍摄要求或其他说明（可选）" value="{{createForm.note}}" bindinput="onNoteInput" /></view>
       <view class="form-hint">预约时间不足{{urgentThresholdDays}}天将按加急任务处理，加急工时按{{urgentMultiplier}}倍计算。</view>
       <button class="btn-primary" bindtap="submitCreate">提交预约</button>
@@ -59,6 +61,8 @@
       <view class="urgent-tag" wx:if="{{item.isUrgent}}">加急 · 工时 ×{{item.urgentMultiplier}}</view>
       <view class="deadline-bar" wx:if="{{item.scheduledAt}}"><text class="deadline-icon">◷</text><text class="deadline-text {{item.countdownUrgent ? 'deadline-urgent' : ''}}">{{item.countdown}}</text><text class="deadline-date">{{item.scheduledAt}}</text></view>
       <view class="handoff-section"><view class="section-label">地点</view><view class="section-text">{{item.location}}</view></view>
+      <view class="handoff-section"><view class="section-label">预约联系</view><view class="section-text">{{item.submitterContact}}</view></view>
+      <view class="handoff-section"><view class="section-label">到期前提醒</view><view class="section-text">{{item.reminderLeadLabel}}</view></view>
       <view class="handoff-section" wx:if="{{item.note}}"><view class="section-label">备注</view><view class="section-text">{{item.note}}</view></view>
       <view class="handoff-section" wx:if="{{item.assigneeName}}"><view class="section-label">摄制干事</view><view class="section-text">{{item.assigneeName}} · 派发人：{{item.assignedBy}}</view></view>
       <view class="handoff-section" wx:if="{{item.syncResult}}"><view class="section-label">完成结果</view><view class="section-text">{{item.syncResult}}</view></view>

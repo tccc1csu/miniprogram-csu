@@ -19,7 +19,9 @@ const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
   HANDOFFS: 'handoffs',
   ALLOWANCE_RULES: 'allowance_rules',
-  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities'
+  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities',
+  NOTIFICATION_SETTINGS: 'notification_settings',
+  NOTIFICATION_SUBSCRIPTIONS: 'notification_subscriptions'
 }
 
 const DEFAULT_DEPARTMENTS = [
@@ -42,7 +44,7 @@ const SESSION_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000
 const TEST_ACCOUNT_PASSWORD = '123456'
 const ENABLE_TEST_ACCOUNTS = true
 const ENABLE_DEMO_DATA = true
-const DEMO_SEED_TAG = 'demo-2026-07-27'
+const DEMO_SEED_TAG = 'demo-2026-09-08'
 const WORK_TYPES = ['稿件写作', '视频制作', '美编设计', '日常办公']
 const DEFAULT_WORK_TYPE = '日常办公'
 const DEPARTMENT_DEFAULT_WORK_TYPE = {
@@ -60,6 +62,8 @@ const TEST_ACCOUNTS = [
   { name: '采编部长', role: 'minister', department: '采编部' },
   { name: '采编干事', role: 'member', department: '采编部' },
   { name: '办公部长', role: 'minister', department: '办公部' },
+  { name: '摄制部长', role: 'minister', department: '摄制部' },
+  { name: '摄制干事', role: 'member', department: '摄制部' },
   { name: '美编部长', role: 'minister', department: '美编部' },
   { name: '赵六', role: 'member', department: '办公部' },
   { name: '钱七', role: 'member', department: '办公部' },
@@ -197,6 +201,15 @@ exports.main = async (event) => {
     if (functionName === 'manageResponsibilities') {
       return await handleManageResponsibilities(event, user)
     }
+    if (functionName === 'manageTaskNotifications') {
+      return await handleManageTaskNotifications(event, user, openid)
+    }
+    if (functionName === 'deleteMyAccount') {
+      return await handleDeleteMyAccount(event, user)
+    }
+    if (functionName === 'resetDevelopmentData') {
+      return await handleResetDevelopmentData(user)
+    }
     return fail('未知云函数操作：' + functionName)
   } catch (err) {
     console.error('api error', functionName, err)
@@ -329,6 +342,7 @@ async function ensureSeedData() {
 
 async function doEnsureSeedData() {
   await ensureTestAccounts()
+  await ensureNotificationSettings()
   await ensureDemoData()
 }
 
@@ -355,13 +369,10 @@ async function handleAccountLogin(event, openid) {
     return fail(account.message)
   }
 
-  const exist = account.user
-  if (isTestLoginUser(exist, event.password)) {
-    const userInfo = await issueSession(exist, openid, event.wxProfile, { temporary: true })
-    return success(userInfo)
-  }
-
-  return await handleBindWechat(event, openid)
+  // 账号密码登录只在当前设备建立会话，绝不改动已有微信绑定。
+  // 这样同一台测试机可以在不同账号之间切换。
+  const userInfo = await issueSession(account.user, openid, event.wxProfile, { temporary: true })
+  return success(userInfo)
 }
 
 async function handleBindWechat(event, openid) {
@@ -593,6 +604,30 @@ async function ensureTestAccounts() {
   }
 }
 
+async function ensureNotificationSettings() {
+  const existing = await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS)
+    .where({ key: '__settings__' })
+    .limit(1)
+    .get()
+  if (first(existing)) {
+    return
+  }
+
+  await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS).add({
+    data: {
+      key: '__settings__',
+      enabled: false,
+      templateId: '',
+      page: 'pages/collaboration/collaboration',
+      titleField: 'thing1',
+      contentField: 'thing2',
+      timeField: 'time3',
+      createTime: new Date(),
+      updateTime: new Date()
+    }
+  })
+}
+
 async function ensureDemoData() {
   if (!ENABLE_DEMO_DATA) {
     return
@@ -809,6 +844,96 @@ async function ensureDemoHandoffs() {
       assignedTime: new Date(now.getTime() - 78 * 3600 * 1000),
       completedTime: new Date(now.getTime() - 74 * 3600 * 1000),
       archivedTime: new Date(now.getTime() - 72 * 3600 * 1000)
+    },
+    {
+      demoKey: 'production-submitted-event-photos',
+      title: '迎新活动现场拍摄',
+      taskName: '迎新活动现场拍摄',
+      scheduledAt: formatDateTime(new Date(now.getTime() + 30 * 3600 * 1000)),
+      location: '新校区风雨球场',
+      submitterContact: '13800000001',
+      note: '请优先拍摄开场、互动和集体合影。',
+      workflowType: 'productionReservation',
+      sourceDepartment: '摄制部',
+      targetDepartment: '摄制部',
+      submitterName: '采编干事',
+      submitterOpenid: '',
+      assigneeName: '',
+      assigneeOpenid: '',
+      assignedBy: '',
+      archiveMemberName: '',
+      archiveMemberOpenid: '',
+      status: 'submitted',
+      statusLabel: HANDOFF_STATUS_LABELS.submitted,
+      isUrgent: true,
+      urgentMultiplier: 1.5,
+      reminderLeadHours: 6,
+      syncResult: '',
+      reviewComment: '',
+      seedTag: DEMO_SEED_TAG,
+      createTime: new Date(now.getTime() - 2 * 3600 * 1000),
+      updateTime: new Date(now.getTime() - 2 * 3600 * 1000)
+    },
+    {
+      demoKey: 'production-assigned-interview-video',
+      title: '优秀学生采访视频',
+      taskName: '优秀学生采访视频',
+      scheduledAt: formatDateTime(new Date(now.getTime() + 4 * 24 * 3600 * 1000)),
+      location: '毓秀楼 A 座 302',
+      submitterContact: '13800000002',
+      note: '需要横版主片和三张采访现场照片。',
+      workflowType: 'productionReservation',
+      sourceDepartment: '摄制部',
+      targetDepartment: '摄制部',
+      submitterName: '采编部长',
+      submitterOpenid: '',
+      assigneeName: '摄制干事',
+      assigneeOpenid: '',
+      assignedBy: '摄制部长',
+      archiveMemberName: '',
+      archiveMemberOpenid: '',
+      status: 'assigned',
+      statusLabel: HANDOFF_STATUS_LABELS.assigned,
+      isUrgent: false,
+      urgentMultiplier: 1,
+      reminderLeadHours: 24,
+      syncResult: '',
+      reviewComment: '',
+      seedTag: DEMO_SEED_TAG,
+      createTime: new Date(now.getTime() - 6 * 3600 * 1000),
+      updateTime: new Date(now.getTime() - 3 * 3600 * 1000),
+      assignedTime: new Date(now.getTime() - 3 * 3600 * 1000)
+    },
+    {
+      demoKey: 'production-archive-assigned-forum',
+      title: '青年论坛活动摄制',
+      taskName: '青年论坛活动摄制',
+      scheduledAt: formatDateTime(new Date(now.getTime() + 2 * 24 * 3600 * 1000)),
+      location: '毓秀楼报告厅',
+      submitterContact: '13800000003',
+      note: '成片和原始素材均已整理。',
+      workflowType: 'productionReservation',
+      sourceDepartment: '摄制部',
+      targetDepartment: '摄制部',
+      submitterName: '办公部长',
+      submitterOpenid: '',
+      assigneeName: '摄制干事',
+      assigneeOpenid: '',
+      assignedBy: '摄制部长',
+      archiveMemberName: '赵六',
+      archiveMemberOpenid: '',
+      status: 'archive_assigned',
+      statusLabel: HANDOFF_STATUS_LABELS.archive_assigned,
+      isUrgent: false,
+      urgentMultiplier: 1,
+      reminderLeadHours: 24,
+      syncResult: '4K 成片、横版短视频和素材包均已上传共享盘。',
+      reviewComment: '',
+      seedTag: DEMO_SEED_TAG,
+      createTime: new Date(now.getTime() - 10 * 3600 * 1000),
+      updateTime: new Date(now.getTime() - 30 * 60 * 1000),
+      assignedTime: new Date(now.getTime() - 8 * 3600 * 1000),
+      completedTime: new Date(now.getTime() - 30 * 60 * 1000)
     }
   ]
 
@@ -834,7 +959,12 @@ async function ensureDemoHandoffRow(row) {
     return
   }
 
-  await db.collection(COLLECTIONS.HANDOFFS).add({ data: row })
+  await db.collection(COLLECTIONS.HANDOFFS).add({
+    data: Object.assign({
+      workflowType: 'editorialOfficeHandoff',
+      reminderLeadHours: 24
+    }, row)
+  })
 }
 
 async function getWechatBoundUser(openid) {
@@ -894,7 +1024,8 @@ async function issueSession(user, openid, wxProfileRaw, options) {
     password: null,
     token,
     tokenExpireAt,
-    wechatBound: !isTemporary,
+    // 临时账号密码会话不能把原有的微信绑定状态覆盖成未绑定。
+    wechatBound: isTemporary ? !!(user.wechatBound || user.openid) : true,
     lastLoginTime: now,
     updateTime: now
   }
@@ -1400,6 +1531,167 @@ async function handleManageResponsibilities(event, user) {
   return success({ updated: 1 })
 }
 
+async function handleManageTaskNotifications(event, user, openid) {
+  const action = event.action || 'getSettings'
+  if (action === 'getSettings') {
+    const settings = await getTaskNotificationSettings()
+    const subscriptions = await getAll(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS, { userId: user._id })
+    const subscription = subscriptions[0]
+    return success({
+      settings: formatTaskNotificationSettings(settings),
+      subscription: subscription ? {
+        status: subscription.status || 'unknown',
+        templateId: subscription.templateId || '',
+        subscribedAt: formatDateTime(subscription.subscribedAt),
+        consumedAt: formatDateTime(subscription.consumedAt)
+      } : null
+    })
+  }
+
+  if (action === 'saveSettings') {
+    requireAdmin(user)
+    const now = new Date()
+    const settings = await getTaskNotificationSettings()
+    const updateData = {
+      enabled: !!event.enabled,
+      templateId: trim(event.templateId),
+      page: trim(event.page) || 'pages/collaboration/collaboration',
+      titleField: trim(event.titleField) || 'thing1',
+      contentField: trim(event.contentField) || 'thing2',
+      timeField: trim(event.timeField) || 'time3',
+      updateTime: now
+    }
+    if (updateData.enabled && !updateData.templateId) {
+      return fail('启用微信服务通知前，请先填写订阅消息模板 ID')
+    }
+    await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS).doc(settings._id).update({ data: updateData })
+    return success({ updated: 1 })
+  }
+
+  if (action === 'setSubscription') {
+    // 账号密码登录的临时会话不对应账号永久绑定的微信，不能代替该微信授权订阅。
+    if (user.isTestAccount || (user.sessionOpenid && user.sessionOpenid === openid)) {
+      return fail('请使用该账号已绑定的微信授权登录后开启提醒')
+    }
+    const settings = await getTaskNotificationSettings()
+    if (!settings.enabled || !settings.templateId) {
+      return fail('管理员尚未配置微信服务通知模板')
+    }
+    if (trim(event.templateId) !== settings.templateId) {
+      return fail('订阅消息模板已更新，请刷新后重试')
+    }
+    const now = new Date()
+    const rows = await getAll(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS, { userId: user._id })
+    const data = {
+      userId: user._id,
+      userOpenid: user.openid || '',
+      templateId: settings.templateId,
+      status: event.accepted ? 'accept' : 'reject',
+      subscribedAt: event.accepted ? now : null,
+      updateTime: now
+    }
+    if (rows[0]) {
+      await db.collection(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS).doc(rows[0]._id).update({ data })
+    } else {
+      await db.collection(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS).add({ data: Object.assign({ createTime: now }, data) })
+    }
+    return success({ status: data.status })
+  }
+
+  return fail('未知操作：' + action)
+}
+
+async function getTaskNotificationSettings() {
+  const rows = await getAll(COLLECTIONS.NOTIFICATION_SETTINGS, { key: '__settings__' })
+  const settings = rows[0]
+  if (settings) return settings
+  await ensureNotificationSettings()
+  const retry = await getAll(COLLECTIONS.NOTIFICATION_SETTINGS, { key: '__settings__' })
+  return retry[0] || {
+    enabled: false,
+    templateId: '',
+    page: 'pages/collaboration/collaboration',
+    titleField: 'thing1',
+    contentField: 'thing2',
+    timeField: 'time3'
+  }
+}
+
+function formatTaskNotificationSettings(settings) {
+  return {
+    enabled: !!settings.enabled,
+    templateId: settings.templateId || '',
+    page: settings.page || 'pages/collaboration/collaboration',
+    titleField: settings.titleField || 'thing1',
+    contentField: settings.contentField || 'thing2',
+    timeField: settings.timeField || 'time3'
+  }
+}
+
+async function handleDeleteMyAccount(event, user) {
+  const password = trim(event.password)
+  const current = await getDoc(COLLECTIONS.USERS, user._id)
+  if (!current || !passwordMatches(current, password, hashPassword(password))) {
+    return fail('密码错误，未注销账号')
+  }
+  if (current.isTestAccount) {
+    return fail('测试账号由演示数据自动维护，请使用“重置测试数据”重新生成')
+  }
+
+  const now = new Date()
+  const clearData = { userId: '', openid: '', updateTime: now }
+  await db.collection(COLLECTIONS.MEMBERS).where({ userId: user._id }).update({ data: clearData })
+  await db.collection(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS).where({ userId: user._id }).remove()
+  await db.collection(COLLECTIONS.USERS).doc(user._id).remove()
+  return success({ deleted: 1 })
+}
+
+async function handleResetDevelopmentData(user) {
+  requireAdmin(user)
+  const clearCollections = [
+    COLLECTIONS.USERS,
+    COLLECTIONS.DEPARTMENTS,
+    COLLECTIONS.MEMBERS,
+    COLLECTIONS.RECORDS,
+    COLLECTIONS.CONTACTS,
+    COLLECTIONS.SUGGESTIONS,
+    COLLECTIONS.VOTES,
+    COLLECTIONS.VOTE_RECORDS,
+    COLLECTIONS.NOTIFICATIONS,
+    COLLECTIONS.HANDOFFS,
+    COLLECTIONS.ALLOWANCE_RULES,
+    COLLECTIONS.WORKFLOW_RESPONSIBILITIES,
+    COLLECTIONS.NOTIFICATION_SETTINGS,
+    COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS
+  ]
+  const cleared = {}
+  for (const collection of clearCollections) {
+    cleared[collection] = await removeAllCollectionRows(collection)
+  }
+
+  seedDataReady = false
+  seedDataPromise = null
+  // 集合本身保留，但基础部门、规则和职责已清空，需要重新写入默认配置。
+  await doEnsureCollectionStructure()
+  await doEnsureSeedData()
+  seedDataReady = true
+  return success({ cleared, seededAccounts: TEST_ACCOUNTS.length, demoSeedTag: DEMO_SEED_TAG })
+}
+
+async function removeAllCollectionRows(collection) {
+  let removed = 0
+  while (true) {
+    const rows = await getAll(collection, {}, { limit: 100 })
+    if (!rows.length) break
+    await Promise.all(rows.map(async row => {
+      await db.collection(collection).doc(row._id).remove()
+    }))
+    removed += rows.length
+    if (rows.length < 100) break
+  }
+  return removed
+}
+
 async function handleManageContacts(event, user) {
   const action = event.action
   const contacts = db.collection(COLLECTIONS.CONTACTS)
@@ -1700,7 +1992,8 @@ async function handleManageHandoffs(event, user, openid) {
 
   if (action === 'getHandoffs') {
     const scope = event.scope || 'active'
-    const rows = await getVisibleHandoffs(user, openid, scope, event.departmentFilter)
+    const workflowType = normalizeWorkflowType(event.workflowType)
+    const rows = await getVisibleHandoffs(user, openid, scope, event.departmentFilter, workflowType)
     rows.sort(sortByUpdateTimeDesc)
     return success(rows.map(item => formatHandoff(item, user, openid)))
   }
@@ -1715,6 +2008,7 @@ async function handleManageHandoffs(event, user, openid) {
     const targetSites = trim(event.targetSites) || '院网、升华网、学工网'
     const articleType = normalizeArticleType(event.articleType)
     const reviewerNames = normalizeNameList(event.reviewerNames)
+    const reminderLeadHours = normalizeReminderLeadHours(event.reminderLeadHours)
     if (!title || !articleNames) {
       return fail('请填写标题和稿件名称')
     }
@@ -1730,6 +2024,7 @@ async function handleManageHandoffs(event, user, openid) {
         reviewerNames,
         note: trim(event.note),
         deadline: trim(event.deadline) || '',
+        reminderLeadHours,
         sourceDepartment: '采编部',
         targetDepartment: '办公部',
         submitterName: user.name,
@@ -1749,7 +2044,8 @@ async function handleManageHandoffs(event, user, openid) {
     await addWorkflowNotification({
       title: '新的采编对接需求',
       content: title + ' 已提交给办公部，请办公部部长派发。',
-      targetDept: '办公部'
+      targetDept: '办公部',
+      recipientSpecs: [{ role: 'minister', department: '办公部' }]
     })
     return success({ _id: addRes._id })
   }
@@ -1758,7 +2054,9 @@ async function handleManageHandoffs(event, user, openid) {
     const taskName = trim(event.taskName)
     const scheduledAt = trim(event.scheduledAt)
     const location = trim(event.location)
-    if (!taskName || !scheduledAt || !location) return fail('请填写任务名称、预约时间和地点')
+    const submitterContact = trim(event.submitterContact)
+    const reminderLeadHours = normalizeReminderLeadHours(event.reminderLeadHours)
+    if (!taskName || !scheduledAt || !location || !submitterContact) return fail('请填写任务名称、预约时间、地点和联系方式')
     const scheduledDate = parseProductionDateTime(scheduledAt)
     if (isNaN(scheduledDate.getTime())) return fail('预约时间格式无效')
     const now = new Date()
@@ -1771,7 +2069,9 @@ async function handleManageHandoffs(event, user, openid) {
         taskName,
         scheduledAt,
         location,
+        submitterContact,
         note: trim(event.note),
+        reminderLeadHours,
         workflowType: 'productionReservation',
         sourceDepartment: '摄制部',
         targetDepartment: '摄制部',
@@ -1795,7 +2095,8 @@ async function handleManageHandoffs(event, user, openid) {
     await addWorkflowNotification({
       title: '新的摄制预约',
       content: taskName + ' 已提交给摄制部部长，请安排干事。',
-      targetDept: '摄制部'
+      targetDept: '摄制部',
+      recipientSpecs: [{ role: 'minister', department: '摄制部' }]
     })
     return success({ _id: addRes._id, isUrgent: urgent })
   }
@@ -1834,7 +2135,8 @@ async function handleManageHandoffs(event, user, openid) {
     await addWorkflowNotification({
       title: handoff.workflowType === 'productionReservation' ? '摄制部任务已派发' : '办公部任务已派发',
       content: handoff.title + ' 已派发给 ' + assigneeName + '。',
-      targetDept: targetDepartment
+      targetDept: targetDepartment,
+      recipientSpecs: [{ name: assigneeName, department: targetDepartment }]
     })
     return success({ updated: 1 })
   }
@@ -1888,7 +2190,8 @@ async function handleManageHandoffs(event, user, openid) {
       await addWorkflowNotification({
         title: '摄制任务待归档',
         content: handoff.title + ' 已完成，请 ' + selectedArchiveMember.name + ' 负责归档。',
-        targetDept: '办公部'
+        targetDept: '办公部',
+        recipientSpecs: [{ name: selectedArchiveMember.name, department: '办公部' }]
       })
       return success({ updated: 1, archiveMemberName: selectedArchiveMember.name })
     }
@@ -1905,7 +2208,8 @@ async function handleManageHandoffs(event, user, openid) {
     await addWorkflowNotification({
       title: '协同需求待审核',
       content: handoff.title + ' 已完成同步，等待管理员老师审核。',
-      targetDept: ''
+      targetDept: '',
+      recipientSpecs: [{ role: 'admin' }]
     })
     return success({ updated: 1 })
   }
@@ -1941,7 +2245,9 @@ async function handleManageHandoffs(event, user, openid) {
     await addWorkflowNotification({
       title: approved ? '协同需求已归档' : '协同需求审核退回',
       content: handoff.title + (approved ? ' 已审核通过并归档。' : ' 未通过审核，请办公部修改后重新提交。'),
-      targetDept: approved ? '采编部' : '办公部'
+      targetDept: approved ? '采编部' : '办公部',
+      // 审核退回后，下一个需要处理任务的是办公部部长。
+      recipientSpecs: approved ? [] : [{ role: 'minister', department: '办公部' }]
     })
     return success({ updated: 1, archived: approved })
   }
@@ -1979,48 +2285,7 @@ async function handleManageHandoffs(event, user, openid) {
 
   if (action === 'checkDeadlines') {
     requireAdmin(user)
-    const allHandoffs = await getAll(COLLECTIONS.HANDOFFS, {})
-    const now = new Date()
-    const reminders = []
-
-    for (const item of allHandoffs) {
-      if (!item.deadline || ['archived', 'rejected'].includes(item.status)) continue
-
-      const dueDate = new Date(item.deadline)
-      if (isNaN(dueDate.getTime())) continue
-
-      const diffHours = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
-
-      // 24小时内到期且未发过提醒。
-      if (diffHours > 0 && diffHours <= 24 && !item.deadlineReminderSent) {
-        const dept = item.status === 'submitted' ? '办公部' : (item.assigneeName ? '办公部' : '采编部')
-        await addWorkflowNotification({
-          title: '任务即将到期提醒',
-          content: '「' + item.title + '」将在 ' + Math.ceil(diffHours) + ' 小时后到期，请尽快处理。',
-          targetDept: dept
-        })
-        await handoffs.doc(item._id).update({
-          data: { deadlineReminderSent: true, updateTime: now }
-        })
-        reminders.push(item._id)
-      }
-
-      // 已过期。
-      if (diffHours <= 0 && !item.deadlineExpiredSent) {
-        const dept = item.status === 'submitted' ? '办公部' : (item.assigneeName ? '办公部' : '采编部')
-        await addWorkflowNotification({
-          title: '任务已过期提醒',
-          content: '「' + item.title + '」已超过截止日期，请尽快处理。',
-          targetDept: dept
-        })
-        await handoffs.doc(item._id).update({
-          data: { deadlineExpiredSent: true, updateTime: now }
-        })
-        reminders.push(item._id)
-      }
-    }
-
-    return success({ checked: allHandoffs.length, reminders: reminders.length, reminderIds: reminders })
+    return await checkDeadlinesInternal()
   }
 
   return fail('未知操作：' + action)
@@ -2034,19 +2299,20 @@ async function checkDeadlinesInternal() {
   const reminders = []
 
   for (const item of allHandoffs) {
-    if (!item.deadline || ['archived', 'rejected'].includes(item.status)) continue
+    if (['archived', 'rejected'].includes(item.status)) continue
 
-    const dueDate = new Date(item.deadline)
+    const dueDate = getHandoffDueDate(item)
     if (isNaN(dueDate.getTime())) continue
-
     const diffHours = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+    const reminderLeadHours = normalizeReminderLeadHours(item.reminderLeadHours)
+    const recipient = getCurrentHandoffRecipient(item)
 
-    // 24小时内到期且未发过提醒。
-    if (diffHours > 0 && diffHours <= 24 && !item.deadlineReminderSent) {
+    if (reminderLeadHours > 0 && diffHours > 0 && diffHours <= reminderLeadHours && !item.deadlineReminderSent) {
       await addWorkflowNotification({
         title: '任务即将到期提醒',
         content: '「' + item.title + '」将在 ' + Math.ceil(diffHours) + ' 小时后到期，请尽快处理。',
-        targetDept: '办公部'
+        targetDept: recipient.department,
+        recipientSpecs: recipient.specs
       })
       await handoffs.doc(item._id).update({
         data: { deadlineReminderSent: true, updateTime: now }
@@ -2054,12 +2320,12 @@ async function checkDeadlinesInternal() {
       reminders.push(item._id)
     }
 
-    // 已过期。
     if (diffHours <= 0 && !item.deadlineExpiredSent) {
       await addWorkflowNotification({
         title: '任务已过期提醒',
         content: '「' + item.title + '」已超过截止日期，请尽快处理。',
-        targetDept: '办公部'
+        targetDept: recipient.department,
+        recipientSpecs: recipient.specs
       })
       await handoffs.doc(item._id).update({
         data: { deadlineExpiredSent: true, updateTime: now }
@@ -2298,7 +2564,10 @@ async function upsertWorkflowWorkloadRecord(options) {
 
 async function handleGenericDataAction(event) {
   const collection = event.collection
-  if (!Object.values(COLLECTIONS).includes(collection)) {
+  if (!Object.values(COLLECTIONS).includes(collection) || [
+    COLLECTIONS.NOTIFICATION_SETTINGS,
+    COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS
+  ].includes(collection)) {
     return fail('不允许访问该集合')
   }
 
@@ -2331,19 +2600,22 @@ async function handleGenericDataAction(event) {
   return fail('未知通用操作')
 }
 
-async function getVisibleHandoffs(user, openid, scope, departmentFilter) {
+async function getVisibleHandoffs(user, openid, scope, departmentFilter, workflowType) {
   const rows = await getAll(COLLECTIONS.HANDOFFS, {})
   const responsibilities = await getAll(COLLECTIONS.WORKFLOW_RESPONSIBILITIES, {})
   const responsibilityMap = {}
   responsibilities.forEach(item => { responsibilityMap[item.key] = item })
   return rows.filter(item => {
+    const workflowKey = item.workflowType || 'editorialOfficeHandoff'
+    if (workflowType && workflowKey !== workflowType) {
+      return false
+    }
     if (scope === 'archive' && item.status !== 'archived') {
       return false
     }
     if (scope !== 'archive' && item.status === 'archived') {
       return false
     }
-    const workflowKey = item.workflowType || 'editorialOfficeHandoff'
     const responsibility = responsibilityMap[workflowKey]
     const departmentRelated = !responsibility || (responsibility.departments || []).includes(user.department)
     if (departmentFilter === 'mine' && user.role !== 'admin' && !departmentRelated) {
@@ -2367,6 +2639,37 @@ async function getVisibleHandoffs(user, openid, scope, departmentFilter) {
     return item.submitterOpenid === openid || item.assigneeOpenid === openid ||
       item.archiveMemberName === user.name || item.archiveMemberOpenid === openid
   })
+}
+
+function getHandoffDueDate(handoff) {
+  if ((handoff.workflowType || 'editorialOfficeHandoff') === 'productionReservation') {
+    return parseProductionDateTime(handoff.scheduledAt)
+  }
+  const deadline = trim(handoff.deadline)
+  if (!deadline) return new Date(NaN)
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(deadline)) {
+    return new Date(deadline + 'T23:59:59+08:00')
+  }
+  return new Date(deadline)
+}
+
+function getCurrentHandoffRecipient(handoff) {
+  const workflowType = handoff.workflowType || 'editorialOfficeHandoff'
+  if (handoff.status === 'submitted') {
+    const department = workflowType === 'productionReservation' ? '摄制部' : '办公部'
+    return { department, specs: [{ role: 'minister', department }] }
+  }
+  if (handoff.status === 'archive_assigned') {
+    return {
+      department: '办公部',
+      specs: [{ name: handoff.archiveMemberName, department: '办公部' }]
+    }
+  }
+  if (handoff.status === 'completed') {
+    return { department: '', specs: [{ role: 'admin' }] }
+  }
+  const department = workflowType === 'productionReservation' ? '摄制部' : '办公部'
+  return { department, specs: [{ name: handoff.assigneeName, department }] }
 }
 
 function canAssignHandoff(user, handoff) {
@@ -2394,15 +2697,101 @@ function canCompleteHandoff(user, openid, handoff) {
 }
 
 async function addWorkflowNotification(data) {
+  const recipientIds = await resolveNotificationRecipientIds(data.recipientSpecs)
+  const notification = {
+    title: trim(data.title),
+    content: trim(data.content),
+    type: 'handoff',
+    targetDept: data.targetDept || '',
+    recipientIds,
+    createTime: new Date()
+  }
   await db.collection(COLLECTIONS.NOTIFICATIONS).add({
     data: {
-      title: data.title,
-      content: data.content,
-      type: 'handoff',
-      targetDept: data.targetDept || '',
-      createTime: new Date()
+      title: notification.title,
+      content: notification.content,
+      type: notification.type,
+      targetDept: notification.targetDept,
+      recipientIds,
+      createTime: notification.createTime
     }
   })
+
+  // 订阅消息授权和模板配置都可能缺失；站内提醒已写入，不让外部推送失败影响流转。
+  try {
+    await sendSubscribedTaskNotifications(notification, recipientIds)
+  } catch (err) {
+    console.error('subscribe message send failed', err)
+  }
+}
+
+async function resolveNotificationRecipientIds(specs) {
+  const result = {}
+  const list = Array.isArray(specs) ? specs : []
+  for (const spec of list) {
+    if (!spec) continue
+    let users = []
+    if (spec.userId) {
+      const user = await getDoc(COLLECTIONS.USERS, spec.userId)
+      if (user) users = [user]
+    } else if (spec.role) {
+      const where = { role: spec.role }
+      if (spec.department) where.department = spec.department
+      users = await getAll(COLLECTIONS.USERS, where)
+    } else if (trim(spec.name)) {
+      users = await getAll(COLLECTIONS.USERS, { name: trim(spec.name) })
+      if (spec.department) {
+        users = users.filter(item => item.department === spec.department)
+      }
+    }
+    users.forEach(user => {
+      if (user && user._id) result[user._id] = true
+    })
+  }
+  return Object.keys(result)
+}
+
+async function sendSubscribedTaskNotifications(notification, recipientIds) {
+  if (!recipientIds || recipientIds.length === 0) return
+  const settings = await getTaskNotificationSettings()
+  if (!settings.enabled || !settings.templateId || !cloud.openapi || !cloud.openapi.subscribeMessage) return
+
+  for (const userId of recipientIds) {
+    const subscriptions = await getAll(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS, {
+      userId,
+      status: 'accept',
+      templateId: settings.templateId
+    })
+    const subscription = subscriptions[0]
+    const user = await getDoc(COLLECTIONS.USERS, userId)
+    if (!subscription || !user || !user.openid || user.isTestAccount) continue
+
+    const now = new Date()
+    const data = {}
+    data[settings.titleField] = { value: clipSubscribeText(notification.title, 20) }
+    data[settings.contentField] = { value: clipSubscribeText(notification.content, 20) }
+    data[settings.timeField] = { value: formatDateTime(now) }
+
+    try {
+      await cloud.openapi.subscribeMessage.send({
+        touser: user.openid,
+        templateId: settings.templateId,
+        page: settings.page,
+        data
+      })
+      // 一次性订阅在成功发送后不再重复消费，下一次任务提醒需要用户再次授权。
+      await db.collection(COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS).doc(subscription._id).update({
+        data: { status: 'consumed', consumedAt: now, updateTime: now }
+      })
+    } catch (err) {
+      console.error('subscribe message API error', userId, err)
+    }
+  }
+}
+
+function clipSubscribeText(value, length) {
+  const text = trim(value)
+  return text.length > length ? text.slice(0, length - 1) + '…' : (text || '任务提醒')
 }
 
 async function requireAuth(event, openid) {
@@ -2452,9 +2841,11 @@ async function upsertMemberForUser(userInfo) {
     name: userInfo.name,
     department,
     role: userInfo.role || 'member',
-    openid: (userInfo.isTestAccount || userInfo.temporarySession) ? '' : (userInfo.openid || ''),
     userId: userInfo._id || '',
     updateTime: new Date()
+  }
+  if (!userInfo.isTestAccount && !userInfo.temporarySession) {
+    data.openid = userInfo.openid || ''
   }
 
   if (exist) {
@@ -2812,7 +3203,7 @@ function buildUserInfo(user, token, tokenExpireAt) {
     department,
     token: token || user.token || '',
     tokenExpireAt: getTime(tokenExpireAt || user.tokenExpireAt) || 0,
-    wechatBound: !user.temporarySession && !user.isTestAccount && !!(user.openid || user.wechatBound),
+    wechatBound: !user.isTestAccount && !!(user.openid || user.wechatBound),
     temporarySession: !!user.temporarySession,
     isTestAccount: !!user.isTestAccount
   }
@@ -2973,6 +3364,11 @@ function formatHandoff(handoff, user, openid) {
     taskName: handoff.taskName || handoff.title || '',
     scheduledAt: handoff.scheduledAt || '',
     location: handoff.location || '',
+    submitterContact: handoff.submitterContact || '',
+    reminderLeadHours: normalizeReminderLeadHours(handoff.reminderLeadHours),
+    reminderLeadLabel: normalizeReminderLeadHours(handoff.reminderLeadHours) > 0
+      ? '提前 ' + normalizeReminderLeadHours(handoff.reminderLeadHours) + ' 小时'
+      : '已关闭',
     isUrgent: !!handoff.isUrgent,
     urgentMultiplier: toNumber(handoff.urgentMultiplier) || 1,
     archiveMemberName: handoff.archiveMemberName || '',
@@ -3126,6 +3522,20 @@ function normalizeWorkType(value, department) {
     return type
   }
   return DEPARTMENT_DEFAULT_WORK_TYPE[department] || DEFAULT_WORK_TYPE
+}
+
+function normalizeWorkflowType(value) {
+  const workflowType = trim(value)
+  return ['editorialOfficeHandoff', 'productionReservation'].includes(workflowType) ? workflowType : ''
+}
+
+function normalizeReminderLeadHours(value) {
+  if (value === undefined || value === null || trim(value) === '') {
+    return 24
+  }
+  const hours = Number(value)
+  if (!Number.isFinite(hours)) return 24
+  return Math.max(0, Math.min(24 * 30, Math.floor(hours)))
 }
 
 function normalizeArticleType(value) {

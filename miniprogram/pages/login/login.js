@@ -60,7 +60,7 @@ Page({
     if (!password.trim()) { showToast('请输入密码'); return }
 
     this.setData({ bindLoading: true })
-    showLoading('绑定中...')
+    showLoading('登录中...')
 
     callFunction('accountLogin', {
         name: name.trim(),
