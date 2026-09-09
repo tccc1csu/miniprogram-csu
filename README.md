@@ -1,9 +1,8 @@
 # 青年传媒中心工作统计小程序
 
-本项目是微信云开发版本，不需要启动本地 Node/SQLite 后端。
+本项目是设计为中南大学商学院青年传媒中心日常工作开发的小程序。本项目为微信云开发版本，不需要启动本地 Node/SQLite 后端。
 
 - AppID：`wx4972972007bb6a4e`
-- 云环境 ID：`cloud1-d2gd4994t925d1435`
 - 小程序前端：`miniprogram/`
 - 统一云函数：`cloudfunctions/api/`
 
