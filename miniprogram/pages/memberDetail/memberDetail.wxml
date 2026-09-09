@@ -15,10 +15,6 @@
         <view class="stat-value">{{summary.totalWorkload}}</view>
         <view class="stat-label">总工作量(h)</view>
       </view>
-      <view class="stat-item">
-        <view class="stat-value">{{summary.totalAllowance}}</view>
-        <view class="stat-label">总津贴(元)</view>
-      </view>
     </view>
   </view>
 
@@ -30,7 +26,6 @@
         <text class="history-week">{{item.week}}</text>
         <view class="history-meta">
           <text class="history-workload">{{item.workload}}h</text>
-          <text class="history-allowance">¥{{item.allowance}}</text>
         </view>
       </view>
       <view class="history-content">{{item.workContent}}</view>

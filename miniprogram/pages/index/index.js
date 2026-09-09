@@ -16,14 +16,14 @@ Page({
       totalMembers: 0,
       totalDepartments: 0,
       thisWeekRecords: 0,
-      thisWeekAllowance: 0
+      thisWeekWorkload: 0
     },
     // 部长概览
     ministerStats: {
       memberCount: 0,
       uploadedCount: 0,
       pendingCount: 0,
-      thisWeekAllowance: 0
+      thisWeekWorkload: 0
     },
     recentRecords: [],
     deptRank: [] // 管理员：部门排名
@@ -102,7 +102,7 @@ Page({
 
   formatRecords: function (records) {
     return (records || []).map(item => Object.assign({}, item, {
-      allowanceText: item.allowanceStatus === 'set' ? ('¥' + item.allowance) : '待部长填写'
+      workloadText: (Number(item.workload) || 0).toFixed(1) + 'h'
     }))
   }
 })

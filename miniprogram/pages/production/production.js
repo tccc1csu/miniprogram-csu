@@ -62,6 +62,8 @@ Page({
     showReminderPrompt: false,
     reminderPromptText: '',
     focusHandoffId: '',
+    createDefaultsLoading: false,
+    createDefaultsOwner: '',
     loading: false
   },
 
@@ -83,6 +85,7 @@ Page({
       role: app.globalData.role,
       department: app.globalData.department || ''
     })
+    this.loadCreateDefaults()
     this.loadProductionOptions()
     this.loadHandoffs()
     this.loadTaskNotificationSettings()
@@ -111,6 +114,24 @@ Page({
         urgentMultiplier: Number(result && result.urgentMultiplier) > 0 ? Number(result.urgentMultiplier) : 1.5
       })
     }).catch(() => {})
+  },
+
+  loadCreateDefaults: function () {
+    if (this.data.activeTab !== 'active') return
+    const userInfo = app.globalData.userInfo || {}
+    const owner = String(userInfo._id || userInfo.openid || userInfo.name || '')
+    if (!owner || this.data.createDefaultsOwner === owner || this.data.createDefaultsLoading) return
+    this.setData({ createDefaultsLoading: true })
+    callFunction('manageHandoffs', {
+      action: 'getCreateDefaults',
+      workflowType: 'productionReservation'
+    }).then(defaults => {
+      this.setData({
+        createForm: defaults ? Object.assign({}, this.data.createForm, defaults) : this.data.createForm,
+        createDefaultsOwner: owner,
+        createDefaultsLoading: false
+      })
+    }).catch(() => this.setData({ createDefaultsLoading: false }))
   },
 
   loadHandoffs: function () {
@@ -217,12 +238,7 @@ Page({
     }).then(result => {
       hideLoading()
       showToast(result && result.isUrgent ? '已提交，系统标记为加急' : '已提交给摄制部', 'success')
-      this.setData({
-        createForm: {
-          taskName: '', date: getToday(), time: getCurrentTime(), location: '',
-          submitterContact: '', reminderLeadHours: '24', note: ''
-        }
-      })
+      if (result && result.defaults) this.setData({ createForm: result.defaults })
       this.loadHandoffs()
     }).catch(err => {
       hideLoading()
@@ -351,7 +367,7 @@ Page({
       archiveNote: this.data.archiveNote.trim()
     }).then(() => {
       hideLoading()
-      showToast('已归档并写入津贴统计', 'success')
+      showToast('已归档并写入工时记录', 'success')
       this.closeArchiveModal()
       this.loadHandoffs()
       this.showNextReminderPrompt('当前预约已归档，开启下一条重要提醒。')

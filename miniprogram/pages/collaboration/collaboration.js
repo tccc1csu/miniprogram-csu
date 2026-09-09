@@ -1,7 +1,7 @@
 // pages/collaboration/collaboration.js - 协作广场
 const app = getApp()
 const { callFunction } = require('../../utils/db')
-const { ROLE_LABELS } = require('../../utils/constants')
+const { ROLE_LABELS, DEFAULT_DEPARTMENTS } = require('../../utils/constants')
 
 Page({
   data: {
@@ -31,9 +31,9 @@ Page({
       this.refreshModules(list || [])
     }).catch(() => {
       this.refreshModules([
-        { key: 'activitySuggestions', departments: ['办公部', '采编部', '美编部', '摄制部', '运营部', '原创部'] },
+        { key: 'activitySuggestions', departments: DEFAULT_DEPARTMENTS.filter(department => department !== '兄弟部门') },
         { key: 'editorialOfficeHandoff', departments: ['采编部', '办公部'] },
-        { key: 'productionReservation', departments: ['摄制部', '办公部'] }
+        { key: 'productionReservation', departments: ['摄制部', '办公部', '兄弟部门'] }
       ])
     })
   },

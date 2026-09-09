@@ -35,10 +35,6 @@
         <view class="stat-value">{{summary.totalWorkload}}</view>
         <view class="stat-label">总工作量(h)</view>
       </view>
-      <view class="stat-item">
-        <view class="stat-value">{{summary.totalAllowance}}</view>
-        <view class="stat-label">总津贴(元)</view>
-      </view>
     </view>
   </view>
 
@@ -55,15 +51,12 @@
           <text class="record-name">{{item.memberName}}</text>
           <text class="record-dept-tag">{{item.department}}</text>
         </view>
-        <view class="record-allowance-wrap">
-          <text class="record-allowance {{item.allowanceStatus === 'set' ? '' : 'allowance-pending'}}">{{item.allowanceText}}</text>
-        </view>
       </view>
       <view class="record-content" data-item="{{item}}" bindtap="onTapRecord">{{item.workContent}}</view>
       <view class="record-footer">
         <view class="record-meta">
           <text class="meta-item">类型：{{item.workTypeLabel || item.workType}}</text>
-          <text class="meta-item">工作量：{{item.workload}}h</text>
+          <text class="meta-item">工时：{{item.workload}}h</text>
           <text class="meta-item">上传人：{{item.uploadedBy}}</text>
         </view>
         <view class="record-actions" wx:if="{{item.canEdit}}">

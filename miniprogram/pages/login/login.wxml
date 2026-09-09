@@ -3,7 +3,7 @@
   <view class="logo-area">
     <view class="logo-icon">青</view>
     <view class="logo-title">青年传媒中心</view>
-    <view class="logo-subtitle">工作内容与津贴统计系统</view>
+    <view class="logo-subtitle">工作内容与工时薪酬统计系统</view>
   </view>
 
   <view class="login-form card">

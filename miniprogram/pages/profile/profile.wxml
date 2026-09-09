@@ -42,8 +42,8 @@
         <text>协同记录</text>
       </view>
       <view class="tool-item" bindtap="goAllowanceRules">
-        <view class="tool-icon icon-rules">津</view>
-        <text>津贴规则</text>
+        <view class="tool-icon icon-rules">时</view>
+        <text>工时规则</text>
       </view>
       <view class="tool-item" bindtap="goResponsibilities">
         <view class="tool-icon icon-duty">责</view>

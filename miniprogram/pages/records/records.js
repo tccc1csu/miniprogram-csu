@@ -19,7 +19,6 @@ Page({
     loading: false,
     summary: {
       totalWorkload: 0,
-      totalAllowance: 0,
       count: 0
     }
   },
@@ -103,8 +102,7 @@ Page({
           (role === 'minister' && r.department === department) ||
           (role === 'member' && r.memberName === app.globalData.userInfo.name)
         return Object.assign({}, r, {
-          canEdit: canEdit,
-          allowanceText: r.allowanceStatus === 'set' ? ('¥' + r.allowance) : '待部长填写'
+          canEdit: canEdit
         })
       })
       records.sort((a, b) => {
@@ -114,17 +112,15 @@ Page({
         return a.memberName.localeCompare(b.memberName)
       })
 
-      let totalWorkload = 0, totalAllowance = 0
+      let totalWorkload = 0
       records.forEach(r => {
         totalWorkload += r.workload || 0
-        totalAllowance += r.allowance || 0
       })
 
       this.setData({
         recordList: records,
         summary: {
           totalWorkload: totalWorkload.toFixed(1),
-          totalAllowance: totalAllowance.toFixed(0),
           count: records.length
         },
         loading: false

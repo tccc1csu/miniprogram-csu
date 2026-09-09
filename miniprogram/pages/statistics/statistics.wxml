@@ -26,10 +26,6 @@
         <view class="stat-value">{{totalStats.totalWorkload}}</view>
         <view class="stat-label">总工作量(h)</view>
       </view>
-      <view class="stat-item">
-        <view class="stat-value">{{totalStats.totalAllowance}}</view>
-        <view class="stat-label">总津贴(元)</view>
-      </view>
     </view>
   </view>
 
@@ -42,7 +38,7 @@
   <!-- 部门统计 -->
   <view wx:if="{{activeTab == 0}}">
     <view class="card">
-      <view class="card-title">各部门工作量与津贴</view>
+      <view class="card-title">各部门工作量</view>
       <view class="empty" wx:if="{{deptStats.length === 0}}">暂无数据</view>
       <!-- 柱状图样式展示 -->
       <view wx:for="{{deptStats}}" wx:key="department" class="bar-item">
@@ -52,7 +48,6 @@
         </view>
         <view class="bar-value">
           <text>{{item.totalWorkload}}h</text>
-          <text class="bar-allowance">¥{{item.totalAllowance}}</text>
         </view>
       </view>
     </view>
@@ -65,13 +60,11 @@
           <view class="table-cell flex2">部门</view>
           <view class="table-cell flex1">人数</view>
           <view class="table-cell flex1">工作量</view>
-          <view class="table-cell flex1">津贴(元)</view>
         </view>
         <view wx:for="{{deptStats}}" wx:key="department" class="table-row">
           <view class="table-cell flex2">{{item.department}}</view>
           <view class="table-cell flex1">{{item.memberCount}}</view>
           <view class="table-cell flex1">{{item.totalWorkload}}</view>
-          <view class="table-cell flex1">{{item.totalAllowance}}</view>
         </view>
       </view>
     </view>
@@ -80,7 +73,7 @@
   <!-- 成员统计 -->
   <view wx:if="{{activeTab == 1}}">
     <view class="card">
-      <view class="card-title">各成员工作量与津贴</view>
+      <view class="card-title">各成员工作量</view>
       <view class="empty" wx:if="{{memberStats.length === 0}}">暂无数据</view>
       <view wx:for="{{memberStats}}" wx:key="key" class="member-stat-item">
         <view class="member-stat-info">
@@ -89,7 +82,6 @@
         </view>
         <view class="member-stat-data">
           <view class="member-stat-workload">{{item.workload}}h</view>
-          <view class="member-stat-allowance">¥{{item.allowance}}</view>
         </view>
       </view>
     </view>

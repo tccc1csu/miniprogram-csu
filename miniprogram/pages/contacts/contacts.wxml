@@ -2,12 +2,20 @@
 <view class="container">
   <!-- 筛选栏 -->
   <view class="filter-bar">
-    <picker bindchange="onDeptChange" value="{{deptIndex}}" range="{{deptOptions}}">
-      <view class="filter-picker">
-        <text class="filter-label">{{departmentFilter}}</text>
-        <text class="filter-arrow">▼</text>
-      </view>
-    </picker>
+    <view class="filter-group">
+      <picker bindchange="onDeptChange" value="{{deptIndex}}" range="{{deptOptions}}">
+        <view class="filter-picker">
+          <text class="filter-label">{{departmentFilter}}</text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
+      <picker bindchange="onCohortChange" value="{{cohortIndex}}" range="{{cohortOptions}}">
+        <view class="filter-picker">
+          <text class="filter-label">{{cohortFilter}}</text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
     <view class="filter-count">共 {{contactList.length}} 人</view>
   </view>
 
@@ -19,6 +27,11 @@
         <view class="contact-info">
           <view class="contact-name">{{item.name}}</view>
           <view class="contact-dept">{{item.department}}</view>
+          <view class="contact-submeta">
+            <text wx:if="{{item.rank}}">{{item.rank}}</text>
+            <text wx:if="{{item.cohort}}">{{item.cohort}}届</text>
+            <text wx:if="{{item.dormitory}}">{{item.dormitory}}</text>
+          </view>
         </view>
         <view class="contact-actions">
           <text class="action-btn" bindtap="onEdit" data-item="{{item}}">编辑</text>
@@ -69,9 +82,21 @@
     </view>
     <view class="form-row">
       <text class="form-label">部门</text>
-      <picker bindchange="onFormDeptChange" value="0" range="{{formDeptOptions}}">
+      <picker bindchange="onFormDeptChange" value="{{formDeptIndex}}" range="{{formDeptOptions}}">
         <view class="form-picker">{{form.department}}</view>
       </picker>
+    </view>
+    <view class="form-row">
+      <text class="form-label">职级</text>
+      <input class="form-input" placeholder="例如：部长、干事" value="{{form.rank}}" data-field="rank" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">届别</text>
+      <input class="form-input" placeholder="例如：2024" value="{{form.cohort}}" data-field="cohort" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">宿舍</text>
+      <input class="form-input" placeholder="例如：南校区 13 栋 101" value="{{form.dormitory}}" data-field="dormitory" bindinput="onFormInput" />
     </view>
     <view class="form-row">
       <text class="form-label">电话</text>

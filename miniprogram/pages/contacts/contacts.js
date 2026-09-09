@@ -9,14 +9,21 @@ Page({
     role: '',
     contactList: [],
     departmentFilter: '全部部门',
+    cohortFilter: '全部届别',
     deptOptions: ['全部部门'].concat(DEFAULT_DEPARTMENTS),
+    cohortOptions: ['全部届别'],
     formDeptOptions: DEFAULT_DEPARTMENTS,
     deptIndex: 0,
+    cohortIndex: 0,
+    formDeptIndex: 0,
     showAddModal: false,
     editingId: null,
     form: {
       name: '',
       department: DEFAULT_DEPARTMENTS[0],
+      rank: '',
+      cohort: '',
+      dormitory: '',
       phone: '',
       email: '',
       wechatId: '',
@@ -34,12 +41,20 @@ Page({
     showLoading('加载中...')
     callFunction('manageContacts', { action: 'getContacts' }).then(data => {
       hideLoading()
-      let list = data || []
+      const allList = data || []
+      const cohorts = Array.from(new Set(allList.map(item => (item.cohort || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'zh-CN'))
+      const cohortOptions = ['全部届别'].concat(cohorts)
+      const cohortFilter = cohortOptions.includes(this.data.cohortFilter) ? this.data.cohortFilter : '全部届别'
+      let list = allList
       const { departmentFilter } = this.data
       if (departmentFilter !== '全部部门') {
         list = list.filter(c => c.department === departmentFilter)
       }
-      this.setData({ contactList: list })
+      if (cohortFilter !== '全部届别') {
+        list = list.filter(c => c.cohort === cohortFilter)
+      }
+      const cohortIndex = Math.max(0, cohortOptions.indexOf(cohortFilter))
+      this.setData({ contactList: list, cohortOptions, cohortFilter, cohortIndex })
     }).catch(err => {
       hideLoading()
       showToast(err.message || '加载失败')
@@ -47,10 +62,19 @@ Page({
   },
 
   onDeptChange: function (e) {
-    const idx = e.detail.value
+    const idx = Number(e.detail.value)
     this.setData({
       deptIndex: idx,
       departmentFilter: this.data.deptOptions[idx]
+    })
+    this.loadContacts()
+  },
+
+  onCohortChange: function (e) {
+    const idx = Number(e.detail.value)
+    this.setData({
+      cohortIndex: idx,
+      cohortFilter: this.data.cohortOptions[idx] || '全部届别'
     })
     this.loadContacts()
   },
@@ -59,9 +83,13 @@ Page({
     this.setData({
       showAddModal: true,
       editingId: null,
+      formDeptIndex: 0,
       form: {
         name: '',
         department: DEFAULT_DEPARTMENTS[0],
+        rank: '',
+        cohort: '',
+        dormitory: '',
         phone: '',
         email: '',
         wechatId: '',
@@ -72,12 +100,18 @@ Page({
 
   onEdit: function (e) {
     const item = e.currentTarget.dataset.item
+    const formDepartment = item.department || DEFAULT_DEPARTMENTS[0]
+    const formDeptIndex = Math.max(0, DEFAULT_DEPARTMENTS.indexOf(formDepartment))
     this.setData({
       showAddModal: true,
       editingId: item._id,
+      formDeptIndex,
       form: {
         name: item.name,
-        department: item.department || DEFAULT_DEPARTMENTS[0],
+        department: formDepartment,
+        rank: item.rank || '',
+        cohort: item.cohort || '',
+        dormitory: item.dormitory || '',
         phone: item.phone || '',
         email: item.email || '',
         wechatId: item.wechatId || '',
@@ -97,8 +131,11 @@ Page({
   },
 
   onFormDeptChange: function (e) {
-    const idx = e.detail.value
-    this.setData({ 'form.department': DEFAULT_DEPARTMENTS[idx] })
+    const idx = Number(e.detail.value)
+    this.setData({
+      formDeptIndex: idx,
+      'form.department': DEFAULT_DEPARTMENTS[idx] || DEFAULT_DEPARTMENTS[0]
+    })
   },
 
   submitForm: function () {
@@ -113,6 +150,9 @@ Page({
       action,
       name: form.name.trim(),
       department: form.department,
+      rank: form.rank,
+      cohort: form.cohort,
+      dormitory: form.dormitory,
       phone: form.phone,
       email: form.email,
       wechatId: form.wechatId,

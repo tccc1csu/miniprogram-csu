@@ -39,9 +39,9 @@
         <view class="stat-block-value">{{adminStats.thisWeekRecords}}</view>
         <view class="stat-block-label">本周记录</view>
       </view>
-      <view class="stat-block highlight">
-        <view class="stat-block-value">{{adminStats.thisWeekAllowance}}</view>
-        <view class="stat-block-label">本周津贴(元)</view>
+        <view class="stat-block highlight">
+          <view class="stat-block-value">{{adminStats.thisWeekWorkload}}</view>
+          <view class="stat-block-label">本周工时(h)</view>
       </view>
     </view>
 
@@ -54,7 +54,7 @@
           <text class="rank-dept">{{item.department}}</text>
           <text class="rank-count">{{item.memberCount}}人 · {{item.totalWorkload}}h</text>
         </view>
-        <view class="rank-allowance">¥{{item.totalAllowance}}</view>
+        <view class="rank-workload">{{item.totalWorkload}}h</view>
       </view>
     </view>
 
@@ -82,7 +82,7 @@
       <view class="progress-meta">
         <text>已上传 {{ministerStats.uploadedCount}} 人</text>
         <text class="progress-pending">待上传 {{ministerStats.pendingCount}} 人</text>
-        <text class="progress-money">本周津贴 ¥{{ministerStats.thisWeekAllowance}}</text>
+        <text class="progress-money">本周工时 {{ministerStats.thisWeekWorkload}}h</text>
       </view>
     </view>
 
@@ -110,7 +110,7 @@
       <view wx:for="{{recentRecords}}" wx:key="_id" class="record-item">
         <view class="record-top">
           <text class="record-week">{{item.week}}</text>
-          <text class="record-allowance">津贴 {{item.allowanceText}}</text>
+          <text class="record-allowance">工时 {{item.workloadText}}</text>
         </view>
         <view class="record-content">{{item.workContent}}</view>
       </view>
@@ -126,7 +126,7 @@
         <text class="record-dept">{{item.department}}</text>
       </view>
       <view class="record-meta">
-        <text class="record-allowance">{{item.allowanceText}}</text>
+        <text class="record-allowance">工时 {{item.workloadText}}</text>
         <text class="record-week">{{item.week}}</text>
       </view>
     </view>

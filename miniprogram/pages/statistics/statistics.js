@@ -17,7 +17,6 @@ Page({
     // 总计
     totalStats: {
       totalWorkload: 0,
-      totalAllowance: 0,
       memberCount: 0,
       recordCount: 0
     },
@@ -69,7 +68,6 @@ Page({
         memberStats: data.memberStats || [],
         totalStats: data.totalStats || {
           totalWorkload: 0,
-          totalAllowance: 0,
           memberCount: 0,
           recordCount: 0
         },

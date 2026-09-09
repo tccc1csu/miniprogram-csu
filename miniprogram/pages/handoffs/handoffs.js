@@ -47,6 +47,8 @@ Page({
     showReminderPrompt: false,
     reminderPromptText: '',
     focusHandoffId: '',
+    createDefaultsLoading: false,
+    createDefaultsOwner: '',
     loading: false
   },
 
@@ -75,6 +77,7 @@ Page({
       department,
       canCreate: role === 'admin' || department === '采编部'
     })
+    this.loadCreateDefaults()
     this.loadHandoffs()
     this.loadTaskNotificationSettings()
     this.updateCountdowns()
@@ -88,6 +91,24 @@ Page({
     if (tab !== 'flow') {
       this.loadHandoffs()
     }
+  },
+
+  loadCreateDefaults: function () {
+    if (this.data.activeTab !== 'active' || !this.data.canCreate) return
+    const userInfo = app.globalData.userInfo || {}
+    const owner = String(userInfo._id || userInfo.openid || userInfo.name || '')
+    if (!owner || this.data.createDefaultsOwner === owner || this.data.createDefaultsLoading) return
+    this.setData({ createDefaultsLoading: true })
+    callFunction('manageHandoffs', {
+      action: 'getCreateDefaults',
+      workflowType: 'editorialOfficeHandoff'
+    }).then(defaults => {
+      this.setData({
+        createForm: defaults ? Object.assign({}, this.data.createForm, defaults) : this.data.createForm,
+        createDefaultsOwner: owner,
+        createDefaultsLoading: false
+      })
+    }).catch(() => this.setData({ createDefaultsLoading: false }))
   },
 
   loadHandoffs: function () {
@@ -227,23 +248,10 @@ Page({
     if (!form.articleNames.trim()) { showToast('请填写稿件名称'); return }
 
     showLoading('提交中...')
-    callFunction('manageHandoffs', Object.assign({ action: 'createHandoff' }, form)).then(() => {
+    callFunction('manageHandoffs', Object.assign({ action: 'createHandoff' }, form)).then(result => {
       hideLoading()
       showToast('已提交给办公部', 'success')
-      this.setData({
-        createForm: {
-          title: '',
-          articleNames: '',
-          articleType: 'original',
-          articleTypeIndex: 0,
-          targetSites: '院网、升华网、学工网',
-          reviewerNames: '',
-          note: '',
-          deadline: '',
-          deadlineLabel: '',
-          reminderLeadHours: '24'
-        }
-      })
+      if (result && result.defaults) this.setData({ createForm: result.defaults })
       this.loadHandoffs()
     }).catch(err => {
       hideLoading()

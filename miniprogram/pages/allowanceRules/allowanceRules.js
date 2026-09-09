@@ -1,4 +1,4 @@
-// pages/allowanceRules/allowanceRules.js - 自动归档津贴规则
+// pages/allowanceRules/allowanceRules.js - 自动归档工时规则
 const app = getApp()
 const { callFunction } = require('../../utils/db')
 const { showToast, showLoading, hideLoading } = require('../../utils/util')
@@ -7,10 +7,10 @@ Page({
   data: {
     role: '',
     isAdmin: false,
-    settings: { urgentThresholdDays: 2, urgentMultiplier: 1.5 },
+    settings: { urgentThresholdDays: 2, urgentMultiplier: 1.5, standardHourlyRate: 10, productionHourlyRate: 12 },
     rules: [],
     newRule: {
-      name: '', department: '', role: '', workType: '日常办公', unit: '次', hours: 0, allowance: 0
+      name: '', department: '', role: '', workType: '日常办公', unit: '次', hours: 0
     },
     showAdd: false,
     loading: false
@@ -46,7 +46,9 @@ Page({
     callFunction('manageAllowanceRules', {
       action: 'updateSettings',
       urgentThresholdDays: this.data.settings.urgentThresholdDays,
-      urgentMultiplier: this.data.settings.urgentMultiplier
+      urgentMultiplier: this.data.settings.urgentMultiplier,
+      standardHourlyRate: this.data.settings.standardHourlyRate,
+      productionHourlyRate: this.data.settings.productionHourlyRate
     }).then(() => {
       hideLoading()
       showToast('全局设置已保存', 'success')
@@ -118,7 +120,7 @@ Page({
       showToast('规则已添加', 'success')
       this.setData({
         showAdd: false,
-        newRule: { name: '', department: '', role: '', workType: '日常办公', unit: '次', hours: 0, allowance: 0 }
+        newRule: { name: '', department: '', role: '', workType: '日常办公', unit: '次', hours: 0 }
       })
       this.loadRules()
     }).catch(err => {

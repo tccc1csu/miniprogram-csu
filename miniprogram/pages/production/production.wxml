@@ -41,7 +41,7 @@
     </view>
     <view class="flow-step">
       <view class="step-index">4</view>
-      <view class="step-body"><view class="step-title">归档并自动核算</view><view class="step-text">办公部指定成员归档后，摄制干事和归档人员的工时、津贴自动进入统计。</view></view>
+      <view class="step-body"><view class="step-title">归档并自动记录工时</view><view class="step-text">办公部指定成员归档后，摄制干事和归档人员的工时自动进入记录，导出周报时再按部门时薪计算。</view></view>
     </view>
   </view>
 

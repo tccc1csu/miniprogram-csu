@@ -16,8 +16,7 @@ Page({
     flatTable: [],        // 扁平表格数据（用于导出）
     totalRow: {
       memberCount: 0,
-      workload: 0,
-      allowance: 0
+      workload: 0
     },
     loading: false
   },
@@ -67,13 +66,11 @@ Page({
       // 计算总计
       let memberCount = 0
       let workload = 0
-      let allowance = 0
       const flatTable = []
       groups.forEach(g => {
         g.records.forEach(r => {
           memberCount++
           workload += r.workload || 0
-          allowance += r.allowance || 0
           flatTable.push(r)
         })
       })
@@ -83,8 +80,7 @@ Page({
         flatTable: flatTable,
         totalRow: {
           memberCount: memberCount,
-          workload: workload.toFixed(1),
-          allowance: allowance.toFixed(0)
+          workload: workload.toFixed(1)
         },
         loading: false
       })
@@ -102,8 +98,9 @@ Page({
       showToast('暂无数据可导出')
       return
     }
+    const exportTotalCompensation = flatTable.reduce((total, record) => total + getExportCompensation(record), 0)
     let text = `【青年传媒中心周报】${selectedWeek}\n`
-    text += `共 ${totalRow.memberCount} 人 | 总工作量 ${totalRow.workload}h | 总津贴 ${totalRow.allowance}元\n\n`
+    text += `共 ${totalRow.memberCount} 人 | 总工作量 ${totalRow.workload}h | 薪酬合计 ${formatMoney(exportTotalCompensation)}元\n\n`
 
     let currentDept = ''
     flatTable.forEach(r => {
@@ -111,7 +108,8 @@ Page({
         currentDept = r.department
         text += `\n【${currentDept}】\n`
       }
-      text += `${r.memberName}【${r.workTypeLabel || r.workType || '日常办公'}】：${r.workContent}（${r.workload}h，¥${r.allowance}）\n`
+      const hourlyRate = getExportHourlyRate(r)
+      text += `${r.memberName}【${r.workTypeLabel || r.workType || '日常办公'}】：${r.workContent}（${r.workload}h × ${formatMoney(hourlyRate)}元/h = ${formatMoney(getExportCompensation(r))}元）\n`
     })
 
     wx.setClipboardData({
@@ -130,12 +128,12 @@ Page({
       return
     }
     // CSV 头部
-    let csv = '\uFEFF周次,部门,姓名,工作类型,工作内容,工作量(小时),津贴(元),备注\n'
+    let csv = '\uFEFF周次,部门,姓名,工作类型,工作内容,工作量(小时),时薪(元/小时),薪酬(元),备注\n'
     flatTable.forEach(r => {
       // 转义逗号和引号
       const content = (r.workContent || '').replace(/"/g, '""')
       const remark = (r.remark || '').replace(/"/g, '""')
-      csv += `${r.week},${r.department || ''},${r.memberName || ''},"${r.workTypeLabel || r.workType || '日常办公'}","${content}",${r.workload || 0},${r.allowance || 0},"${remark}"\n`
+      csv += `${r.week},${r.department || ''},${r.memberName || ''},"${r.workTypeLabel || r.workType || '日常办公'}","${content}",${r.workload || 0},${formatMoney(getExportHourlyRate(r))},${formatMoney(getExportCompensation(r))},"${remark}"\n`
     })
 
     wx.setClipboardData({
@@ -174,3 +172,16 @@ Page({
     }
   }
 })
+
+function getExportHourlyRate(record) {
+  return Number(record && record.hourlyRate) || (record && record.department === '摄制部' ? 12 : 10)
+}
+
+function getExportCompensation(record) {
+  const workload = Number(record && record.workload) || 0
+  return workload * getExportHourlyRate(record)
+}
+
+function formatMoney(value) {
+  return (Number(value) || 0).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
+}

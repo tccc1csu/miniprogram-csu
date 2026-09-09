@@ -10,7 +10,6 @@ Page({
     recordList: [],
     summary: {
       totalWorkload: 0,
-      totalAllowance: 0,
       weekCount: 0
     }
   },
@@ -35,16 +34,13 @@ Page({
       hideLoading()
       records.sort((a, b) => b.week.localeCompare(a.week))
       let totalWorkload = 0
-      let totalAllowance = 0
       records.forEach(r => {
         totalWorkload += r.workload || 0
-        totalAllowance += r.allowance || 0
       })
       this.setData({
         recordList: records,
         summary: {
           totalWorkload: totalWorkload.toFixed(1),
-          totalAllowance: totalAllowance.toFixed(0),
           weekCount: records.length
         }
       })
