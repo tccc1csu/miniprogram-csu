@@ -581,13 +581,6 @@ async function handleRegister(event, openid) {
     return fail('该姓名已被注册，请绑定已有账号')
   }
 
-  if (role === 'admin') {
-    const admins = await getAll(COLLECTIONS.USERS, { role: 'admin' })
-    if (admins.some(item => !item.isTestAccount)) {
-      return fail('管理员账号已存在，请联系管理员分配角色')
-    }
-  }
-
   const now = new Date()
   const token = generateToken()
   const tokenExpireAt = new Date(now.getTime() + SESSION_TTL_MS)
