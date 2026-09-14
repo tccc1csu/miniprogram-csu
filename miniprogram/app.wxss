@@ -2,7 +2,7 @@
 page {
   background-color: #F5F6FA;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: #333;
   box-sizing: border-box;
 }
@@ -19,14 +19,15 @@ view, text, input, textarea, button, picker {
 /* 卡片样式 */
 .card {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
+  border: 2rpx solid #E5E9F0;
+  border-radius: 12rpx;
+  padding: 32rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #333;
   margin-bottom: 20rpx;
@@ -37,9 +38,9 @@ view, text, input, textarea, button, picker {
   background: linear-gradient(135deg, #4A90D9, #357ABD);
   color: #fff;
   border: none;
-  border-radius: 12rpx;
-  padding: 24rpx 0;
-  font-size: 30rpx;
+  border-radius: 10rpx;
+  padding: 26rpx 0;
+  font-size: 32rpx;
   font-weight: 500;
   text-align: center;
   width: 100%;
@@ -54,9 +55,9 @@ view, text, input, textarea, button, picker {
   background: #fff;
   color: #4A90D9;
   border: 2rpx solid #4A90D9;
-  border-radius: 12rpx;
-  padding: 20rpx 0;
-  font-size: 28rpx;
+  border-radius: 10rpx;
+  padding: 22rpx 0;
+  font-size: 30rpx;
   text-align: center;
   width: 100%;
 }
@@ -67,7 +68,7 @@ view, text, input, textarea, button, picker {
 }
 
 .form-label {
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: #666;
   margin-bottom: 12rpx;
   display: block;
@@ -75,19 +76,19 @@ view, text, input, textarea, button, picker {
 
 .form-input {
   background: #F5F6FA;
-  border: 2rpx solid #E8E8E8;
-  border-radius: 10rpx;
-  padding: 20rpx 24rpx;
-  font-size: 28rpx;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 8rpx;
+  padding: 22rpx 24rpx;
+  font-size: 30rpx;
   width: 100%;
 }
 
 .form-textarea {
   background: #F5F6FA;
-  border: 2rpx solid #E8E8E8;
-  border-radius: 10rpx;
-  padding: 20rpx 24rpx;
-  font-size: 28rpx;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 8rpx;
+  padding: 22rpx 24rpx;
+  font-size: 30rpx;
   width: 100%;
   min-height: 160rpx;
 }
@@ -97,7 +98,7 @@ view, text, input, textarea, button, picker {
   display: inline-block;
   padding: 6rpx 20rpx;
   border-radius: 20rpx;
-  font-size: 22rpx;
+  font-size: 24rpx;
 }
 
 .tag-admin {
@@ -120,7 +121,7 @@ view, text, input, textarea, button, picker {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24rpx 0;
+  padding: 26rpx 0;
   border-bottom: 2rpx solid #F0F0F0;
 }
 
@@ -133,7 +134,7 @@ view, text, input, textarea, button, picker {
   text-align: center;
   padding: 80rpx 0;
   color: #999;
-  font-size: 28rpx;
+  font-size: 30rpx;
 }
 
 /* 顶部数据展示 */
@@ -154,7 +155,7 @@ view, text, input, textarea, button, picker {
 }
 
 .stat-label {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #999;
   margin-top: 8rpx;
 }
@@ -163,7 +164,7 @@ view, text, input, textarea, button, picker {
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 24rpx;
+  font-size: 26rpx;
 }
 
 .table-header {

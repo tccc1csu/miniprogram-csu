@@ -72,10 +72,10 @@
   justify-content: space-between;
   align-items: center;
   background: #F5F6FA;
-  border: 2rpx solid #E8E8E8;
-  border-radius: 10rpx;
-  padding: 20rpx 24rpx;
-  font-size: 28rpx;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 8rpx;
+  padding: 22rpx 24rpx;
+  font-size: 30rpx;
   color: #333;
 }
 
