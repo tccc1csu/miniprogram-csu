@@ -1,0 +1,20 @@
+# WeChat DevTools local state
+project.private.config.json
+
+# Local archives and generated files
+*.zip
+*.7z
+*.docx
+*.log
+
+# Node dependencies
+**/node_modules/
+
+# Local database files
+server/data/*.db
+server/data/*.db-*
+
+# Editor and OS metadata
+.DS_Store
+Thumbs.db
+.vscode/

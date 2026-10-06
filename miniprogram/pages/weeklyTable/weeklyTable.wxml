@@ -1,0 +1,75 @@
+<!--pages/weeklyTable/weeklyTable.wxml-->
+<view class="container">
+  <!-- 周次选择栏 -->
+  <view class="header-bar">
+    <view class="week-selector">
+      <picker mode="selector" range="{{weekList}}" bindchange="onWeekChange" value="{{weekIndex}}">
+        <view class="picker-value">
+          <text class="week-text">{{selectedWeek}}</text>
+          <text class="arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+    <button class="btn-share" bindtap="showExportOptions">导出数据</button>
+  </view>
+
+  <view class="week-range-text">{{weekRange}}</view>
+
+  <!-- 汇总 -->
+  <view class="summary-bar card">
+    <view class="stat-row">
+      <view class="stat-item">
+        <view class="stat-value">{{totalRow.memberCount}}</view>
+        <view class="stat-label">人数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{totalRow.workload}}</view>
+        <view class="stat-label">总工作量(h)</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && tableData.length === 0}}">
+    <view class="empty-icon">📊</view>
+    <text>本周暂无数据</text>
+  </view>
+
+  <!-- 按部门分组的表格 -->
+  <block wx:for="{{tableData}}" wx:key="department" wx:for-item="group">
+    <view class="dept-section card">
+      <view class="dept-header">
+        <text class="dept-name">{{group.department}}</text>
+        <view class="dept-summary">
+          <text>{{group.memberCount}}人</text>
+          <text>{{group.totalWorkload}}h</text>
+        </view>
+      </view>
+
+      <!-- 表格 -->
+      <view class="table">
+        <view class="table-header">
+          <view class="table-cell col-name">姓名</view>
+          <view class="table-cell col-type">类型</view>
+          <view class="table-cell col-content">工作内容</view>
+          <view class="table-cell col-workload">工作量</view>
+        </view>
+        <view wx:for="{{group.records}}" wx:key="_id" wx:for-item="record" class="table-row">
+          <view class="table-cell col-name">{{record.memberName}}</view>
+          <view class="table-cell col-type">{{record.workTypeLabel || record.workType}}</view>
+          <view class="table-cell col-content content-cell">{{record.workContent}}</view>
+          <view class="table-cell col-workload">{{record.workload}}h</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 总计行 -->
+  <view class="total-row card" wx:if="{{tableData.length > 0}}">
+    <text class="total-label">合计</text>
+    <view class="total-detail">
+      <text>{{totalRow.memberCount}}人</text>
+      <text>{{totalRow.workload}}h</text>
+    </view>
+  </view>
+</view>

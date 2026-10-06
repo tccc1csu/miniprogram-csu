@@ -1,0 +1,162 @@
+/* pages/statistics/statistics.wxss */
+.filter-bar {
+  display: flex;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-right: 20rpx;
+  white-space: nowrap;
+}
+
+.filter-bar .picker-value {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F5F6FA;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 10rpx;
+  padding: 16rpx 24rpx;
+  font-size: 28rpx;
+}
+
+.total-card {
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+}
+
+.total-card .stat-value {
+  color: #fff;
+}
+
+.total-card .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 30rpx;
+  color: #666;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #4A90D9;
+  font-weight: 600;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background: #4A90D9;
+  border-radius: 3rpx;
+}
+
+/* 柱状图 */
+.bar-item {
+  margin-bottom: 28rpx;
+}
+
+.bar-label {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.bar-track {
+  height: 36rpx;
+  background: #F0F0F0;
+  border-radius: 18rpx;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4A90D9, #6BB0E8);
+  border-radius: 18rpx;
+  min-width: 8rpx;
+  transition: width 0.5s;
+}
+
+.bar-value {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.bar-allowance {
+  color: #E74C3C;
+  font-weight: 600;
+}
+
+/* 表格 */
+.flex1 { flex: 1; }
+.flex2 { flex: 2; }
+
+/* 成员统计 */
+.member-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.member-stat-item:last-child {
+  border-bottom: none;
+}
+
+.member-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-stat-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.member-stat-dept {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.member-stat-data {
+  display: flex;
+  align-items: center;
+}
+
+.member-stat-workload {
+  font-size: 26rpx;
+  color: #4A90D9;
+  margin-right: 24rpx;
+}
+
+.member-stat-allowance {
+  font-size: 28rpx;
+  color: #E74C3C;
+  font-weight: 600;
+}

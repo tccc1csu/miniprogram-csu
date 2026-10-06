@@ -1,0 +1,98 @@
+<!--pages/upload/upload.wxml-->
+<view class="container">
+  <!-- 顶部信息栏 -->
+  <view class="upload-header">
+    <view class="header-top">
+      <view class="dept-badge">{{isMember ? '我的上报' : department}}</view>
+      <picker mode="selector" range="{{weekList}}" bindchange="onWeekChange" value="{{weekIndex}}">
+        <view class="week-picker">
+          <text class="week-text">{{selectedWeek}}</text>
+          <text class="arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+    <view class="header-summary">
+      <view class="summary-item">
+        <text class="summary-num">{{uploadedCount}}</text>
+        <text class="summary-label">已填写 / {{totalMembers}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-num">{{totalWorkload}}</text>
+        <text class="summary-label">工作量(h)</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 普通成员上报 -->
+  <view class="self-report card" wx:if="{{isMember}}">
+    <view class="card-title">{{selfForm.hasRecord ? '修改本周上报' : '填写本周上报'}}</view>
+    <view class="form-group">
+      <text class="form-label">工作类型</text>
+      <picker mode="selector" range="{{workTypeOptions}}" value="{{selfForm.workTypeIndex}}" bindchange="onSelfWorkTypeChange">
+        <view class="form-picker">
+          <text>{{selfForm.workType}}</text>
+          <text class="arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-group">
+      <text class="form-label">工作内容</text>
+      <textarea class="form-textarea" placeholder="填写本周完成的工作内容" value="{{selfForm.workContent}}" bindinput="onSelfContentInput" maxlength="300" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">工时</text>
+      <input class="form-input" type="digit" placeholder="例如 2.5" value="{{selfForm.workload}}" bindinput="onSelfWorkloadInput" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">备注</text>
+      <input class="form-input" placeholder="可选" value="{{selfForm.remark}}" bindinput="onSelfRemarkInput" />
+    </view>
+    <button class="btn-primary" bindtap="handleSelfSubmit" loading="{{submitting}}" disabled="{{submitting}}">
+      {{selfForm.hasRecord ? '更新上报' : '提交上报'}}
+    </button>
+  </view>
+
+  <!-- 成员批量编辑表格 -->
+  <view class="batch-table card" wx:if="{{!isMember}}">
+    <view class="table-header-row">
+      <view class="th th-name">成员</view>
+      <view class="th th-type">类型</view>
+      <view class="th th-content">工作内容</view>
+      <view class="th th-workload">工时</view>
+    </view>
+
+    <view wx:for="{{memberForms}}" wx:key="index" class="table-row {{item.hasRecord ? 'row-uploaded' : ''}}">
+      <view class="td td-name">
+        <text class="member-name">{{item.memberName}}</text>
+        <text class="status-badge {{item.hasRecord ? 'status-done' : (item.workContent ? 'status-ready' : 'status-pending')}}">{{item.status}}</text>
+      </view>
+      <view class="td td-type">
+        <picker mode="selector" range="{{workTypeOptions}}" value="{{item.workTypeIndex}}" data-index="{{index}}" bindchange="onWorkTypeChange">
+          <view class="inline-picker">
+            <text>{{item.workType}}</text>
+            <text class="arrow">▾</text>
+          </view>
+        </picker>
+      </view>
+      <view class="td td-content">
+        <textarea class="inline-textarea" placeholder="填写工作内容..." value="{{item.workContent}}" bindinput="onContentInput" data-index="{{index}}" maxlength="200" auto-height />
+      </view>
+      <view class="td td-workload">
+        <input class="inline-input" type="digit" placeholder="h" value="{{item.workload}}" bindinput="onWorkloadInput" data-index="{{index}}" />
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{memberForms.length === 0}}">
+      <text>本部门暂无成员，请先添加</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar" wx:if="{{!isMember && memberForms.length > 0}}">
+    <button class="btn-clear" bindtap="handleClearWeek">清空</button>
+    <button class="btn-primary btn-submit" bindtap="handleBatchSubmit" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? '提交中 ' + submitProgress : '批量提交 (' + uploadedCount + '/' + totalMembers + ')'}}
+    </button>
+  </view>
+
+</view>

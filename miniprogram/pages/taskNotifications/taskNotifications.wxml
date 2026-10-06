@@ -1,0 +1,32 @@
+<view class="container">
+  <view class="status-card card">
+    <view class="card-title">微信任务提醒</view>
+    <view class="status-row">
+      <text class="status-label">服务通知</text>
+      <text class="status-value {{settings && settings.enabled ? 'enabled' : 'disabled'}}">{{settings && settings.enabled ? '已配置' : '未配置'}}</text>
+    </view>
+    <view class="status-row">
+      <text class="status-label">本次授权</text>
+      <text class="status-value">{{subscription && subscription.status === 'accept' ? '待发送' : (subscription && subscription.status === 'consumed' ? '已发送，需再次授权' : '未开启')}}</text>
+    </view>
+    <button class="btn-primary" bindtap="requestSubscription" disabled="{{loading || !settings || !settings.enabled}}">开启下一条任务提醒</button>
+  </view>
+
+  <view class="hint-card" wx:if="{{settings && settings.enabled}}">任务流转或接近截止时间时，系统会优先发送微信服务通知；每次成功发送后，需要再次授权下一条提醒。</view>
+
+  <view class="admin-card card" wx:if="{{role === 'admin'}}">
+    <view class="card-title">管理员配置</view>
+    <view class="switch-row">
+      <text>启用微信服务通知</text>
+      <switch checked="{{adminForm.enabled}}" color="#4A90D9" bindchange="onEnabledChange" />
+    </view>
+    <view class="form-group"><text class="form-label">订阅消息模板 ID</text><input class="form-input" placeholder="在微信公众平台复制模板 ID" value="{{adminForm.templateId}}" bindinput="onTemplateIdInput" /></view>
+    <view class="form-group"><text class="form-label">点击通知默认跳转页</text><input class="form-input" value="{{adminForm.page}}" bindinput="onPageInput" /></view>
+    <view class="field-grid">
+      <view class="form-group"><text class="form-label">任务字段</text><input class="form-input" value="{{adminForm.titleField}}" bindinput="onTitleFieldInput" /></view>
+      <view class="form-group"><text class="form-label">说明字段</text><input class="form-input" value="{{adminForm.contentField}}" bindinput="onContentFieldInput" /></view>
+    </view>
+    <view class="form-group"><text class="form-label">时间字段</text><input class="form-input" value="{{adminForm.timeField}}" bindinput="onTimeFieldInput" /></view>
+    <button class="btn-primary" bindtap="saveSettings" loading="{{saving}}" disabled="{{saving}}">保存通知设置</button>
+  </view>
+</view>

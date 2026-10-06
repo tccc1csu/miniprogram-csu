@@ -1,0 +1,200 @@
+<!--pages/projectTasks/projectTasks.wxml-->
+<view class="container">
+  <view class="page-header">
+    <view class="header-title">项目任务</view>
+    <view class="header-subtitle">跨部门协同 · 阶段推进</view>
+  </view>
+
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <!-- 管理员发布按钮 -->
+  <view class="fab-btn" wx:if="{{isAdmin && activeTab === 'active'}}" bindtap="openCreateModal">+</view>
+
+  <!-- 项目列表 -->
+  <view wx:if="{{projects.length === 0 && !loading}}" class="empty-state">
+    <view class="empty-icon">📋</view>
+    <view class="empty-text">暂无项目任务</view>
+    <view class="empty-hint" wx:if="{{isAdmin}}">点击右下角 + 发布第一个项目</view>
+    <view class="empty-hint" wx:else>暂无本部门参与的项目</view>
+  </view>
+
+  <view wx:for="{{projects}}" wx:key="_id" class="project-card card" bindtap="openDetail" data-id="{{item._id}}">
+    <view class="project-head">
+      <view class="project-title">{{item.name}}</view>
+      <view class="status-tag status-{{item.status}}">{{item.statusLabel}}</view>
+    </view>
+    <view class="project-desc">{{item.description}}</view>
+
+    <!-- 阶段进度条 -->
+    <view class="phase-progress">
+      <block wx:for="{{item.phases}}" wx:for-item="phase" wx:for-index="pIdx" wx:key="index">
+        <view class="phase-dot {{item.currentPhaseIndex > pIdx ? 'done' : (item.currentPhaseIndex === pIdx ? 'current' : '')}}">
+          <text wx:if="{{item.currentPhaseIndex > pIdx}}">✓</text>
+          <text wx:else>{{pIdx + 1}}</text>
+        </view>
+        <view class="phase-line" wx:if="{{pIdx < item.phases.length - 1}} {{item.currentPhaseIndex > pIdx ? 'line-done' : ''}}"></view>
+      </block>
+    </view>
+    <view class="phase-text">第 {{item.currentPhaseIndex + 1}} 阶段 / 共 {{item.phases.length}} 阶段 · {{item.currentPhaseName}}</view>
+
+    <!-- 参与部门标签 -->
+    <view class="dept-tags">
+      <view wx:for="{{item.departmentTasks}}" wx:for-item="dt" wx:key="department" class="dept-tag {{dt.status === 'completed' ? 'tag-done' : (dt.status === 'in_progress' ? 'tag-doing' : '')}}">
+        {{dt.department}}
+        <text wx:if="{{dt.status === 'completed'}}"> ✓</text>
+      </view>
+    </view>
+
+    <view class="project-meta">
+      <text class="meta-item">📅 截止：{{item.deadline || '未设置'}}</text>
+      <text class="meta-item">👤 {{item.creatorName}}</text>
+    </view>
+  </view>
+
+  <!-- 发布项目弹窗 -->
+  <view class="modal-mask" wx:if="{{showCreateModal}}" bindtap="closeCreateModal">
+    <view class="modal-content large-modal" catchtap="stopTap">
+      <view class="modal-title">发布项目任务</view>
+      <scroll-view scroll-y class="modal-scroll">
+        <view class="form-group">
+          <text class="form-label">项目名称</text>
+          <input class="form-input" placeholder="例如：秋季招新宣传项目" value="{{createForm.name}}" bindinput="onCreateNameInput" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">项目描述</text>
+          <textarea class="form-textarea" placeholder="简要描述项目目标和背景" value="{{createForm.description}}" bindinput="onCreateDescInput"></textarea>
+        </view>
+        <view class="form-group">
+          <text class="form-label">截止日期</text>
+          <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
+            <view class="form-picker">
+              <text>{{createForm.deadline || '选择日期'}}</text>
+              <text class="arrow">▾</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">参与部门</text>
+          <view class="dept-checkbox-list">
+            <view wx:for="{{departmentOptions}}" wx:for-item="dept" wx:key="name"
+                  class="dept-checkbox {{dept.checked ? 'checked' : ''}}"
+                  bindtap="toggleDept" data-dept="{{dept.name}}">
+              <view class="check-box">{{dept.checked ? '✓' : ''}}</view>
+              <text>{{dept.name}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 各部门任务内容 -->
+        <block wx:for="{{createForm.deptTasks}}" wx:for-item="dt" wx:for-index="dtIdx" wx:key="department">
+          <view class="form-group">
+            <text class="form-label">{{dt.department}} · 任务内容</text>
+            <textarea class="form-textarea compact" placeholder="填写该部门在项目中的任务内容"
+                      value="{{dt.taskContent}}"
+                      data-index="{{dtIdx}}" bindinput="onDeptTaskInput"></textarea>
+          </view>
+        </block>
+
+        <view class="form-group">
+          <text class="form-label">阶段设置</text>
+          <view class="phase-edit-list">
+            <view wx:for="{{createForm.phases}}" wx:for-item="phase" wx:for-index="pIdx" wx:key="index" class="phase-edit-item">
+              <text class="phase-num">{{pIdx + 1}}</text>
+              <input class="form-input phase-input" placeholder="阶段名称" value="{{phase.name}}" data-index="{{pIdx}}" bindinput="onPhaseNameInput" />
+              <view class="phase-remove" wx:if="{{createForm.phases.length > 2}}" bindtap="removePhase" data-index="{{pIdx}}">×</view>
+            </view>
+          </view>
+          <view class="add-phase-btn" bindtap="addPhase">+ 添加阶段</view>
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCreateModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="submitCreate" loading="{{creating}}">发布项目</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 项目详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetailModal">
+    <view class="modal-content large-modal" catchtap="stopTap">
+      <view class="modal-title">{{detailProject.name}}</view>
+      <scroll-view scroll-y class="modal-scroll">
+        <view class="detail-section">
+          <view class="detail-meta-row">
+            <text class="meta-label">状态</text>
+            <view class="status-tag status-{{detailProject.status}}">{{detailProject.statusLabel}}</view>
+          </view>
+          <view class="detail-meta-row">
+            <text class="meta-label">描述</text>
+            <text class="meta-value">{{detailProject.description || '—'}}</text>
+          </view>
+          <view class="detail-meta-row">
+            <text class="meta-label">截止日期</text>
+            <text class="meta-value">{{detailProject.deadline || '未设置'}}</text>
+          </view>
+          <view class="detail-meta-row">
+            <text class="meta-label">发布人</text>
+            <text class="meta-value">{{detailProject.creatorName}}</text>
+          </view>
+          <view class="detail-meta-row">
+            <text class="meta-label">发布时间</text>
+            <text class="meta-value">{{detailProject.createTime}}</text>
+          </view>
+          <view class="detail-meta-row" wx:if="{{detailProject.completeTime}}">
+            <text class="meta-label">完成时间</text>
+            <text class="meta-value">{{detailProject.completeTime}}</text>
+          </view>
+        </view>
+
+        <!-- 纵向阶段流程图 -->
+        <view class="detail-section">
+          <view class="section-title">阶段进度</view>
+          <view class="phase-flow">
+            <view wx:for="{{detailProject.phases}}" wx:for-item="phase" wx:for-index="pIdx" wx:key="index" class="phase-flow-item">
+              <view class="phase-flow-dot {{detailProject.currentPhaseIndex > pIdx ? 'done' : (detailProject.currentPhaseIndex === pIdx ? 'current' : '')}}">
+                <text wx:if="{{detailProject.currentPhaseIndex > pIdx}}">✓</text>
+                <text wx:else>{{pIdx + 1}}</text>
+              </view>
+              <view class="phase-flow-body">
+                <view class="phase-flow-name {{detailProject.currentPhaseIndex >= pIdx ? 'active' : ''}}">{{phase.name}}</view>
+                <view class="phase-flow-status">
+                  <text wx:if="{{detailProject.currentPhaseIndex > pIdx}}" class="text-success">已完成</text>
+                  <text wx:elif="{{detailProject.currentPhaseIndex === pIdx && detailProject.status === 'active'}}" class="text-primary">进行中</text>
+                  <text wx:else class="text-aux">未开始</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 各部门任务 -->
+        <view class="detail-section">
+          <view class="section-title">各部门任务</view>
+          <view wx:for="{{detailProject.deptTasks}}" wx:for-item="dt" wx:for-index="dtIdx" wx:key="department" class="dept-task-card">
+            <view class="dept-task-head">
+              <text class="dept-task-name">{{dt.department}}</text>
+              <view class="status-tag status-{{dt.status}}">{{dt.statusLabel}}</view>
+            </view>
+            <view class="dept-task-content">{{dt.taskContent}}</view>
+            <view class="dept-task-time" wx:if="{{dt.completeTime}}">完成时间：{{dt.completeTime}}</view>
+            <view class="dept-task-actions" wx:if="{{dt.canComplete}}">
+              <button class="mini-btn primary" bindtap="markDeptComplete" data-id="{{detailProject._id}}" data-dept="{{dt.department}}">标记完成</button>
+            </view>
+          </view>
+        </view>
+
+        <!-- 管理员操作 -->
+        <view class="detail-section admin-actions-bar" wx:if="{{isAdmin && detailProject.status === 'active'}}">
+          <button class="mini-btn" bindtap="forceAdvancePhase" data-id="{{detailProject._id}}">强制推进阶段</button>
+          <button class="mini-btn danger" bindtap="endProject" data-id="{{detailProject._id}}">结束项目</button>
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeDetailModal">关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

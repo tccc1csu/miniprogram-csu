@@ -1,0 +1,49 @@
+.status-card,
+.admin-card {
+  padding: 30rpx;
+}
+
+.status-row,
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+  font-size: 28rpx;
+}
+
+.status-row {
+  color: #666;
+}
+
+.status-value {
+  color: #333;
+  font-weight: 500;
+}
+
+.status-value.enabled { color: #249255; }
+.status-value.disabled { color: #B7791F; }
+
+.status-card .btn-primary {
+  margin-top: 28rpx;
+}
+
+.hint-card {
+  margin: 24rpx 0;
+  padding: 24rpx;
+  border-left: 6rpx solid #4A90D9;
+  background: #EAF3FE;
+  color: #4D6480;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.field-grid {
+  display: flex;
+  gap: 20rpx;
+}
+
+.field-grid .form-group {
+  flex: 1;
+}

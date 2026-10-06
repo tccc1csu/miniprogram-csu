@@ -1,0 +1,152 @@
+/* pages/records/records.wxss */
+.filter-bar {
+  padding: 24rpx 28rpx;
+}
+
+.filter-row {
+  display: flex;
+  gap: 20rpx;
+}
+
+.filter-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 26rpx;
+  color: #666;
+  margin-right: 16rpx;
+  white-space: nowrap;
+}
+
+.filter-picker {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F5F6FA;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 10rpx;
+  padding: 14rpx 20rpx;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+  padding: 30rpx;
+}
+
+.summary-card .stat-value {
+  color: #fff;
+}
+
+.summary-card .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.record-card {
+  padding: 28rpx;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.record-name-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.record-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 16rpx;
+}
+
+.record-dept-tag {
+  font-size: 20rpx;
+  color: #4A90D9;
+  background: #E8F4FD;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+}
+
+.record-allowance {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #E74C3C;
+}
+
+.allowance-pending {
+  font-size: 24rpx;
+  color: #B7791F;
+}
+
+.record-content {
+  font-size: 27rpx;
+  color: #555;
+  line-height: 1.6;
+  padding: 16rpx 20rpx;
+  background: #F9FAFB;
+  border-radius: 10rpx;
+  margin-bottom: 16rpx;
+}
+
+.record-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-item {
+  font-size: 23rpx;
+  color: #999;
+  line-height: 1.6;
+}
+
+.record-actions {
+  display: flex;
+}
+
+.action-edit {
+  font-size: 25rpx;
+  color: #4A90D9;
+  padding: 8rpx 24rpx;
+  border: 2rpx solid #4A90D9;
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+}
+
+.action-delete {
+  font-size: 25rpx;
+  color: #E74C3C;
+  padding: 8rpx 24rpx;
+  border: 2rpx solid #E74C3C;
+  border-radius: 8rpx;
+}
+
+.record-remark {
+  margin-top: 16rpx;
+  padding: 12rpx 20rpx;
+  font-size: 24rpx;
+  color: #996600;
+  background: #FFF9E6;
+  border-radius: 8rpx;
+}

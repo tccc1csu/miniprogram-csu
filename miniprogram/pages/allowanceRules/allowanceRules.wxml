@@ -1,0 +1,37 @@
+<!-- pages/allowanceRules/allowanceRules.wxml -->
+<view class="container">
+  <view class="page-intro card"><view class="card-title">自动归档工时规则</view><view class="intro-text">归档流程完成后，系统按这里的工时自动生成工作记录。金额不在日常填写时录入，只在导出周报时按部门时薪计算。</view></view>
+
+  <view class="card settings-card">
+    <view class="section-head"><view class="card-title">工时与计薪设置</view><text class="readonly-tag" wx:if="{{!isAdmin}}">只读</text></view>
+    <view class="setting-row"><text class="setting-label">提前多少天算加急</text><input class="number-input" type="digit" disabled="{{!isAdmin}}" value="{{settings.urgentThresholdDays}}" data-field="urgentThresholdDays" bindinput="onSettingInput" /><text class="unit">天</text></view>
+    <view class="setting-row"><text class="setting-label">加急工时倍率</text><input class="number-input" type="digit" disabled="{{!isAdmin}}" value="{{settings.urgentMultiplier}}" data-field="urgentMultiplier" bindinput="onSettingInput" /><text class="unit">倍</text></view>
+    <view class="setting-row"><text class="setting-label">普通部门时薪</text><input class="number-input" type="digit" disabled="{{!isAdmin}}" value="{{settings.standardHourlyRate}}" data-field="standardHourlyRate" bindinput="onSettingInput" /><text class="unit">元/时</text></view>
+    <view class="setting-row"><text class="setting-label">摄制部时薪</text><input class="number-input" type="digit" disabled="{{!isAdmin}}" value="{{settings.productionHourlyRate}}" data-field="productionHourlyRate" bindinput="onSettingInput" /><text class="unit">元/时</text></view>
+    <button class="btn-primary" wx:if="{{isAdmin}}" bindtap="saveSettings">保存设置</button>
+  </view>
+
+  <view class="section-title">职责规则 <text class="count">{{rules.length}} 条</text></view>
+  <view class="rule-card card" wx:for="{{rules}}" wx:key="_id">
+    <view class="rule-title-row"><input class="rule-name" disabled="{{!isAdmin}}" value="{{item.name}}" data-index="{{index}}" data-field="name" bindinput="onRuleInput" /><text class="rule-dept">{{item.department}}</text></view>
+    <view class="rule-grid">
+      <view class="rule-field"><text>部门</text><input disabled="{{!isAdmin}}" value="{{item.department}}" data-index="{{index}}" data-field="department" bindinput="onRuleInput" /></view>
+      <view class="rule-field"><text>职责角色</text><input disabled="{{!isAdmin}}" value="{{item.role}}" data-index="{{index}}" data-field="role" bindinput="onRuleInput" /></view>
+      <view class="rule-field"><text>工作类型</text><input disabled="{{!isAdmin}}" value="{{item.workType}}" data-index="{{index}}" data-field="workType" bindinput="onRuleInput" /></view>
+      <view class="rule-field"><text>单位</text><input disabled="{{!isAdmin}}" value="{{item.unit}}" data-index="{{index}}" data-field="unit" bindinput="onRuleInput" /></view>
+      <view class="rule-field"><text>工时</text><input class="number-input" type="digit" disabled="{{!isAdmin}}" value="{{item.hours}}" data-index="{{index}}" data-field="hours" bindinput="onRuleInput" /></view>
+    </view>
+    <view class="rule-actions" wx:if="{{isAdmin}}"><button class="mini-btn primary" data-index="{{index}}" bindtap="saveRule">保存</button><button class="mini-btn danger" data-index="{{index}}" bindtap="deleteRule">删除</button></view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && rules.length === 0}}">暂无工时规则</view>
+  <button class="btn-secondary add-rule-btn" wx:if="{{isAdmin}}" bindtap="toggleAdd">{{showAdd ? '收起新增规则' : '新增自定义规则'}}</button>
+  <view class="card add-card" wx:if="{{showAdd && isAdmin}}">
+    <view class="card-title">新增自定义规则</view>
+    <view class="form-group"><text class="form-label">规则名称</text><input class="form-input" value="{{newRule.name}}" data-field="name" bindinput="onNewRuleInput" /></view>
+    <view class="form-row"><input class="form-input half" placeholder="部门" value="{{newRule.department}}" data-field="department" bindinput="onNewRuleInput" /><input class="form-input half" placeholder="职责角色" value="{{newRule.role}}" data-field="role" bindinput="onNewRuleInput" /></view>
+    <view class="form-row"><input class="form-input half" placeholder="工作类型" value="{{newRule.workType}}" data-field="workType" bindinput="onNewRuleInput" /><input class="form-input half" placeholder="单位" value="{{newRule.unit}}" data-field="unit" bindinput="onNewRuleInput" /></view>
+    <view class="form-row"><input class="form-input half" type="digit" placeholder="工时" value="{{newRule.hours}}" data-field="hours" bindinput="onNewRuleInput" /></view>
+    <button class="btn-primary" bindtap="addRule">确认新增</button>
+  </view>
+</view>

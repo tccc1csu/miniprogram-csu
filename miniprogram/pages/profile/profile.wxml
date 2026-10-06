@@ -1,0 +1,132 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <view class="profile-header">
+    <view class="avatar">{{userInfo.name[0]}}</view>
+    <view class="profile-name">{{userInfo.name}}</view>
+    <view class="profile-role">
+      <text class="tag tag-{{userInfo.role}}">{{roleLabel}}</text>
+      <text class="profile-dept" wx:if="{{userInfo.department}}"> · {{userInfo.department}}</text>
+    </view>
+  </view>
+
+  <view class="tool-card card">
+    <view class="card-title">工具</view>
+    <view class="tool-grid">
+      <view class="tool-item" bindtap="goRecords">
+        <view class="tool-icon icon-record">录</view>
+        <text>记录</text>
+      </view>
+      <view class="tool-item" bindtap="goStatistics">
+        <view class="tool-icon icon-stat">统</view>
+        <text>统计</text>
+      </view>
+      <view class="tool-item" bindtap="goWeeklyTable">
+        <view class="tool-icon icon-table">表</view>
+        <text>周报</text>
+      </view>
+      <view class="tool-item" bindtap="goContacts">
+        <view class="tool-icon icon-contact">讯</view>
+        <text>通讯录</text>
+      </view>
+      <view class="tool-item" wx:if="{{userInfo.role != 'member'}}" bindtap="goManage">
+        <view class="tool-icon icon-manage">员</view>
+        <text>{{userInfo.role == 'admin' ? '人员' : '成员'}}</text>
+      </view>
+      <view class="tool-item" bindtap="goCollaboration">
+        <view class="tool-icon icon-collab">协</view>
+        <text>协作</text>
+      </view>
+      <!-- 采编部/办公部协同记录入口 -->
+      <view class="tool-item" wx:if="{{userInfo.department == '采编部' || userInfo.department == '办公部'}}" bindtap="goHandoffHistory">
+        <view class="tool-icon icon-handoff">同</view>
+        <text>协同记录</text>
+      </view>
+      <view class="tool-item" bindtap="goAllowanceRules">
+        <view class="tool-icon icon-rules">时</view>
+        <text>工时规则</text>
+      </view>
+      <view class="tool-item" bindtap="goResponsibilities">
+        <view class="tool-icon icon-duty">责</view>
+        <text>部门职责</text>
+      </view>
+      <view class="tool-item" bindtap="goTaskNotifications">
+        <view class="tool-icon icon-notice">提</view>
+        <text>任务提醒</text>
+      </view>
+      <view class="tool-item" bindtap="goFileLibrary">
+        <view class="tool-icon icon-file">文</view>
+        <text>文件库</text>
+      </view>
+      <view class="tool-item" wx:if="{{userInfo.role == 'admin'}}" bindtap="resetDevelopmentData">
+        <view class="tool-icon icon-reset">测</view>
+        <text>重置测试数据</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="info-card card">
+    <view class="card-title">账号信息</view>
+    <view class="info-row">
+      <text class="info-label">姓名</text>
+      <text class="info-value">{{userInfo.name}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">角色</text>
+      <text class="info-value">{{roleLabel}}</text>
+    </view>
+    <view class="info-row" wx:if="{{userInfo.department}}">
+      <text class="info-label">部门</text>
+      <text class="info-value">{{userInfo.department}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">当前周次</text>
+      <text class="info-value">{{currentWeek}}</text>
+    </view>
+  </view>
+
+  <!-- 采编部/办公部协同流程图例 -->
+  <view class="info-card card" wx:if="{{userInfo.department == '采编部' || userInfo.department == '办公部'}}">
+    <view class="card-title">采编办公协同流程</view>
+    <view class="flow-mini">
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '采编部' ? 'dot-mine' : ''}}">1</view>
+        <text>采编部报备稿件</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '办公部' ? 'dot-mine' : ''}}">2</view>
+        <text>办公部派发干事</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot {{userInfo.department == '办公部' ? 'dot-mine' : ''}}">3</view>
+        <text>干事完成同步</text>
+      </view>
+      <view class="flow-mini-line"></view>
+      <view class="flow-mini-step">
+        <view class="flow-mini-dot">4</view>
+        <text>管理员审核归档</text>
+      </view>
+    </view>
+    <view class="handoff-hint" bindtap="goHandoffHistory">点击「协同记录」查看我的参与记录 →</view>
+  </view>
+
+  <view class="logout-area">
+    <button class="btn-secondary logout-btn" bindtap="handleLogout">退出登录</button>
+    <button class="btn-secondary delete-btn" wx:if="{{!userInfo.isTestAccount}}" bindtap="openDeletePanel">注销账号</button>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showDeletePanel}}" bindtap="closeDeletePanel">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">注销账号</view>
+      <view class="modal-copy">注销后无法登录该账号；历史工作记录会保留。</view>
+      <input class="form-input" password="true" placeholder="输入当前密码确认" value="{{deletePassword}}" bindinput="onDeletePasswordInput" />
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeDeletePanel" disabled="{{deleting}}">取消</button>
+        <button class="btn-danger" bindtap="confirmDeleteAccount" loading="{{deleting}}" disabled="{{deleting}}">确认注销</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="version-text">青年传媒中心工作统计系统 v1.0</view>
+</view>

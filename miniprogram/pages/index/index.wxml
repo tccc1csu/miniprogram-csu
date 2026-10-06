@@ -1,0 +1,134 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 顶部欢迎卡片 -->
+  <view class="welcome-card">
+    <view class="welcome-info">
+      <view class="welcome-name">{{userInfo.name}}</view>
+      <view class="welcome-role">
+        <text class="tag tag-{{role}}">{{roleLabel}}</text>
+        <text class="welcome-dept" wx:if="{{userInfo.department}}"> · {{userInfo.department}}</text>
+      </view>
+    </view>
+    <view class="week-info">
+      <view class="week-label">{{currentWeek}}</view>
+      <view class="week-range">{{weekRange}}</view>
+    </view>
+  </view>
+
+  <view class="primary-report" wx:if="{{role !== 'admin'}}" bindtap="goUpload">
+    <view>
+      <view class="primary-title">{{role === 'member' ? '上报工作量' : '上传工作量'}}</view>
+      <view class="primary-meta">{{currentWeek}}</view>
+    </view>
+    <view class="primary-arrow">›</view>
+  </view>
+
+  <!-- ======== 管理员视图 ======== -->
+  <block wx:if="{{role === 'admin'}}">
+    <!-- 数据概览卡片 -->
+    <view class="stats-grid card">
+      <view class="stat-block">
+        <view class="stat-block-value">{{adminStats.totalDepartments}}</view>
+        <view class="stat-block-label">部门数</view>
+      </view>
+      <view class="stat-block">
+        <view class="stat-block-value">{{adminStats.totalMembers}}</view>
+        <view class="stat-block-label">成员总数</view>
+      </view>
+      <view class="stat-block">
+        <view class="stat-block-value">{{adminStats.thisWeekRecords}}</view>
+        <view class="stat-block-label">本周记录</view>
+      </view>
+        <view class="stat-block highlight">
+          <view class="stat-block-value">{{adminStats.thisWeekWorkload}}</view>
+          <view class="stat-block-label">本周工时(h)</view>
+      </view>
+    </view>
+
+    <!-- 部门排名 -->
+    <view class="card" wx:if="{{deptRank.length > 0}}">
+      <view class="card-title">本周部门工作量排行</view>
+      <view wx:for="{{deptRank}}" wx:key="department" class="rank-item">
+        <view class="rank-num {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</view>
+        <view class="rank-info">
+          <text class="rank-dept">{{item.department}}</text>
+          <text class="rank-count">{{item.memberCount}}人 · {{item.totalWorkload}}h</text>
+        </view>
+        <view class="rank-workload">{{item.totalWorkload}}h</view>
+      </view>
+    </view>
+
+    <view class="tool-grid">
+      <view class="tool-item" bindtap="goWeeklyTable"><view class="tool-icon icon-table">表</view><text>周报</text></view>
+      <view class="tool-item" bindtap="goStatistics"><view class="tool-icon icon-stat">统</view><text>统计</text></view>
+      <view class="tool-item" bindtap="goRecords"><view class="tool-icon icon-record">录</view><text>记录</text></view>
+      <view class="tool-item" bindtap="goManage"><view class="tool-icon icon-manage">管</view><text>人员</text></view>
+      <view class="tool-item" bindtap="goContacts"><view class="tool-icon icon-contact">讯</view><text>通讯录</text></view>
+      <view class="tool-item" bindtap="goCollaboration"><view class="tool-icon icon-collab">协</view><text>协作</text></view>
+    </view>
+  </block>
+
+  <!-- ======== 部长视图 ======== -->
+  <block wx:elif="{{role === 'minister'}}">
+    <!-- 进度卡片 -->
+    <view class="progress-card card">
+      <view class="progress-header">
+        <text class="progress-title">本周上传进度</text>
+        <text class="progress-ratio">{{ministerStats.uploadedCount}}/{{ministerStats.memberCount}}</text>
+      </view>
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{ministerStats.memberCount > 0 ? (ministerStats.uploadedCount / ministerStats.memberCount * 100) : 0}}%"></view>
+      </view>
+      <view class="progress-meta">
+        <text>已上传 {{ministerStats.uploadedCount}} 人</text>
+        <text class="progress-pending">待上传 {{ministerStats.pendingCount}} 人</text>
+        <text class="progress-money">本周工时 {{ministerStats.thisWeekWorkload}}h</text>
+      </view>
+    </view>
+
+    <view class="tool-grid">
+      <view class="tool-item" bindtap="goWeeklyTable"><view class="tool-icon icon-table">表</view><text>周报</text></view>
+      <view class="tool-item" bindtap="goRecords"><view class="tool-icon icon-record">录</view><text>记录</text></view>
+      <view class="tool-item" bindtap="goStatistics"><view class="tool-icon icon-stat">统</view><text>统计</text></view>
+      <view class="tool-item" bindtap="goManage"><view class="tool-icon icon-manage">员</view><text>成员</text></view>
+      <view class="tool-item" bindtap="goContacts"><view class="tool-icon icon-contact">讯</view><text>通讯录</text></view>
+      <view class="tool-item" bindtap="goCollaboration"><view class="tool-icon icon-collab">协</view><text>协作</text></view>
+    </view>
+  </block>
+
+  <!-- ======== 成员视图 ======== -->
+  <block wx:else>
+    <view class="tool-grid member-tools">
+      <view class="tool-item" bindtap="goRecords"><view class="tool-icon icon-record">录</view><text>记录</text></view>
+      <view class="tool-item" bindtap="goContacts"><view class="tool-icon icon-contact">讯</view><text>通讯录</text></view>
+      <view class="tool-item" bindtap="goCollaboration"><view class="tool-icon icon-collab">协</view><text>协作</text></view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">我的工作记录</view>
+      <view class="empty" wx:if="{{recentRecords.length === 0}}">暂无记录</view>
+      <view wx:for="{{recentRecords}}" wx:key="_id" class="record-item">
+        <view class="record-top">
+          <text class="record-week">{{item.week}}</text>
+          <text class="record-allowance">工时 {{item.workloadText}}</text>
+        </view>
+        <view class="record-content">{{item.workContent}}</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 最近上传记录（管理员/部长） -->
+  <view class="card" wx:if="{{role !== 'member' && recentRecords.length > 0}}">
+    <view class="card-title">最近上传</view>
+    <view wx:for="{{recentRecords}}" wx:key="_id" class="list-item">
+      <view class="record-info">
+        <text class="record-name">{{item.memberName}}</text>
+        <text class="record-dept">{{item.department}}</text>
+      </view>
+      <view class="record-meta">
+        <text class="record-allowance">工时 {{item.workloadText}}</text>
+        <text class="record-week">{{item.week}}</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,36 @@
+<!--pages/memberDetail/memberDetail.wxml-->
+<view class="container">
+  <view class="profile-header card">
+    <view class="avatar">{{memberName[0]}}</view>
+    <view class="profile-name">{{memberName}}</view>
+  </view>
+
+  <view class="summary-card card">
+    <view class="stat-row">
+      <view class="stat-item">
+        <view class="stat-value">{{summary.weekCount}}</view>
+        <view class="stat-label">记录周数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{summary.totalWorkload}}</view>
+        <view class="stat-label">总工作量(h)</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">历史工作记录</view>
+    <view class="empty" wx:if="{{recordList.length === 0}}">暂无记录</view>
+    <view wx:for="{{recordList}}" wx:key="_id" class="history-item">
+      <view class="history-top">
+        <text class="history-week">{{item.week}}</text>
+        <view class="history-meta">
+          <text class="history-workload">{{item.workload}}h</text>
+        </view>
+      </view>
+      <view class="history-content">{{item.workContent}}</view>
+      <view class="history-dept">{{item.department}} · {{item.workTypeLabel || item.workType}} · 上传人：{{item.uploadedBy}}</view>
+      <view class="history-remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+    </view>
+  </view>
+</view>

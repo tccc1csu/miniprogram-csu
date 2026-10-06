@@ -1,0 +1,70 @@
+<!--pages/records/records.wxml-->
+<view class="container">
+  <!-- 筛选栏 -->
+  <view class="filter-bar card">
+    <view class="filter-row">
+      <view class="filter-item">
+        <text class="filter-label">周次</text>
+        <picker mode="selector" range="{{weekList}}" bindchange="onWeekChange" value="{{weekIndex}}">
+          <view class="filter-picker">
+            <text>{{selectedWeek}}</text>
+            <text class="arrow">▾</text>
+          </view>
+        </picker>
+      </view>
+      <view class="filter-item" wx:if="{{role === 'admin'}}">
+        <text class="filter-label">部门</text>
+        <picker mode="selector" range="{{deptFilterList}}" bindchange="onDeptFilterChange" value="{{deptFilterIndex}}">
+          <view class="filter-picker">
+            <text>{{selectedDeptFilter}}</text>
+            <text class="arrow">▾</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <!-- 汇总卡片 -->
+  <view class="summary-card card" wx:if="{{recordList.length > 0}}">
+    <view class="stat-row">
+      <view class="stat-item">
+        <view class="stat-value">{{summary.count}}</view>
+        <view class="stat-label">记录数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{summary.totalWorkload}}</view>
+        <view class="stat-label">总工作量(h)</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="record-list">
+    <view class="empty" wx:if="{{!loading && recordList.length === 0}}">
+      <view class="empty-icon">📋</view>
+      <text>本周暂无记录</text>
+    </view>
+
+    <view wx:for="{{recordList}}" wx:key="_id" class="record-card card">
+      <view class="record-header">
+        <view class="record-name-wrap">
+          <text class="record-name">{{item.memberName}}</text>
+          <text class="record-dept-tag">{{item.department}}</text>
+        </view>
+      </view>
+      <view class="record-content" data-item="{{item}}" bindtap="onTapRecord">{{item.workContent}}</view>
+      <view class="record-footer">
+        <view class="record-meta">
+          <text class="meta-item">类型：{{item.workTypeLabel || item.workType}}</text>
+          <text class="meta-item">工时：{{item.workload}}h</text>
+          <text class="meta-item">上传人：{{item.uploadedBy}}</text>
+        </view>
+        <view class="record-actions" wx:if="{{item.canEdit}}">
+          <text class="action-edit" catchtap="onEdit" data-id="{{item._id}}" data-week="{{item.week}}">编辑</text>
+          <text class="action-delete" wx:if="{{role !== 'member'}}" catchtap="onDelete" data-id="{{item._id}}" data-name="{{item.memberName}}">删除</text>
+        </view>
+      </view>
+      <view class="record-remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+    </view>
+  </view>
+</view>

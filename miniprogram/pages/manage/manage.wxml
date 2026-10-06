@@ -1,0 +1,104 @@
+<!--pages/manage/manage.wxml-->
+<view class="container">
+  <!-- 标签栏 -->
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="index" class="tab-item {{activeTab == item.index ? 'active' : ''}}" data-index="{{item.index}}" bindtap="onTabChange">{{item.label}}</view>
+  </view>
+
+  <!-- 成员管理 -->
+  <view wx:if="{{activeTab == 0}}">
+    <view class="add-btn-wrap">
+      <button class="btn-primary" bindtap="showAddMemberModal">+ 添加成员</button>
+    </view>
+    <view class="card">
+      <view class="empty" wx:if="{{memberList.length === 0}}">暂无成员</view>
+      <view wx:for="{{memberList}}" wx:key="_id" class="list-item">
+        <view class="member-info">
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-dept">{{item.department}}</text>
+        </view>
+        <text class="action-delete-text" bindtap="onDeleteMember" data-id="{{item._id}}" data-name="{{item.name}}">删除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 部门管理 -->
+  <view wx:if="{{activeTab == 1}}">
+    <view class="add-btn-wrap">
+      <button class="btn-primary" bindtap="showAddDeptModal">+ 添加部门</button>
+    </view>
+    <view class="card">
+      <view class="empty" wx:if="{{departmentList.length === 0}}">暂无部门</view>
+      <view wx:for="{{departmentList}}" wx:key="_id" class="list-item">
+        <text class="dept-item-name">{{item.name}}</text>
+        <text class="action-delete-text" bindtap="onDeleteDept" data-id="{{item._id}}" data-name="{{item.name}}">删除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户管理（仅管理员） -->
+  <view wx:if="{{activeTab == 2 && role == 'admin'}}">
+    <view class="card">
+      <view class="card-title">所有用户账号</view>
+      <view class="empty" wx:if="{{userList.length === 0}}">暂无用户</view>
+      <view wx:for="{{userList}}" wx:key="_id" class="user-item">
+        <view class="user-info">
+          <view class="user-name-row">
+            <text class="user-name">{{item.name}}</text>
+            <text class="tag tag-{{item.role}}">{{item.role == 'admin' ? '管理员' : (item.role == 'minister' ? '部长' : '成员')}}</text>
+            <text class="mini-tag bind-tag {{item.wechatBound ? 'bound' : ''}}">{{item.wechatBound ? '已绑定微信' : '未绑定'}}</text>
+            <text class="mini-tag test-tag" wx:if="{{item.isTestAccount}}">测试账号</text>
+          </view>
+          <text class="user-dept" wx:if="{{item.department}}">{{item.department}}</text>
+        </view>
+        <view class="user-actions">
+          <text class="action-role" bindtap="onChangeUserRole" data-id="{{item._id}}" data-name="{{item.name}}" data-role="{{item.role}}">改角色</text>
+          <text class="action-delete-text" bindtap="onDeleteUser" data-id="{{item._id}}" data-name="{{item.name}}">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 添加成员弹窗 -->
+<view class="modal-mask" wx:if="{{showAddMember}}" bindtap="hideAddMemberModal">
+  <view class="modal-content" catchtap="">
+    <view class="modal-title">添加成员</view>
+    <view class="form-group">
+      <text class="form-label">成员姓名</text>
+      <input class="form-input" placeholder="请输入姓名" value="{{newMemberName}}" bindinput="onNewMemberNameInput" />
+    </view>
+    <view class="form-group" wx:if="{{role !== 'minister'}}">
+      <text class="form-label">所属部门</text>
+      <picker mode="selector" range="{{departmentList}}" range-key="name" bindchange="onNewMemberDeptChange" value="{{newMemberDeptIndex}}">
+        <view class="picker-value">
+          <text>{{departmentList[newMemberDeptIndex].name}}</text>
+          <text class="arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-group" wx:else>
+      <text class="form-label">所属部门</text>
+      <view class="static-value">{{department}}</view>
+    </view>
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="hideAddMemberModal">取消</button>
+      <button class="btn-primary modal-confirm" bindtap="confirmAddMember">确认</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加部门弹窗 -->
+<view class="modal-mask" wx:if="{{showAddDept}}" bindtap="hideAddDeptModal">
+  <view class="modal-content" catchtap="">
+    <view class="modal-title">添加部门</view>
+    <view class="form-group">
+      <text class="form-label">部门名称</text>
+      <input class="form-input" placeholder="请输入部门名称" value="{{newDeptName}}" bindinput="onNewDeptNameInput" />
+    </view>
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="hideAddDeptModal">取消</button>
+      <button class="btn-primary modal-confirm" bindtap="confirmAddDept">确认</button>
+    </view>
+  </view>
+</view>

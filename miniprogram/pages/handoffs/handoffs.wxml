@@ -1,0 +1,190 @@
+<!--pages/handoffs/handoffs.wxml-->
+<view class="container">
+  <view class="flow-summary">
+    <view class="summary-title">采编部稿件同步流程</view>
+    <view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 管理员审核 → 自动归档</view>
+  </view>
+
+  <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
+    <view class="reminder-prompt-title">下一条重要提醒</view>
+    <view class="reminder-prompt-text">{{reminderPromptText}}</view>
+    <view class="reminder-prompt-actions">
+      <button class="reminder-skip" bindtap="closeReminderPrompt" disabled="{{requestingSubscription}}">稍后</button>
+      <button class="reminder-confirm" bindtap="requestNextReminder" loading="{{requestingSubscription}}" disabled="{{requestingSubscription}}">开启提醒</button>
+    </view>
+  </view>
+
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{activeTab === 'flow'}}" class="flow-card card">
+    <view class="flow-step">
+      <view class="step-index">1</view>
+      <view class="step-body">
+        <view class="step-title">采编部提交稿件需求</view>
+        <view class="step-text">采编部完成稿件后，在小程序登记标题、稿件名称、原创/转载类型和投稿平台，可设置截止日期。</view>
+      </view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">2</view>
+      <view class="step-body">
+        <view class="step-title">办公部部长派发</view>
+        <view class="step-text">办公部部长收到需求，选择办公部干事承接同步工作。</view>
+      </view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">3</view>
+      <view class="step-body">
+        <view class="step-title">办公部干事完成同步</view>
+        <view class="step-text">干事完成院网、升华网、学工网等同步后填写反馈。</view>
+      </view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">4</view>
+      <view class="step-body">
+        <view class="step-title">管理员老师审核归档</view>
+        <view class="step-text">审核通过后自动归档，并为原创采编稿件和办公同步动作核算工作量。</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeTab !== 'flow'}}">
+    <view class="create-card card" wx:if="{{activeTab === 'active' && canCreate}}">
+      <view class="card-title">发起采编对接</view>
+      <view class="form-group">
+        <text class="form-label">需求标题</text>
+        <input class="form-input" placeholder="例如：两篇新闻稿同步投稿" value="{{createForm.title}}" bindinput="onCreateTitleInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">稿件名称</text>
+        <textarea class="form-textarea" placeholder="一行一篇稿件" value="{{createForm.articleNames}}" bindinput="onArticleInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">稿件类型</text>
+        <picker mode="selector" range="{{articleTypeOptions}}" value="{{createForm.articleTypeIndex}}" bindchange="onArticleTypeChange">
+          <view class="form-picker">
+            <text>{{articleTypeOptions[createForm.articleTypeIndex]}}</text>
+            <text>▾</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">投稿平台</text>
+        <input class="form-input" value="{{createForm.targetSites}}" bindinput="onSitesInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">审核人员（可选）</text>
+        <textarea class="form-textarea compact-textarea" placeholder="填写参与审核的成员姓名，多个姓名用逗号、顿号或换行分隔" value="{{createForm.reviewerNames}}" bindinput="onReviewerNamesInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">截止日期（可选）</text>
+        <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
+          <view class="form-picker">
+            <text>{{createForm.deadlineLabel || '选择日期'}}</text>
+            <text>▾</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">提前提醒（小时）</text>
+        <input class="form-input" type="number" placeholder="默认 24，填 0 关闭到期前提醒" value="{{createForm.reminderLeadHours}}" bindinput="onReminderLeadHoursInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">备注</text>
+        <input class="form-input" placeholder="可选" value="{{createForm.note}}" bindinput="onNoteInput" />
+      </view>
+      <button class="btn-primary" bindtap="submitCreate">提交给办公部</button>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && handoffs.length === 0}}">暂无协同需求</view>
+
+    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card {{item.focused ? 'focused-handoff' : ''}}">
+      <view class="handoff-head">
+        <view>
+          <view class="handoff-title">{{item.title}}</view>
+          <view class="handoff-meta">{{item.sourceDepartment}} → {{item.targetDepartment}} · {{item.createTime}}</view>
+        </view>
+        <view class="status status-{{item.status}}">{{item.statusLabel}}</view>
+      </view>
+
+      <!-- 截止日期倒计时 -->
+      <view class="deadline-bar" wx:if="{{item.deadline}}">
+        <view class="deadline-icon">⏰</view>
+        <text class="deadline-text {{item.countdownUrgent ? 'deadline-urgent' : ''}}">{{item.countdown || '计算中...'}}</text>
+        <text class="deadline-date">截止：{{item.deadline}}</text>
+      </view>
+      <view class="handoff-section">
+        <view class="section-label">稿件</view>
+        <view class="section-text">{{item.articleNames}}</view>
+      </view>
+      <view class="handoff-section">
+        <view class="section-label">类型</view>
+        <view class="section-text">{{item.articleTypeLabel}}</view>
+      </view>
+      <view class="handoff-section">
+        <view class="section-label">平台</view>
+        <view class="section-text">{{item.targetSites}}</view>
+      </view>
+      <view class="handoff-section" wx:if="{{item.note}}">
+        <view class="section-label">备注</view>
+        <view class="section-text">{{item.note}}</view>
+      </view>
+      <view class="handoff-section" wx:if="{{item.assigneeName}}">
+        <view class="section-label">承接</view>
+        <view class="section-text">{{item.assigneeName}} · 派发人：{{item.assignedBy}}</view>
+      </view>
+      <view class="handoff-section" wx:if="{{item.syncResult}}">
+        <view class="section-label">反馈</view>
+        <view class="section-text">{{item.syncResult}}</view>
+      </view>
+      <view class="handoff-section" wx:if="{{item.reviewComment}}">
+        <view class="section-label">审核</view>
+        <view class="section-text">{{item.reviewComment}}</view>
+      </view>
+      <view class="handoff-actions" wx:if="{{item.canAssign || item.canComplete || item.canReview}}">
+        <button class="mini-btn" wx:if="{{item.canAssign}}" data-item="{{item}}" bindtap="openAssignModal">派发</button>
+        <button class="mini-btn" wx:if="{{item.canComplete}}" data-item="{{item}}" bindtap="openCompleteModal">提交同步结果</button>
+        <button class="mini-btn primary" wx:if="{{item.canReview}}" data-item="{{item}}" bindtap="openReviewModal">审核</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showAssignModal}}" bindtap="closeAssignModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">派发给办公部干事</view>
+      <picker mode="selector" range="{{officeMembers}}" range-key="name" value="{{assigneeIndex}}" bindchange="onAssigneeChange">
+        <view class="picker-value">
+          <text>{{officeMembers[assigneeIndex].name}}</text>
+          <text>▾</text>
+        </view>
+      </picker>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeAssignModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmAssign">确认派发</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">提交同步结果</view>
+      <textarea class="form-textarea" placeholder="填写挂网链接、投稿反馈或处理说明" value="{{syncResult}}" bindinput="onSyncResultInput" />
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmComplete">发送审核</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">管理员审核</view>
+      <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
+      <view class="modal-actions">
+        <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
+        <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>
+      </view>
+    </view>
+  </view>
+</view>

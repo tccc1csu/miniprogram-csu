@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/collaboration/collaboration",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/upload/upload",
+    "pages/records/records",
+    "pages/statistics/statistics",
+    "pages/weeklyTable/weeklyTable",
+    "pages/manage/manage",
+    "pages/memberDetail/memberDetail",
+    "pages/profile/profile",
+    "pages/contacts/contacts",
+    "pages/suggestions/suggestions",
+    "pages/handoffs/handoffs",
+    "pages/production/production",
+    "pages/allowanceRules/allowanceRules",
+    "pages/responsibilities/responsibilities",
+    "pages/taskNotifications/taskNotifications",
+    "pages/projectTasks/projectTasks",
+    "pages/fileLibrary/fileLibrary"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4A90D9",
+    "navigationBarTitleText": "青年传媒中心",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F6FA"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#4A90D9",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/collaboration/collaboration",
+        "text": "协作广场"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "cloud": true,
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

@@ -1,0 +1,16 @@
+<!-- pages/responsibilities/responsibilities.wxml -->
+<view class="container">
+  <view class="page-intro card"><view class="card-title">部门职责划分</view><view class="intro-text">管理员可以设置每条协作流程关联的部门。成员在协作广场选择“仅看本部门”后，只会看到与本部门相关的流程。</view></view>
+  <view class="readonly-tip" wx:if="{{!isAdmin}}">当前为只读模式，部门关联由管理员维护。</view>
+  <view class="responsibility-card card" wx:for="{{responsibilities}}" wx:for-item="responsibility" wx:for-index="responsibilityIndex" wx:key="_id">
+    <view class="responsibility-head"><view class="responsibility-name">{{responsibility.name}}</view><text class="responsibility-key">{{responsibility.key}}</text></view>
+    <view class="responsibility-desc">{{responsibility.description}}</view>
+    <view class="department-list">
+      <view wx:for="{{responsibility.departmentOptions}}" wx:for-item="option" wx:key="name" class="department-option {{option.checked ? 'selected' : ''}}" data-index="{{responsibilityIndex}}" data-department="{{option.name}}" bindtap="toggleDepartment">
+        <view class="check-box {{option.checked ? 'checked' : ''}}">{{option.checked ? '✓' : ''}}</view><text>{{option.name}}</text>
+      </view>
+    </view>
+    <button class="btn-primary save-btn" wx:if="{{isAdmin}}" data-index="{{responsibilityIndex}}" bindtap="saveResponsibility">保存本条</button>
+  </view>
+  <view class="empty" wx:if="{{!loading && responsibilities.length === 0}}">暂无职责配置</view>
+</view>

@@ -1,0 +1,282 @@
+/* pages/contacts/contacts.wxss */
+.container {
+  padding-bottom: 120rpx;
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  margin-bottom: 16rpx;
+  border-radius: 0 0 16rpx 16rpx;
+}
+
+.filter-group {
+  display: flex;
+  gap: 12rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-group picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-picker {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 12rpx;
+  background: #F5F6FA;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 6rpx;
+}
+
+.contact-submeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.78);
+}
+
+.filter-label {
+  font-size: 26rpx;
+  color: #333;
+  margin-right: 6rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-arrow {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.filter-count {
+  font-size: 26rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.contact-list {
+  padding: 0 20rpx;
+}
+
+.contact-card {
+  margin-bottom: 20rpx;
+  padding: 0;
+  overflow: hidden;
+  border: 2rpx solid #E5E9F0;
+  border-radius: 12rpx;
+}
+
+.contact-header {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+}
+
+.contact-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 700;
+  margin-right: 20rpx;
+  border: 2rpx solid rgba(255,255,255,0.4);
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-name {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+.contact-dept {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.85);
+  margin-top: 4rpx;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.9);
+  padding: 6rpx 14rpx;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6rpx;
+}
+
+.action-btn.delete {
+  background: rgba(231,76,60,0.25);
+}
+
+.contact-body {
+  padding: 10rpx 30rpx 20rpx;
+}
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.contact-row:last-child {
+  border-bottom: none;
+}
+
+.row-label {
+  width: 100rpx;
+  font-size: 26rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.row-value {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  word-break: break-all;
+}
+
+.copy-hint {
+  font-size: 22rpx;
+  color: #4A90D9;
+  margin-left: 10rpx;
+  flex-shrink: 0;
+}
+
+.fab-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 60rpx;
+  width: 100rpx;
+  height: 100rpx;
+  line-height: 96rpx;
+  text-align: center;
+  border-radius: 50rpx;
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+  color: #fff;
+  font-size: 56rpx;
+  font-weight: 300;
+  box-shadow: 0 6rpx 20rpx rgba(74,144,217,0.4);
+  z-index: 10;
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+.modal-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 640rpx;
+  background: #fff;
+  border: 2rpx solid #E5E9F0;
+  border-radius: 12rpx;
+  padding: 40rpx;
+  z-index: 101;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.form-label {
+  width: 120rpx;
+  font-size: 28rpx;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: #F5F6FA;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 8rpx;
+  font-size: 30rpx;
+}
+
+.form-picker {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 20rpx;
+  background: #F5F6FA;
+  border: 2rpx solid #D9DEE7;
+  border-radius: 8rpx;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 30rpx;
+}
+
+.modal-btns button {
+  flex: 1;
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #999;
+  margin-bottom: 10rpx;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #bbb;
+}

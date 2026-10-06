@@ -1,0 +1,101 @@
+/* pages/memberDetail/memberDetail.wxss */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  line-height: 120rpx;
+  text-align: center;
+  border-radius: 60rpx;
+  background: linear-gradient(135deg, #4A90D9, #6BB0E8);
+  color: #fff;
+  font-size: 50rpx;
+  font-weight: 700;
+  margin-bottom: 20rpx;
+}
+
+.profile-name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+}
+
+.summary-card .stat-value {
+  color: #fff;
+}
+
+.summary-card .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.history-item {
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.history-week {
+  font-size: 28rpx;
+  color: #4A90D9;
+  font-weight: 600;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+}
+
+.history-workload {
+  font-size: 26rpx;
+  color: #666;
+  margin-right: 20rpx;
+}
+
+.history-allowance {
+  font-size: 28rpx;
+  color: #E74C3C;
+  font-weight: 600;
+}
+
+.history-content {
+  font-size: 27rpx;
+  color: #555;
+  line-height: 1.6;
+  padding: 16rpx 20rpx;
+  background: #F9FAFB;
+  border-radius: 10rpx;
+  margin-bottom: 12rpx;
+}
+
+.history-dept {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.history-remark {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: #996600;
+  background: #FFF9E6;
+  padding: 10rpx 20rpx;
+  border-radius: 8rpx;
+}

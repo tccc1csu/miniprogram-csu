@@ -1,0 +1,122 @@
+<!--pages/contacts/contacts.wxml-->
+<view class="container">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-group">
+      <picker bindchange="onDeptChange" value="{{deptIndex}}" range="{{deptOptions}}">
+        <view class="filter-picker">
+          <text class="filter-label">{{departmentFilter}}</text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
+      <picker bindchange="onCohortChange" value="{{cohortIndex}}" range="{{cohortOptions}}">
+        <view class="filter-picker">
+          <text class="filter-label">{{cohortFilter}}</text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+    <view class="filter-count">共 {{contactList.length}} 人</view>
+  </view>
+
+  <!-- 通讯录列表 -->
+  <view class="contact-list">
+    <view class="contact-card card" wx:for="{{contactList}}" wx:key="_id">
+      <view class="contact-header">
+        <view class="contact-avatar">{{item.name[0]}}</view>
+        <view class="contact-info">
+          <view class="contact-name">{{item.name}}</view>
+          <view class="contact-dept">{{item.department}}</view>
+          <view class="contact-submeta">
+            <text wx:if="{{item.rank}}">{{item.rank}}</text>
+            <text wx:if="{{item.cohort}}">{{item.cohort}}届</text>
+            <text wx:if="{{item.dormitory}}">{{item.dormitory}}</text>
+          </view>
+        </view>
+        <view class="contact-actions">
+          <text class="action-btn" bindtap="onEdit" data-item="{{item}}">编辑</text>
+          <text class="action-btn delete" bindtap="onDelete" data-id="{{item._id}}" data-name="{{item.name}}">删除</text>
+        </view>
+      </view>
+      <view class="contact-body">
+        <view class="contact-row" wx:if="{{item.phone}}" bindtap="copyValue" data-val="{{item.phone}}">
+          <text class="row-label">电话</text>
+          <text class="row-value">{{item.phone}}</text>
+          <text class="copy-hint">点击复制</text>
+        </view>
+        <view class="contact-row" wx:if="{{item.email}}" bindtap="copyValue" data-val="{{item.email}}">
+          <text class="row-label">邮箱</text>
+          <text class="row-value">{{item.email}}</text>
+          <text class="copy-hint">点击复制</text>
+        </view>
+        <view class="contact-row" wx:if="{{item.wechatId}}" bindtap="copyValue" data-val="{{item.wechatId}}">
+          <text class="row-label">微信号</text>
+          <text class="row-value">{{item.wechatId}}</text>
+          <text class="copy-hint">点击复制</text>
+        </view>
+        <view class="contact-row" wx:if="{{item.qq}}" bindtap="copyValue" data-val="{{item.qq}}">
+          <text class="row-label">QQ</text>
+          <text class="row-value">{{item.qq}}</text>
+          <text class="copy-hint">点击复制</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{contactList.length === 0}}">
+      <view class="empty-icon">📇</view>
+      <view class="empty-text">暂无通讯录信息</view>
+      <view class="empty-hint">点击右上角 + 添加第一条记录</view>
+    </view>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="fab-btn" bindtap="showAdd">+</view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="hideModal"></view>
+  <view class="modal-panel" wx:if="{{showAddModal}}">
+    <view class="modal-title">{{editingId ? '编辑联系方式' : '添加联系方式'}}</view>
+    <view class="form-row">
+      <text class="form-label">姓名</text>
+      <input class="form-input" placeholder="请输入姓名" value="{{form.name}}" data-field="name" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">部门</text>
+      <picker bindchange="onFormDeptChange" value="{{formDeptIndex}}" range="{{formDeptOptions}}">
+        <view class="form-picker">{{form.department}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="form-label">职级</text>
+      <input class="form-input" placeholder="例如：部长、干事" value="{{form.rank}}" data-field="rank" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">届别</text>
+      <input class="form-input" placeholder="例如：2024" value="{{form.cohort}}" data-field="cohort" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">宿舍</text>
+      <input class="form-input" placeholder="例如：南校区 13 栋 101" value="{{form.dormitory}}" data-field="dormitory" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">电话</text>
+      <input class="form-input" placeholder="请输入电话" value="{{form.phone}}" data-field="phone" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">邮箱</text>
+      <input class="form-input" placeholder="请输入邮箱" value="{{form.email}}" data-field="email" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">微信号</text>
+      <input class="form-input" placeholder="请输入微信号" value="{{form.wechatId}}" data-field="wechatId" bindinput="onFormInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">QQ</text>
+      <input class="form-input" placeholder="请输入QQ号" value="{{form.qq}}" data-field="qq" bindinput="onFormInput" />
+    </view>
+    <view class="modal-btns">
+      <button class="btn-secondary" bindtap="hideModal">取消</button>
+      <button class="btn-primary" bindtap="submitForm">保存</button>
+    </view>
+  </view>
+</view>

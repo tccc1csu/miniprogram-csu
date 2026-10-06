@@ -1,0 +1,314 @@
+/* pages/index/index.wxss */
+.welcome-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+  border-radius: 16rpx;
+  padding: 36rpx;
+  margin-bottom: 24rpx;
+  color: #fff;
+}
+
+.welcome-name {
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.welcome-role {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+}
+
+.welcome-dept {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.week-info {
+  text-align: right;
+}
+
+.week-label {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.week-range {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8rpx;
+}
+
+.primary-report {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 128rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  background: #fff;
+  border-left: 8rpx solid #E74C3C;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.primary-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.primary-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.primary-arrow {
+  font-size: 48rpx;
+  color: #E74C3C;
+}
+
+/* 统计网格（管理员） */
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 24rpx 10rpx;
+}
+
+.stat-block {
+  width: 25%;
+  text-align: center;
+  padding: 16rpx 0;
+}
+
+.stat-block-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-block-label {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.stat-block.highlight .stat-block-value {
+  color: #E74C3C;
+}
+
+/* 排名 */
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-num {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: #F0F0F0;
+  color: #999;
+  font-size: 24rpx;
+  font-weight: 600;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.rank-top {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #fff;
+}
+
+.rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rank-dept {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.rank-count {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.rank-allowance {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #E74C3C;
+}
+
+/* 进度卡片（部长） */
+.progress-card {
+  padding: 30rpx;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.progress-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.progress-ratio {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #4A90D9;
+}
+
+.progress-bar {
+  height: 20rpx;
+  background: #F0F0F0;
+  border-radius: 10rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4A90D9, #6BB0E8);
+  border-radius: 10rpx;
+  transition: width 0.5s;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.progress-pending {
+  color: #E74C3C;
+}
+
+.progress-money {
+  color: #E74C3C;
+  font-weight: 600;
+}
+
+/* 小工具 */
+.tool-grid {
+  display: flex;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 0;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.tool-item {
+  width: 33.333%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18rpx 0;
+}
+
+.member-tools .tool-item {
+  width: 33.333%;
+}
+
+.tool-item text {
+  font-size: 23rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.tool-icon {
+  width: 60rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  border-radius: 16rpx;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.icon-table { background: linear-gradient(135deg, #5BB85B, #4A9F4A); }
+.icon-stat { background: linear-gradient(135deg, #F0A030, #D88820); }
+.icon-record { background: linear-gradient(135deg, #4A90D9, #357ABD); }
+.icon-manage { background: linear-gradient(135deg, #9B59B6, #8E44AD); }
+.icon-upload { background: linear-gradient(135deg, #E74C3C, #C0392B); }
+.icon-contact { background: linear-gradient(135deg, #3E9E64, #2F7D50); }
+.icon-collab { background: linear-gradient(135deg, #5A6FEC, #4A5ED0); }
+
+/* 记录列表 */
+.record-item {
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.record-week {
+  font-size: 26rpx;
+  color: #4A90D9;
+  font-weight: 500;
+}
+
+.record-allowance {
+  font-size: 26rpx;
+  color: #E74C3C;
+  font-weight: 600;
+}
+
+.record-content {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.record-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.record-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.record-dept {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.record-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}

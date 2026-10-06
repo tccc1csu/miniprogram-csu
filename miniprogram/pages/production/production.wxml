@@ -1,0 +1,93 @@
+<!-- pages/production/production.wxml -->
+<view class="container">
+  <view class="flow-summary production-summary">
+    <view class="summary-title">摄制预约协作</view>
+    <view class="summary-path">预约人发起 → 摄制部部长派发 → 摄制干事完成 → 指定办公部成员归档</view>
+  </view>
+
+  <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
+    <view class="reminder-prompt-title">下一条重要提醒</view>
+    <view class="reminder-prompt-text">{{reminderPromptText}}</view>
+    <view class="reminder-prompt-actions">
+      <button class="reminder-skip" bindtap="closeReminderPrompt" disabled="{{requestingSubscription}}">稍后</button>
+      <button class="reminder-confirm" bindtap="requestNextReminder" loading="{{requestingSubscription}}" disabled="{{requestingSubscription}}">开启提醒</button>
+    </view>
+  </view>
+
+  <view class="filter-bar" wx:if="{{role !== 'admin'}}">
+    <text class="filter-label">流程范围</text>
+    <view class="filter-switch">
+      <view class="filter-option {{departmentFilter === 'all' ? 'active' : ''}}" data-filter="all" bindtap="switchDepartmentFilter">查看全部</view>
+      <view class="filter-option {{departmentFilter === 'mine' ? 'active' : ''}}" data-filter="mine" bindtap="switchDepartmentFilter">仅看本部门</view>
+    </view>
+  </view>
+
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{activeTab === 'flow'}}" class="flow-card card">
+    <view class="flow-step">
+      <view class="step-index">1</view>
+      <view class="step-body"><view class="step-title">任何成员发起预约</view><view class="step-text">填写任务名称、预约时间和地点，预约时间距离当前不足配置阈值时自动标记为加急。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">2</view>
+      <view class="step-body"><view class="step-title">摄制部部长派发</view><view class="step-text">摄制部部长从本部门成员中选择承接干事。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">3</view>
+      <view class="step-body"><view class="step-title">干事提交完成结果</view><view class="step-text">完成拍摄或制作后选择负责归档的办公部成员。该选择会作为下一次默认值。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">4</view>
+      <view class="step-body"><view class="step-title">归档并自动记录工时</view><view class="step-text">办公部指定成员归档后，摄制干事和归档人员的工时自动进入记录，导出周报时再按部门时薪计算。</view></view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeTab !== 'flow'}}">
+    <view class="create-card card" wx:if="{{activeTab === 'active'}}">
+      <view class="card-title">发起摄制预约</view>
+      <view class="form-group"><text class="form-label">任务名称</text><input class="form-input" placeholder="例如：迎新活动现场拍摄" value="{{createForm.taskName}}" bindinput="onTaskNameInput" /></view>
+      <view class="form-row">
+        <view class="form-group half"><text class="form-label">预约日期</text><picker mode="date" value="{{createForm.date}}" bindchange="onDateChange"><view class="form-picker">{{createForm.date}}<text>▾</text></view></picker></view>
+        <view class="form-group half"><text class="form-label">预约时间</text><picker mode="time" value="{{createForm.time}}" bindchange="onTimeChange"><view class="form-picker">{{createForm.time}}<text>▾</text></view></picker></view>
+      </view>
+      <view class="form-group"><text class="form-label">地点</text><input class="form-input" placeholder="填写拍摄地点" value="{{createForm.location}}" bindinput="onLocationInput" /></view>
+      <view class="form-group"><text class="form-label">预约人联系方式</text><input class="form-input" type="text" placeholder="手机号或微信号，方便摄制部确认" value="{{createForm.submitterContact}}" bindinput="onSubmitterContactInput" /></view>
+      <view class="form-group"><text class="form-label">提前提醒（小时）</text><input class="form-input" type="number" placeholder="默认 24，填 0 关闭到期前提醒" value="{{createForm.reminderLeadHours}}" bindinput="onReminderLeadHoursInput" /></view>
+      <view class="form-group"><text class="form-label">备注</text><textarea class="form-textarea" placeholder="填写拍摄要求或其他说明（可选）" value="{{createForm.note}}" bindinput="onNoteInput" /></view>
+      <view class="form-hint">预约时间不足{{urgentThresholdDays}}天将按加急任务处理，加急工时按{{urgentMultiplier}}倍计算。</view>
+      <button class="btn-primary" bindtap="submitCreate">提交预约</button>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && handoffs.length === 0}}">暂无摄制预约</view>
+    <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card {{item.focused ? 'focused-handoff' : ''}}">
+      <view class="handoff-head">
+        <view><view class="handoff-title">{{item.taskName}}</view><view class="handoff-meta">{{item.submitterName}} 发起 · {{item.createTime}}</view></view>
+        <view class="status status-{{item.status}}">{{item.statusLabel}}</view>
+      </view>
+      <view class="urgent-tag" wx:if="{{item.isUrgent}}">加急 · 工时 ×{{item.urgentMultiplier}}</view>
+      <view class="deadline-bar" wx:if="{{item.scheduledAt}}"><text class="deadline-icon">◷</text><text class="deadline-text {{item.countdownUrgent ? 'deadline-urgent' : ''}}">{{item.countdown}}</text><text class="deadline-date">{{item.scheduledAt}}</text></view>
+      <view class="handoff-section"><view class="section-label">地点</view><view class="section-text">{{item.location}}</view></view>
+      <view class="handoff-section"><view class="section-label">预约联系</view><view class="section-text">{{item.submitterContact}}</view></view>
+      <view class="handoff-section"><view class="section-label">到期前提醒</view><view class="section-text">{{item.reminderLeadLabel}}</view></view>
+      <view class="handoff-section" wx:if="{{item.note}}"><view class="section-label">备注</view><view class="section-text">{{item.note}}</view></view>
+      <view class="handoff-section" wx:if="{{item.assigneeName}}"><view class="section-label">摄制干事</view><view class="section-text">{{item.assigneeName}} · 派发人：{{item.assignedBy}}</view></view>
+      <view class="handoff-section" wx:if="{{item.syncResult}}"><view class="section-label">完成结果</view><view class="section-text">{{item.syncResult}}</view></view>
+      <view class="handoff-section" wx:if="{{item.archiveMemberName}}"><view class="section-label">归档人员</view><view class="section-text">{{item.archiveMemberName}}</view></view>
+      <view class="handoff-section" wx:if="{{item.archiveNote}}"><view class="section-label">归档说明</view><view class="section-text">{{item.archiveNote}}</view></view>
+      <view class="handoff-actions" wx:if="{{item.canAssign || item.canComplete || item.canArchive}}">
+        <button class="mini-btn" wx:if="{{item.canAssign}}" data-item="{{item}}" bindtap="openAssignModal">派发干事</button>
+        <button class="mini-btn" wx:if="{{item.canComplete}}" data-item="{{item}}" bindtap="openCompleteModal">提交完成</button>
+        <button class="mini-btn primary" wx:if="{{item.canArchive}}" data-item="{{item}}" bindtap="openArchiveModal">归档入账</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showAssignModal}}" bindtap="closeAssignModal"><view class="modal-content" catchtap="stopTap"><view class="modal-title">派发摄制部干事</view><picker mode="selector" range="{{assignMembers}}" range-key="name" value="{{assigneeIndex}}" bindchange="onAssigneeChange"><view class="picker-value"><text>{{assignMembers[assigneeIndex].name}}</text><text>▾</text></view></picker><view class="modal-actions"><button class="btn-secondary" bindtap="closeAssignModal">取消</button><button class="btn-primary modal-confirm" bindtap="confirmAssign">确认派发</button></view></view></view>
+
+  <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal"><view class="modal-content" catchtap="stopTap"><view class="modal-title">提交摄制完成结果</view><view class="form-group"><text class="form-label">完成结果</text><textarea class="form-textarea" placeholder="填写成片链接、文件位置或完成说明" value="{{syncResult}}" bindinput="onSyncResultInput" /></view><view class="form-group"><text class="form-label">负责归档的办公部成员</text><picker mode="selector" range="{{officeMembers}}" range-key="name" value="{{archiveMemberIndex}}" bindchange="onArchiveMemberChange"><view class="picker-value"><text>{{officeMembers[archiveMemberIndex].name}}</text><text>▾</text></view></picker></view><view class="modal-actions"><button class="btn-secondary" bindtap="closeCompleteModal">取消</button><button class="btn-primary modal-confirm" bindtap="confirmComplete">发送归档</button></view></view></view>
+
+  <view class="modal-mask" wx:if="{{showArchiveModal}}" bindtap="closeArchiveModal"><view class="modal-content" catchtap="stopTap"><view class="modal-title">归档摄制预约</view><textarea class="form-textarea" placeholder="填写归档说明（可选）" value="{{archiveNote}}" bindinput="onArchiveNoteInput" /><view class="modal-actions"><button class="btn-secondary" bindtap="closeArchiveModal">取消</button><button class="btn-primary modal-confirm" bindtap="confirmArchive">确认归档</button></view></view></view>
+</view>

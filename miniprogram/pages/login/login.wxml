@@ -1,0 +1,38 @@
+<!--pages/login/login.wxml-->
+<view class="login-page">
+  <view class="logo-area">
+    <view class="logo-icon">青</view>
+    <view class="logo-title">青年传媒中心</view>
+    <view class="logo-subtitle">工作内容与工时薪酬统计系统</view>
+  </view>
+
+  <view class="login-form card">
+    <button class="btn-primary" bindtap="handleWechatLogin" loading="{{loading}}" disabled="{{loading || bindLoading}}">微信授权登录</button>
+    <view class="auth-tip">
+      {{showBindPanel ? '当前微信未绑定账号，可直接使用姓名和密码登录或注册。' : '微信授权登录与账号密码登录均可使用；账号密码登录不会改变原有微信绑定。'}}
+    </view>
+
+    <view class="divider">
+      <view class="divider-line"></view>
+      <text>账号登录 / 测试切换</text>
+      <view class="divider-line"></view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">姓名</text>
+      <input class="form-input" type="text" placeholder="请输入账号姓名" value="{{name}}" bindinput="onNameInput" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">密码</text>
+      <input class="form-input" password="true" placeholder="请输入账号密码" value="{{password}}" bindinput="onPasswordInput" />
+    </view>
+
+    <button class="btn-secondary" bindtap="handleBindLogin" loading="{{bindLoading}}" disabled="{{loading || bindLoading}}">账号登录</button>
+  </view>
+
+  <view class="switch-link" bindtap="goRegister">
+    <text>还没有账号？</text>
+    <text class="link-text">注册并绑定微信</text>
+  </view>
+</view>

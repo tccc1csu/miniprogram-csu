@@ -1,0 +1,89 @@
+<!--pages/statistics/statistics.wxml-->
+<view class="container">
+  <!-- 周次筛选 -->
+  <view class="filter-bar card">
+    <view class="filter-label">统计周次：</view>
+    <picker mode="selector" range="{{weekList}}" bindchange="onWeekChange" value="{{weekIndex}}">
+      <view class="picker-value">
+        <text>{{weekList[weekIndex]}}</text>
+        <text class="arrow">▾</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 总计概览 -->
+  <view class="total-card card">
+    <view class="stat-row">
+      <view class="stat-item">
+        <view class="stat-value">{{totalStats.recordCount}}</view>
+        <view class="stat-label">记录数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{totalStats.memberCount}}</view>
+        <view class="stat-label">参与人数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{totalStats.totalWorkload}}</view>
+        <view class="stat-label">总工作量(h)</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab == 0 ? 'active' : ''}}" data-index="0" bindtap="onTabChange">部门统计</view>
+    <view class="tab-item {{activeTab == 1 ? 'active' : ''}}" data-index="1" bindtap="onTabChange">成员统计</view>
+  </view>
+
+  <!-- 部门统计 -->
+  <view wx:if="{{activeTab == 0}}">
+    <view class="card">
+      <view class="card-title">各部门工作量</view>
+      <view class="empty" wx:if="{{deptStats.length === 0}}">暂无数据</view>
+      <!-- 柱状图样式展示 -->
+      <view wx:for="{{deptStats}}" wx:key="department" class="bar-item">
+        <view class="bar-label">{{item.department}}</view>
+        <view class="bar-track">
+          <view class="bar-fill" style="width: {{item.workloadPercent}}%"></view>
+        </view>
+        <view class="bar-value">
+          <text>{{item.totalWorkload}}h</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 部门统计表格 -->
+    <view class="card" wx:if="{{deptStats.length > 0}}">
+      <view class="card-title">部门明细表</view>
+      <view class="table">
+        <view class="table-header">
+          <view class="table-cell flex2">部门</view>
+          <view class="table-cell flex1">人数</view>
+          <view class="table-cell flex1">工作量</view>
+        </view>
+        <view wx:for="{{deptStats}}" wx:key="department" class="table-row">
+          <view class="table-cell flex2">{{item.department}}</view>
+          <view class="table-cell flex1">{{item.memberCount}}</view>
+          <view class="table-cell flex1">{{item.totalWorkload}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成员统计 -->
+  <view wx:if="{{activeTab == 1}}">
+    <view class="card">
+      <view class="card-title">各成员工作量</view>
+      <view class="empty" wx:if="{{memberStats.length === 0}}">暂无数据</view>
+      <view wx:for="{{memberStats}}" wx:key="key" class="member-stat-item">
+        <view class="member-stat-info">
+          <text class="member-stat-name">{{item.memberName}}</text>
+          <text class="member-stat-dept">{{item.department}}</text>
+        </view>
+        <view class="member-stat-data">
+          <view class="member-stat-workload">{{item.workload}}h</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
