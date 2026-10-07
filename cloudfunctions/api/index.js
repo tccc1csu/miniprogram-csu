@@ -180,6 +180,11 @@ exports.main = async (event) => {
 
     const user = await requireAuth(event, openid)
 
+    if (functionName === 'repairCollections') {
+      // 补齐缺失的集合（例如版本升级后新增的 project_tasks、files）。
+      // 幂等操作，可重复调用；管理员已登录即可执行。
+      return await handleRepairCollections(user)
+    }
     if (functionName === 'addRecord') {
       return await handleAddRecord(event, user, openid)
     }
@@ -269,20 +274,9 @@ async function ensureCollectionStructure() {
 }
 
 async function doEnsureCollectionStructure() {
-  // 云函数实例会随时冷启动。已完成初始化的环境只读取一次标记，
-  // 避免每次冷启动都重复请求所有集合和默认规则。
-  try {
-    const marker = await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS)
-      .where({ key: COLLECTION_STRUCTURE_KEY })
-      .limit(1)
-      .get()
-    if (first(marker)) {
-      return
-    }
-  } catch (err) {
-    // 标记集合尚未创建时，继续执行完整初始化。
-  }
-
+  // 每次冷启动都要确保集合齐全：旧版本用一次性标记跳过，导致后续版本
+  // 新增的集合（如 project_tasks、files）在老环境里永远不会被创建。
+  // db.createCollection 对已存在的集合只会抛错，开销很小，可以安全重复执行。
   const collectionNames = Object.keys(COLLECTIONS).map(key => COLLECTIONS[key])
   await Promise.all(collectionNames.map(async name => {
     try {
@@ -292,6 +286,25 @@ async function doEnsureCollectionStructure() {
     }
   }))
 
+  // 默认数据只需初始化一次，用标记跳过。
+  if (!(await hasCollectionStructureMarker())) {
+    await ensureDefaultCollectionData()
+  }
+}
+
+async function hasCollectionStructureMarker() {
+  try {
+    const marker = await db.collection(COLLECTIONS.NOTIFICATION_SETTINGS)
+      .where({ key: COLLECTION_STRUCTURE_KEY })
+      .limit(1)
+      .get()
+    return !!first(marker)
+  } catch (err) {
+    return false
+  }
+}
+
+async function ensureDefaultCollectionData() {
   const defaults = await Promise.all([
     getAll(COLLECTIONS.DEPARTMENTS, {}),
     getAll(COLLECTIONS.ALLOWANCE_RULES, {}),
@@ -3806,6 +3819,40 @@ function success(data) {
 
 function fail(message) {
   return { code: -1, message }
+}
+
+async function handleRepairCollections(user) {
+  if (!user || user.role !== 'admin') {
+    return fail('仅管理员可以执行该操作')
+  }
+
+  const created = []
+  const failed = []
+  const collectionNames = Object.keys(COLLECTIONS).map(key => COLLECTIONS[key])
+  for (const name of collectionNames) {
+    const existed = await collectionExists(name)
+    if (existed) continue
+    try {
+      await db.createCollection(name)
+      created.push(name)
+    } catch (err) {
+      // 并发创建时可能已被其他实例建好，再确认一次避免误报。
+      if (!(await collectionExists(name))) {
+        failed.push(name)
+      }
+    }
+  }
+
+  return success({ created, failed, total: collectionNames.length })
+}
+
+async function collectionExists(name) {
+  try {
+    await db.collection(name).limit(1).get()
+    return true
+  } catch (err) {
+    return false
+  }
 }
 
 // ===== 项目任务管理 =====

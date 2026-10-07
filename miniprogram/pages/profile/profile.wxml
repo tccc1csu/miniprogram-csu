@@ -57,6 +57,10 @@
         <view class="tool-icon icon-file">文</view>
         <text>文件库</text>
       </view>
+      <view class="tool-item" wx:if="{{userInfo.role == 'admin'}}" bindtap="repairCollections">
+        <view class="tool-icon icon-repair">修</view>
+        <text>修复数据表</text>
+      </view>
       <view class="tool-item" wx:if="{{userInfo.role == 'admin'}}" bindtap="resetDevelopmentData">
         <view class="tool-icon icon-reset">测</view>
         <text>重置测试数据</text>

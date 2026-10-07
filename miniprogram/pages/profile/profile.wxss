@@ -88,6 +88,8 @@
 .icon-file { background: linear-gradient(135deg, #4A90D9, #357ABD); }
 .icon-reset { background: linear-gradient(135deg, #C47B3A, #99561D); }
 
+.icon-repair { background: linear-gradient(135deg, #4A90D9, #357ABD); }
+
 .info-card {
   padding: 30rpx;
 }

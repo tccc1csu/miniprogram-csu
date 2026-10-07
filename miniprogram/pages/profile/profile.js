@@ -105,6 +105,38 @@ Page({
     })
   },
 
+  repairCollections: function () {
+    wx.showModal({
+      title: '修复数据表',
+      content: '将检查并创建缺失的云数据库集合（如项目任务、文件库）。不会删除任何已有数据。',
+      confirmText: '开始修复',
+      success: res => {
+        if (!res.confirm) return
+        wx.showLoading({ title: '修复中...' })
+        callFunction('repairCollections').then(result => {
+          wx.hideLoading()
+          const created = (result && result.created) || []
+          const failed = (result && result.failed) || []
+          if (failed.length) {
+            wx.showModal({
+              title: '部分失败',
+              content: '已创建：' + (created.join('、') || '无') + '\n失败：' + failed.join('、'),
+              showCancel: false
+            })
+            return
+          }
+          wx.showToast({
+            title: created.length ? '已创建 ' + created.length + ' 个集合' : '数据表已完整',
+            icon: 'success'
+          })
+        }).catch(err => {
+          wx.hideLoading()
+          wx.showToast({ title: err.message || '修复失败', icon: 'none' })
+        })
+      }
+    })
+  },
+
   resetDevelopmentData: function () {
     wx.showModal({
       title: '重置测试数据',
