@@ -85,6 +85,7 @@
 .icon-rules { background: linear-gradient(135deg, #E98952, #C75B37); }
 .icon-duty { background: linear-gradient(135deg, #667085, #475467); }
 .icon-notice { background: linear-gradient(135deg, #D85A72, #B33B55); }
+.icon-file { background: linear-gradient(135deg, #4A90D9, #357ABD); }
 .icon-reset { background: linear-gradient(135deg, #C47B3A, #99561D); }
 
 .info-card {

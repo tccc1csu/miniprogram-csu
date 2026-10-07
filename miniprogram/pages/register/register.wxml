@@ -32,6 +32,11 @@
       </picker>
     </view>
 
+    <view class="form-group" wx:if="{{role === 'admin'}}">
+      <text class="form-label">管理员邀请码</text>
+      <input class="form-input" password="true" placeholder="请输入管理员邀请码" value="{{inviteCode}}" bindinput="onInviteCodeInput" />
+    </view>
+
     <view class="form-group" wx:if="{{role !== 'admin'}}">
       <text class="form-label">所属部门</text>
       <picker mode="selector" range="{{departmentList}}" bindchange="onDepartmentChange" value="{{departmentIndex}}">

@@ -34,6 +34,7 @@ Page({
     department: DEFAULT_DEPARTMENTS[0],
     departmentList: DEFAULT_DEPARTMENTS,
     departmentIndex: 0,
+    inviteCode: '',
     loading: false
   },
 
@@ -66,13 +67,18 @@ Page({
     })
   },
 
+  onInviteCodeInput: function (e) {
+    this.setData({ inviteCode: e.detail.value })
+  },
+
   handleRegister: function () {
-    const { name, password, confirmPassword, role, department } = this.data
+    const { name, password, confirmPassword, role, department, inviteCode } = this.data
 
     if (!name.trim()) { showToast('请输入姓名'); return }
     if (!password.trim()) { showToast('请输入密码'); return; }
     if (password.length < 4) { showToast('密码长度至少4位'); return }
     if (password !== confirmPassword) { showToast('两次输入的密码不一致'); return }
+    if (role === 'admin' && !inviteCode.trim()) { showToast('请输入管理员邀请码'); return }
     if (role !== 'admin' && !department) { showToast('请选择部门'); return }
 
     this.setData({ loading: true })
@@ -85,6 +91,7 @@ Page({
         confirmPassword: confirmPassword.trim(),
         role: role,
         department: role === 'admin' ? '' : department,
+        inviteCode: role === 'admin' ? inviteCode.trim() : '',
         wxProfile
       }))
       .then(userInfo => {

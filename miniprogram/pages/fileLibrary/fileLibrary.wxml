@@ -1,0 +1,168 @@
+<!--pages/fileLibrary/fileLibrary.wxml-->
+<view class="container">
+  <!-- 状态栏占位 -->
+  <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
+
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav">
+    <view class="nav-back" bindtap="goBack">
+      <text class="back-icon">‹</text>
+    </view>
+    <view class="nav-title">文件库</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <view class="page-header">
+    <view class="header-title">文件库</view>
+    <view class="header-subtitle">文件上传 · 预览 · 下载 · 管理</view>
+  </view>
+
+  <!-- 统计栏 -->
+  <view class="stats-bar">
+    <view class="stat-item">
+      <text class="stat-num">{{totalCount}}</text>
+      <text class="stat-label">总文件</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{totalSizeText}}</text>
+      <text class="stat-label">总大小</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{todayCount}}</text>
+      <text class="stat-label">今日上传</text>
+    </view>
+  </view>
+
+  <!-- 搜索和分类 -->
+  <view class="filter-bar">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索文件名" value="{{keyword}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="onSearch" />
+      <text class="search-clear" wx:if="{{keyword}}" bindtap="clearKeyword">×</text>
+    </view>
+  </view>
+
+  <!-- 分类标签 -->
+  <scroll-view scroll-x class="type-tabs" enhanced show-scrollbar="{{false}}">
+    <view class="type-tab {{activeType === 'all' ? 'active' : ''}}" data-type="all" bindtap="switchType">全部</view>
+    <view class="type-tab {{activeType === 'document' ? 'active' : ''}}" data-type="document" bindtap="switchType">文档</view>
+    <view class="type-tab {{activeType === 'image' ? 'active' : ''}}" data-type="image" bindtap="switchType">图片</view>
+    <view class="type-tab {{activeType === 'video' ? 'active' : ''}}" data-type="video" bindtap="switchType">视频</view>
+    <view class="type-tab {{activeType === 'audio' ? 'active' : ''}}" data-type="audio" bindtap="switchType">音频</view>
+    <view class="type-tab {{activeType === 'other' ? 'active' : ''}}" data-type="other" bindtap="switchType">其他</view>
+  </scroll-view>
+
+  <!-- 上传按钮 -->
+  <view class="upload-section">
+    <button class="btn-primary upload-btn" bindtap="chooseFile">
+      <text class="upload-icon">+</text>
+      上传文件
+    </button>
+  </view>
+
+  <!-- 文件列表 -->
+  <view wx:if="{{files.length === 0 && !loading}}" class="empty-state">
+    <view class="empty-icon">📁</view>
+    <view class="empty-text">暂无文件</view>
+    <view class="empty-hint">点击上方按钮上传第一个文件</view>
+  </view>
+
+  <view class="file-list">
+    <view wx:for="{{files}}" wx:key="_id" class="file-card card" bindtap="openFileDetail" data-id="{{item._id}}">
+      <view class="file-icon icon-{{item.typeIcon}}">
+        <text>{{item.extLabel}}</text>
+      </view>
+      <view class="file-info">
+        <view class="file-name">{{item.name}}</view>
+        <view class="file-meta">
+          <text class="meta-item">{{item.sizeText}}</text>
+          <text class="meta-dot">·</text>
+          <text class="meta-item">{{item.department}}</text>
+          <text class="meta-dot">·</text>
+          <text class="meta-item">{{item.uploaderName}}</text>
+        </view>
+        <view class="file-time">{{item.createTime}}</view>
+      </view>
+      <view class="file-actions" catchtap="stopTap">
+        <view class="action-btn" bindtap="downloadFile" data-id="{{item._id}}">
+          <text>⬇</text>
+        </view>
+        <view class="action-btn delete-btn" wx:if="{{item.canDelete}}" bindtap="deleteFile" data-id="{{item._id}}">
+          <text>🗑</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 上传进度弹窗 -->
+  <view class="modal-mask" wx:if="{{showUploadProgress}}">
+    <view class="modal-content small-modal">
+      <view class="modal-title">正在上传</view>
+      <view class="upload-progress-wrap">
+        <view class="upload-progress-bar">
+          <view class="upload-progress-fill" style="width: {{uploadProgress}}%"></view>
+        </view>
+        <view class="upload-progress-text">{{uploadProgress}}%</view>
+      </view>
+      <view class="upload-filename">{{uploadingFileName}}</view>
+    </view>
+  </view>
+
+  <!-- 文件详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showDetail}}" bindtap="closeDetail">
+    <view class="modal-content large-modal" catchtap="stopTap">
+      <view class="modal-title">文件详情</view>
+      <scroll-view scroll-y class="modal-scroll">
+        <view class="detail-icon-wrap">
+          <view class="detail-icon icon-{{detailFile.typeIcon}}">
+            <text>{{detailFile.extLabel}}</text>
+          </view>
+        </view>
+        <view class="detail-name">{{detailFile.name}}</view>
+
+        <view class="detail-section">
+          <view class="detail-row">
+            <text class="detail-label">文件大小</text>
+            <text class="detail-value">{{detailFile.sizeText}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">文件类型</text>
+            <text class="detail-value">{{detailFile.typeLabel}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">所属部门</text>
+            <text class="detail-value">{{detailFile.department}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">上传人</text>
+            <text class="detail-value">{{detailFile.uploaderName}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">上传时间</text>
+            <text class="detail-value">{{detailFile.createTime}}</text>
+          </view>
+          <view class="detail-row" wx:if="{{detailFile.downloadCount !== undefined}}">
+            <text class="detail-label">下载次数</text>
+            <text class="detail-value">{{detailFile.downloadCount}} 次</text>
+          </view>
+        </view>
+
+        <view class="detail-section" wx:if="{{detailFile.description}}">
+          <view class="detail-section-title">文件说明</view>
+          <view class="detail-desc">{{detailFile.description}}</view>
+        </view>
+
+        <!-- 图片预览 -->
+        <view class="detail-section" wx:if="{{detailFile.fileType === 'image' && detailFile.tempFilePath}}">
+          <image class="preview-image" src="{{detailFile.tempFilePath}}" mode="widthFix" bindtap="previewImage" src="{{detailFile.tempFilePath}}" />
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeDetail">关闭</button>
+        <button class="btn-primary" bindtap="downloadFileFromDetail">下载 / 预览</button>
+      </view>
+    </view>
+  </view>
+</view>

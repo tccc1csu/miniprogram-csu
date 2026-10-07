@@ -53,6 +53,10 @@
         <view class="tool-icon icon-notice">提</view>
         <text>任务提醒</text>
       </view>
+      <view class="tool-item" bindtap="goFileLibrary">
+        <view class="tool-icon icon-file">文</view>
+        <text>文件库</text>
+      </view>
       <view class="tool-item" wx:if="{{userInfo.role == 'admin'}}" bindtap="resetDevelopmentData">
         <view class="tool-icon icon-reset">测</view>
         <text>重置测试数据</text>

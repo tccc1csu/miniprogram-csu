@@ -49,7 +49,8 @@ Page({
     const modules = [
         { key: 'activitySuggestions', title: '活动建议', meta: '活动', icon: '活', iconClass: 'activity-icon', action: 'suggestions', visible: canSee('activitySuggestions') },
         { key: 'editorialOfficeHandoff', title: '采编办公协同', meta: '采编部 × 办公部', icon: '协', iconClass: 'handoff-icon', action: 'handoffs', visible: canSee('editorialOfficeHandoff') },
-        { key: 'productionReservation', title: '摄制预约协作', meta: '预约 · 摄制 · 归档', icon: '摄', iconClass: 'production-icon', action: 'production', visible: canSee('productionReservation') }
+        { key: 'productionReservation', title: '摄制预约协作', meta: '预约 · 摄制 · 归档', icon: '摄', iconClass: 'production-icon', action: 'production', visible: canSee('productionReservation') },
+        { key: 'projectTasks', title: '项目任务', meta: '跨部门协同 · 阶段推进', icon: '项', iconClass: 'project-icon', action: 'projectTasks', visible: canSee('projectTasks') }
       ]
     this.setData({ modules, hasVisibleModule: modules.some(item => item.visible) })
   },
@@ -65,6 +66,7 @@ Page({
     if (action === 'suggestions') return this.goSuggestions()
     if (action === 'handoffs') return this.goHandoffs()
     if (action === 'production') return this.goProduction()
+    if (action === 'projectTasks') return this.goProjectTasks()
   },
 
   goSuggestions: function () {
@@ -77,5 +79,9 @@ Page({
 
   goProduction: function () {
     wx.navigateTo({ url: '/pages/production/production?departmentFilter=' + this.data.departmentFilter })
+  },
+
+  goProjectTasks: function () {
+    wx.navigateTo({ url: '/pages/projectTasks/projectTasks' })
   }
 })

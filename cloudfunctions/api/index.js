@@ -21,7 +21,9 @@ const COLLECTIONS = {
   ALLOWANCE_RULES: 'allowance_rules',
   WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities',
   NOTIFICATION_SETTINGS: 'notification_settings',
-  NOTIFICATION_SUBSCRIPTIONS: 'notification_subscriptions'
+  NOTIFICATION_SUBSCRIPTIONS: 'notification_subscriptions',
+  PROJECT_TASKS: 'project_tasks',
+  FILES: 'files'
 }
 
 const DEFAULT_DEPARTMENTS = [
@@ -34,6 +36,7 @@ const DEFAULT_DEPARTMENTS = [
   '兄弟部门'
 ]
 const BROTHER_DEPARTMENT = '兄弟部门'
+const ADMIN_INVITE_CODE = 'QCMC-ADMIN-2024' // 管理员注册邀请码
 
 const ROLE_ORDER = {
   admin: 0,
@@ -212,6 +215,12 @@ exports.main = async (event) => {
     }
     if (functionName === 'manageTaskNotifications') {
       return await handleManageTaskNotifications(event, user, openid)
+    }
+    if (functionName === 'manageProjectTasks') {
+      return await handleManageProjectTasks(event, user, openid)
+    }
+    if (functionName === 'manageFiles') {
+      return await handleManageFiles(event, user, openid)
     }
     if (functionName === 'deleteMyAccount') {
       return await handleDeleteMyAccount(event, user)
@@ -564,6 +573,16 @@ async function handleRegister(event, openid) {
   }
   if (role !== 'admin' && !department) {
     return fail('请选择所属部门')
+  }
+  // 管理员注册需要邀请码
+  if (role === 'admin') {
+    const inviteCode = trim(event.inviteCode)
+    if (!inviteCode) {
+      return fail('请输入管理员邀请码')
+    }
+    if (inviteCode !== ADMIN_INVITE_CODE) {
+      return fail('管理员邀请码错误')
+    }
   }
 
   const users = db.collection(COLLECTIONS.USERS)
@@ -3787,4 +3806,321 @@ function success(data) {
 
 function fail(message) {
   return { code: -1, message }
+}
+
+// ===== 项目任务管理 =====
+async function handleManageProjectTasks(event, user, openid) {
+  const action = event.action
+  const collection = db.collection(COLLECTIONS.PROJECT_TASKS)
+  const userRole = user.role
+  const userDept = user.department || ''
+  const isAdmin = userRole === 'admin'
+
+  // 获取项目列表
+  if (action === 'getProjects') {
+    const scope = event.scope || 'active' // active | completed
+    let query = {}
+    if (scope === 'completed') {
+      query.status = 'completed'
+    } else {
+      query.status = 'active'
+    }
+
+    const allProjects = await getAll(COLLECTIONS.PROJECT_TASKS, {})
+    let filtered = allProjects.filter(p => scope === 'completed' ? p.status === 'completed' : p.status === 'active')
+
+    // 非管理员只看本部门参与的项目
+    if (!isAdmin && userDept) {
+      filtered = filtered.filter(p =>
+        (p.deptTasks || []).some(dt => dt.department === userDept)
+      )
+    }
+
+    // 按创建时间倒序
+    filtered.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+    return success(filtered)
+  }
+
+  // 创建项目（管理员）
+  if (action === 'createProject') {
+    if (!isAdmin) return fail('无权限')
+    const name = trim(event.name)
+    const description = trim(event.description || '')
+    const deadline = trim(event.deadline || '')
+    const deptTasks = event.deptTasks || []
+    const phaseNames = event.phases || []
+
+    if (!name) return fail('请输入项目名称')
+    if (!Array.isArray(deptTasks) || deptTasks.length === 0) return fail('请至少选择一个参与部门')
+    if (!Array.isArray(phaseNames) || phaseNames.length < 2) return fail('至少设置2个阶段')
+
+    const phases = phaseNames.map(n => ({ name: n }))
+    // 初始化每个部门在第0阶段的任务状态
+    const initialDeptTasks = deptTasks.map(dt => ({
+      department: dt.department,
+      taskContent: dt.taskContent || '',
+      phaseIndex: 0,
+      status: 'pending', // pending | in_progress | completed
+      completeTime: ''
+    }))
+
+    const now = new Date()
+    const addRes = await collection.add({
+      data: {
+        name,
+        description,
+        deadline,
+        phases,
+        currentPhaseIndex: 0,
+        deptTasks: initialDeptTasks,
+        status: 'active', // active | completed
+        creatorOpenid: openid,
+        creatorName: user.name,
+        createTime: formatDateTime(now),
+        updateTime: formatDateTime(now),
+        completeTime: ''
+      }
+    })
+    return success({ _id: addRes._id })
+  }
+
+  // 标记部门任务完成
+  if (action === 'completeDeptTask') {
+    const projectId = event.projectId
+    const department = trim(event.department || '')
+    if (!projectId || !department) return fail('参数错误')
+
+    const doc = await getDoc(collection, projectId)
+    if (!doc) return fail('项目不存在')
+    if (doc.status !== 'active') return fail('项目已结束')
+
+    // 校验：必须是该部门成员或部长
+    if (!isAdmin && userDept !== department) return fail('无权限操作其他部门任务')
+
+    const deptTasks = doc.deptTasks || []
+    const task = deptTasks.find(dt => dt.department === department)
+    if (!task) return fail('该部门未参与此项目')
+    if (task.phaseIndex !== doc.currentPhaseIndex) return fail('当前阶段不匹配')
+    if (task.status === 'completed') return fail('任务已完成')
+
+    // 标记完成
+    task.status = 'completed'
+    task.completeTime = formatDateTime(new Date())
+
+    // 检查当前阶段的所有部门任务是否都完成了
+    const currentPhaseTasks = deptTasks.filter(dt => dt.phaseIndex === doc.currentPhaseIndex)
+    const allCompleted = currentPhaseTasks.length > 0 && currentPhaseTasks.every(dt => dt.status === 'completed')
+
+    let advanced = false
+    let completed = false
+
+    if (allCompleted) {
+      const nextPhaseIndex = doc.currentPhaseIndex + 1
+      const totalPhases = (doc.phases || []).length
+      if (nextPhaseIndex >= totalPhases) {
+        // 所有阶段完成，项目结束
+        doc.status = 'completed'
+        doc.completeTime = formatDateTime(new Date())
+        completed = true
+      } else {
+        // 推进到下一阶段
+        doc.currentPhaseIndex = nextPhaseIndex
+        // 所有部门的任务状态重置为进行中（下一阶段）
+        deptTasks.forEach(dt => {
+          dt.phaseIndex = nextPhaseIndex
+          dt.status = 'in_progress'
+          dt.completeTime = ''
+        })
+        advanced = true
+      }
+    }
+
+    await collection.doc(projectId).update({
+      data: {
+        deptTasks,
+        currentPhaseIndex: doc.currentPhaseIndex,
+        status: doc.status,
+        completeTime: doc.completeTime || '',
+        updateTime: formatDateTime(new Date())
+      }
+    })
+
+    return success({ advanced, completed })
+  }
+
+  // 管理员强制推进阶段
+  if (action === 'advancePhase') {
+    if (!isAdmin) return fail('无权限')
+    const projectId = event.projectId
+    const doc = await getDoc(collection, projectId)
+    if (!doc) return fail('项目不存在')
+    if (doc.status !== 'active') return fail('项目已结束')
+
+    const nextPhaseIndex = doc.currentPhaseIndex + 1
+    const totalPhases = (doc.phases || []).length
+    let completed = false
+
+    if (nextPhaseIndex >= totalPhases) {
+      doc.status = 'completed'
+      doc.completeTime = formatDateTime(new Date())
+      completed = true
+    } else {
+      doc.currentPhaseIndex = nextPhaseIndex
+      const deptTasks = (doc.deptTasks || []).map(dt => ({
+        ...dt,
+        phaseIndex: nextPhaseIndex,
+        status: 'in_progress',
+        completeTime: ''
+      }))
+      doc.deptTasks = deptTasks
+    }
+
+    await collection.doc(projectId).update({
+      data: {
+        currentPhaseIndex: doc.currentPhaseIndex,
+        deptTasks: doc.deptTasks,
+        status: doc.status,
+        completeTime: doc.completeTime || '',
+        updateTime: formatDateTime(new Date())
+      }
+    })
+
+    return success({ completed })
+  }
+
+  // 管理员结束项目
+  if (action === 'endProject') {
+    if (!isAdmin) return fail('无权限')
+    const projectId = event.projectId
+    const doc = await getDoc(collection, projectId)
+    if (!doc) return fail('项目不存在')
+
+    await collection.doc(projectId).update({
+      data: {
+        status: 'completed',
+        completeTime: formatDateTime(new Date()),
+        updateTime: formatDateTime(new Date())
+      }
+    })
+    return success({})
+  }
+
+  return fail('未知操作：' + action)
+}
+
+function formatDateTime(d) {
+  const pad = n => String(n).padStart(2, '0')
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes())
+}
+
+// ===== 文件管理 =====
+async function handleManageFiles(event, user, openid) {
+  const action = event.action
+  const collection = db.collection(COLLECTIONS.FILES)
+  const isAdmin = user.role === 'admin'
+  const userDept = user.department || ''
+
+  // 获取文件列表
+  if (action === 'getFiles') {
+    const allFiles = await getAll(COLLECTIONS.FILES, {})
+    // 按时间倒序
+    allFiles.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+    return success(allFiles)
+  }
+
+  // 获取上传路径（预生成 cloudPath）
+  if (action === 'getUploadUrl') {
+    const fileName = trim(event.fileName || '')
+    const fileSize = event.fileSize || 0
+    if (!fileName) return fail('文件名不能为空')
+
+    // 生成云存储路径：files/部门/时间戳_文件名
+    const dept = userDept || 'common'
+    const timestamp = Date.now()
+    const ext = (fileName.split('.').pop() || '').toLowerCase()
+    const cloudPath = 'files/' + dept + '/' + timestamp + '_' + fileName
+
+    return success({
+      cloudPath,
+      fileId: cloudPath
+    })
+  }
+
+  // 添加文件记录
+  if (action === 'addFile') {
+    const name = trim(event.name || '')
+    const size = event.size || 0
+    const fileID = event.fileID || ''
+    const cloudPath = event.cloudPath || ''
+
+    if (!name) return fail('文件名不能为空')
+    if (!fileID) return fail('文件ID不能为空')
+
+    const now = new Date()
+    const addRes = await collection.add({
+      data: {
+        name,
+        size,
+        fileID,
+        cloudPath,
+        department: userDept,
+        uploaderOpenid: openid,
+        uploaderName: user.name,
+        downloadCount: 0,
+        description: '',
+        createTime: formatDateTime(now),
+        updateTime: formatDateTime(now)
+      }
+    })
+    return success({ _id: addRes._id })
+  }
+
+  // 记录下载次数
+  if (action === 'recordDownload') {
+    const fileId = event.fileId
+    if (!fileId) return fail('参数错误')
+
+    const doc = await getDoc(collection, fileId)
+    if (!doc) return fail('文件不存在')
+
+    await collection.doc(fileId).update({
+      data: {
+        downloadCount: (doc.downloadCount || 0) + 1,
+        updateTime: formatDateTime(new Date())
+      }
+    })
+    return success({})
+  }
+
+  // 删除文件
+  if (action === 'deleteFile') {
+    const fileId = event.fileId
+    if (!fileId) return fail('参数错误')
+
+    const doc = await getDoc(collection, fileId)
+    if (!doc) return fail('文件不存在')
+
+    // 权限校验：管理员或上传者本人
+    if (!isAdmin && doc.uploaderOpenid !== openid) {
+      return fail('无权限删除')
+    }
+
+    // 先删除云存储文件（可选，失败不影响记录删除）
+    try {
+      if (doc.fileID) {
+        await cloud.deleteFile({
+          fileList: [doc.fileID]
+        })
+      }
+    } catch (e) {
+      console.error('删除云存储文件失败:', e)
+    }
+
+    // 删除数据库记录
+    await collection.doc(fileId).remove()
+    return success({})
+  }
+
+  return fail('未知操作：' + action)
 }

@@ -17,7 +17,9 @@
     "pages/production/production",
     "pages/allowanceRules/allowanceRules",
     "pages/responsibilities/responsibilities",
-    "pages/taskNotifications/taskNotifications"
+    "pages/taskNotifications/taskNotifications",
+    "pages/projectTasks/projectTasks",
+    "pages/fileLibrary/fileLibrary"
   ],
   "window": {
     "backgroundTextStyle": "light",

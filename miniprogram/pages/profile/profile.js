@@ -69,6 +69,10 @@ Page({
     wx.navigateTo({ url: '/pages/taskNotifications/taskNotifications' })
   },
 
+  goFileLibrary: function () {
+    wx.navigateTo({ url: '/pages/fileLibrary/fileLibrary' })
+  },
+
   openDeletePanel: function () {
     this.setData({ showDeletePanel: true, deletePassword: '' })
   },

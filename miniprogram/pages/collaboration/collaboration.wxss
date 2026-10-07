@@ -99,6 +99,10 @@
   background: linear-gradient(135deg, #E98952, #C75B37);
 }
 
+.project-icon {
+  background: linear-gradient(135deg, #E74C3C, #C0392B);
+}
+
 .module-body {
   flex: 1;
   min-width: 0;

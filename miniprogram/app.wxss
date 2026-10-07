@@ -1,14 +1,15 @@
 /* app.wxss - 全局样式 */
 page {
   background-color: #F5F6FA;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, 'Microsoft YaHei', '微软雅黑', sans-serif;
   font-size: 30rpx;
   color: #333;
   box-sizing: border-box;
 }
 
-view, text, input, textarea, button, picker {
+view, text, input, textarea, button, picker, scroll-view, swiper, swiper-item {
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 /* 通用容器 */
