@@ -4009,9 +4009,12 @@ async function handleManageProjectTasks(event, user, openid) {
 }
 
 function formatDateTime(d) {
+  if (!d) return ''
+  const date = d instanceof Date ? d : new Date(d)
+  if (Number.isNaN(date.getTime())) return ''
   const pad = n => String(n).padStart(2, '0')
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
-    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes())
+  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
+    ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes())
 }
 
 // ===== 文件管理 =====
