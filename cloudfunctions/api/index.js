@@ -3937,7 +3937,7 @@ async function handleManageProjectTasks(event, user, openid) {
     const department = trim(event.department || '')
     if (!projectId || !department) return fail('参数错误')
 
-    const doc = await getDoc(collection, projectId)
+    const doc = await getDoc(COLLECTIONS.PROJECT_TASKS, projectId)
     if (!doc) return fail('项目不存在')
     if (doc.status !== 'active') return fail('项目已结束')
 
@@ -3999,7 +3999,7 @@ async function handleManageProjectTasks(event, user, openid) {
   if (action === 'advancePhase') {
     if (!isAdmin) return fail('无权限')
     const projectId = event.projectId
-    const doc = await getDoc(collection, projectId)
+    const doc = await getDoc(COLLECTIONS.PROJECT_TASKS, projectId)
     if (!doc) return fail('项目不存在')
     if (doc.status !== 'active') return fail('项目已结束')
 
@@ -4039,7 +4039,7 @@ async function handleManageProjectTasks(event, user, openid) {
   if (action === 'endProject') {
     if (!isAdmin) return fail('无权限')
     const projectId = event.projectId
-    const doc = await getDoc(collection, projectId)
+    const doc = await getDoc(COLLECTIONS.PROJECT_TASKS, projectId)
     if (!doc) return fail('项目不存在')
 
     await collection.doc(projectId).update({
@@ -4053,12 +4053,6 @@ async function handleManageProjectTasks(event, user, openid) {
   }
 
   return fail('未知操作：' + action)
-}
-
-function formatDateTime(d) {
-  const pad = n => String(n).padStart(2, '0')
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
-    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes())
 }
 
 // ===== 文件管理 =====
@@ -4128,7 +4122,7 @@ async function handleManageFiles(event, user, openid) {
     const fileId = event.fileId
     if (!fileId) return fail('参数错误')
 
-    const doc = await getDoc(collection, fileId)
+    const doc = await getDoc(COLLECTIONS.FILES, fileId)
     if (!doc) return fail('文件不存在')
 
     await collection.doc(fileId).update({
@@ -4145,7 +4139,7 @@ async function handleManageFiles(event, user, openid) {
     const fileId = event.fileId
     if (!fileId) return fail('参数错误')
 
-    const doc = await getDoc(collection, fileId)
+    const doc = await getDoc(COLLECTIONS.FILES, fileId)
     if (!doc) return fail('文件不存在')
 
     // 权限校验：管理员或上传者本人
