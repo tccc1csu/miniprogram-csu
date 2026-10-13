@@ -41,6 +41,9 @@ Page({
     showReviewModal: false,
     reviewTarget: null,
     reviewComment: '',
+    returnTargets: [],
+    returnToIndex: 0,
+
     notificationSettings: null,
     subscription: null,
     requestingSubscription: false,
@@ -349,12 +352,33 @@ Page({
     })
   },
 
+
+
   openReviewModal: function (e) {
+    const item = e.currentTarget.dataset.item
     this.setData({
       showReviewModal: true,
-      reviewTarget: e.currentTarget.dataset.item,
-      reviewComment: ''
+      reviewTarget: item,
+      reviewComment: '',
+      returnTargets: [],
+      returnToIndex: 0
     })
+    callFunction('manageHandoffs', {
+      action: 'getHandoffReturnTargets',
+      handoffId: item._id
+    }).then(list => {
+      const targets = list || []
+      let index = 0
+      if (item.assigneeName) {
+        const found = targets.findIndex(t => t.name === item.assigneeName)
+        if (found >= 0) index = found
+      }
+      this.setData({ returnTargets: targets, returnToIndex: index })
+    }).catch(() => {})
+  },
+
+  onReturnToChange: function (e) {
+    this.setData({ returnToIndex: e.detail.value })
   },
 
   onReviewCommentInput: function (e) {
@@ -362,18 +386,24 @@ Page({
   },
 
   closeReviewModal: function () {
-    this.setData({ showReviewModal: false, reviewTarget: null, reviewComment: '' })
+    this.setData({ showReviewModal: false, reviewTarget: null, reviewComment: '', returnTargets: [], returnToIndex: 0 })
   },
 
   confirmReview: function (e) {
     const approvedValue = e.currentTarget.dataset.approved
     const approved = approvedValue === true || approvedValue === 'true'
+    const target = this.data.returnTargets[this.data.returnToIndex]
+    if (!approved && !target) {
+      showToast('请选择退回对象')
+      return
+    }
     showLoading('审核中...')
     callFunction('manageHandoffs', {
       action: 'reviewHandoff',
       handoffId: this.data.reviewTarget._id,
       approved,
-      reviewComment: this.data.reviewComment.trim()
+      reviewComment: this.data.reviewComment.trim(),
+      returnToName: approved ? '' : (target ? target.name : '')
     }).then(() => {
       hideLoading()
       showToast(approved ? '已归档' : '已退回', 'success')

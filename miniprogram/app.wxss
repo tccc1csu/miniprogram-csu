@@ -1,15 +1,68 @@
-/* app.wxss - 全局样式 */
+﻿/* app.wxss - 全局样式 */
 page {
   background-color: #F5F6FA;
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Helvetica, 'Microsoft YaHei', '微软雅黑', sans-serif;
   font-size: 30rpx;
   color: #333;
   box-sizing: border-box;
+  /* 统一字号阶梯 */
+  --fs-xs: 24rpx;
+  --fs-sm: 26rpx;
+  --fs-base: 30rpx;
+  --fs-md: 32rpx;
+  --fs-lg: 34rpx;
+  --fs-xl: 40rpx;
+  --fs-xxl: 44rpx;
+}
+
+/* 小屏适配（宽度 < 320px）：整体缩小 */
+@media (max-width: 320px) {
+  page {
+    --fs-xs: 22rpx;
+    --fs-sm: 24rpx;
+    --fs-base: 28rpx;
+    --fs-md: 30rpx;
+    --fs-lg: 32rpx;
+    --fs-xl: 38rpx;
+    --fs-xxl: 42rpx;
+    font-size: 28rpx;
+  }
+  .container { padding: 24rpx; }
+  .card { padding: 24rpx; }
+}
+
+/* 大屏适配（宽度 > 414px）：整体放大 */
+@media (min-width: 415px) {
+  page {
+    --fs-xs: 26rpx;
+    --fs-sm: 28rpx;
+    --fs-base: 32rpx;
+    --fs-md: 34rpx;
+    --fs-lg: 36rpx;
+    --fs-xl: 42rpx;
+    --fs-xxl: 48rpx;
+    font-size: 32rpx;
+  }
 }
 
 view, text, input, textarea, button, picker, scroll-view, swiper, swiper-item {
   box-sizing: border-box;
   font-family: inherit;
+  word-break: break-all;
+}
+
+/* 文本溢出兜底 */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* 通用容器 */
@@ -79,19 +132,24 @@ view, text, input, textarea, button, picker, scroll-view, swiper, swiper-item {
   background: #F5F6FA;
   border: 2rpx solid #D9DEE7;
   border-radius: 8rpx;
-  padding: 22rpx 24rpx;
+  padding: 0 24rpx;
   font-size: 30rpx;
+  line-height: 1.6;
+  height: 72rpx;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .form-textarea {
   background: #F5F6FA;
   border: 2rpx solid #D9DEE7;
   border-radius: 8rpx;
-  padding: 22rpx 24rpx;
+  padding: 18rpx 24rpx;
   font-size: 30rpx;
+  line-height: 1.6;
   width: 100%;
   min-height: 160rpx;
+  box-sizing: border-box;
 }
 
 /* 标签 */
