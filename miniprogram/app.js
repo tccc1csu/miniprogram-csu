@@ -1,4 +1,5 @@
 // app.js
+// 微信云开发环境 ID
 const CLOUD_ENV_ID = 'cloud1-d2gd4994t925d1435'
 
 App({
