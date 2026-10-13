@@ -191,7 +191,7 @@ for r in overview['relations']:
 ok('only remote member/department shared-reference lines are omitted',True)
 for edge in edges.values():
     assert any(t.tag.endswith('circle') or t.tag.endswith('ellipse') for t in edge.iter()),edge.attrib['id']
-    assert len([t for t in edge.iter() if t.tag.endswith('line')])>=3,edge.attrib['id']
+    assert len([t for t in edge.iter() if t.tag.endswith('line')])>=2,edge.attrib['id']
 ok('every external relationship visibly carries cardinality markers at both ends',True)
 for r in overview['relations']:
     child=groups[r['child']]

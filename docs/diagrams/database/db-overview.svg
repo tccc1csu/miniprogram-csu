@@ -33,6 +33,7 @@
 </g>
 <g class="edge" id="edge-R001" data-child="department" data-parent="organization">
 <title>R001 department(organization_id) → organization(organization_id)</title>
+<path d="M 224.0,380 L 224.0,334" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R001" d="M 224.0,380 L 224.0,334"/>
 <line x1="219.0" y1="378.0" x2="224.0" y2="368.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="224.0" y1="378.0" x2="224.0" y2="368.0" stroke="#526579" stroke-width="1.3"/>
@@ -43,6 +44,7 @@
 </g>
 <g class="edge" id="edge-R002" data-child="member" data-parent="department">
 <title>R002 member(department_id) → department(department_id)</title>
+<path d="M 224.0,630 L 224.0,584" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R002" d="M 224.0,630 L 224.0,584"/>
 <line x1="219.0" y1="628.0" x2="224.0" y2="618.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="224.0" y1="628.0" x2="224.0" y2="618.0" stroke="#526579" stroke-width="1.3"/>
@@ -53,6 +55,7 @@
 </g>
 <g class="edge" id="edge-R003" data-child="external_identity" data-parent="member">
 <title>R003 external_identity(member_id) → member(member_id)</title>
+<path d="M 428,296 L 388,296 L 388,721 L 374,721" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R003" d="M 428,296 L 388,296 L 388,721 L 374,721"/>
 <line x1="426.0" y1="301.0" x2="416.0" y2="296.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="426.0" y1="296.0" x2="416.0" y2="296.0" stroke="#526579" stroke-width="1.3"/>
@@ -63,6 +66,7 @@
 </g>
 <g class="edge" id="edge-R004" data-child="login_session" data-parent="member">
 <title>R004 login_session(member_id) → member(member_id)</title>
+<path d="M 428,571 L 390,571 L 390,721 L 374,721" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R004" d="M 428,571 L 390,571 L 390,721 L 374,721"/>
 <line x1="426.0" y1="576.0" x2="416.0" y2="571.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="426.0" y1="571.0" x2="416.0" y2="571.0" stroke="#526579" stroke-width="1.3"/>
@@ -73,6 +77,7 @@
 </g>
 <g class="edge" id="edge-R005" data-child="archive_preference" data-parent="member">
 <title>R005 archive_preference(office_member_id) → member(member_id)</title>
+<path d="M 428,871 L 390,871 L 390,721 L 374,721" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R005" d="M 428,871 L 390,871 L 390,721 L 374,721"/>
 <line x1="426.0" y1="876.0" x2="416.0" y2="871.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="426.0" y1="871.0" x2="416.0" y2="871.0" stroke="#526579" stroke-width="1.3"/>
@@ -83,6 +88,7 @@
 </g>
 <g class="edge" id="edge-R006" data-child="archive_preference" data-parent="member">
 <title>R006 archive_preference(production_member_id) → member(member_id)</title>
+<path d="M 428,846 L 412,846 L 412,721 L 374,721" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R006" d="M 428,846 L 412,846 L 412,721 L 374,721"/>
 <line x1="423.0" y1="841.0" x2="423.0" y2="851.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="414.0" cy="846.0" r="3.5" fill="white" stroke="#526579"/>
@@ -91,6 +97,7 @@
 </g>
 <g class="edge" id="edge-R008" data-child="manuscript_version" data-parent="work">
 <title>R008 manuscript_version(work_id) → work(work_id)</title>
+<path d="M 1854.0,405 L 1854.0,359" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R008" d="M 1854.0,405 L 1854.0,359"/>
 <line x1="1849.0" y1="403.0" x2="1854.0" y2="393.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1854.0" y1="403.0" x2="1854.0" y2="393.0" stroke="#526579" stroke-width="1.3"/>
@@ -101,6 +108,7 @@
 </g>
 <g class="edge" id="edge-R010" data-child="editorial_work" data-parent="work">
 <title>R010 editorial_work(work_id) → work(work_id)</title>
+<path d="M 2058,571 L 2042,571 L 2042,271 L 2004,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R010" d="M 2058,571 L 2042,571 L 2042,271 L 2004,271"/>
 <line x1="2056.0" y1="576.0" x2="2046.0" y2="571.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2056.0" y1="571.0" x2="2046.0" y2="571.0" stroke="#526579" stroke-width="1.3"/>
@@ -111,6 +119,7 @@
 </g>
 <g class="edge" id="edge-R011" data-child="editorial_work" data-parent="editorial">
 <title>R011 editorial_work(editorial_id) → editorial(editorial_id)</title>
+<path d="M 2208.0,455 L 2208.0,409" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R011" d="M 2208.0,455 L 2208.0,409"/>
 <line x1="2203.0" y1="453.0" x2="2208.0" y2="443.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2208.0" y1="453.0" x2="2208.0" y2="443.0" stroke="#526579" stroke-width="1.3"/>
@@ -121,6 +130,7 @@
 </g>
 <g class="edge" id="edge-R012" data-child="editorial_target" data-parent="editorial_work">
 <title>R012 editorial_target(editorial_id, work_id) → editorial_work(editorial_id, work_id)</title>
+<path d="M 2208.0,655 L 2208.0,609" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R012" d="M 2208.0,655 L 2208.0,609"/>
 <line x1="2203.0" y1="653.0" x2="2208.0" y2="643.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2208.0" y1="653.0" x2="2208.0" y2="643.0" stroke="#526579" stroke-width="1.3"/>
@@ -131,6 +141,7 @@
 </g>
 <g class="edge" id="edge-R013" data-child="editorial_target" data-parent="platform">
 <title>R013 editorial_target(platform_id) → platform(platform_id)</title>
+<path d="M 2058,796 L 2004,796" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R013" d="M 2058,796 L 2004,796"/>
 <line x1="2056.0" y1="801.0" x2="2046.0" y2="796.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2056.0" y1="796.0" x2="2046.0" y2="796.0" stroke="#526579" stroke-width="1.3"/>
@@ -141,6 +152,7 @@
 </g>
 <g class="edge" id="edge-R016" data-child="editorial_assignment" data-parent="editorial">
 <title>R016 editorial_assignment(editorial_id) → editorial(editorial_id)</title>
+<path d="M 2358,971 L 2374,971 L 2374,271 L 2358,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R016" d="M 2358,971 L 2374,971 L 2374,271 L 2358,271"/>
 <line x1="2363.0" y1="976.0" x2="2363.0" y2="966.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="2372.0" cy="971.0" r="3.5" fill="white" stroke="#526579"/>
@@ -149,6 +161,7 @@
 </g>
 <g class="edge" id="edge-R018" data-child="booking_terms" data-parent="production_schedule">
 <title>R018 booking_terms(schedule_id) → production_schedule(schedule_id)</title>
+<path d="M 999.0,380 L 999.0,350 L 994.0,350 L 994.0,334" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R018" d="M 999.0,380 L 999.0,350 L 994.0,350 L 994.0,334"/>
 <line x1="994.0" y1="378.0" x2="999.0" y2="368.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="999.0" y1="378.0" x2="999.0" y2="368.0" stroke="#526579" stroke-width="1.3"/>
@@ -159,6 +172,7 @@
 </g>
 <g class="edge" id="edge-R019" data-child="production_booking" data-parent="booking_terms">
 <title>R019 production_booking(terms_id) → booking_terms(terms_id)</title>
+<path d="M 994.0,730 L 994.0,700 L 999.0,700 L 999.0,684" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R019" d="M 994.0,730 L 994.0,700 L 999.0,700 L 999.0,684"/>
 <line x1="989.0" y1="728.0" x2="994.0" y2="718.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="994.0" y1="728.0" x2="994.0" y2="718.0" stroke="#526579" stroke-width="1.3"/>
@@ -169,6 +183,7 @@
 </g>
 <g class="edge" id="edge-R023" data-child="production_assignment" data-parent="production_booking">
 <title>R023 production_assignment(booking_id) → production_booking(booking_id)</title>
+<path d="M 1208,271 L 1168,271 L 1168,846 L 1160,846 L 1160,821 L 1144,821" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R023" d="M 1208,271 L 1168,271 L 1168,846 L 1160,846 L 1160,821 L 1144,821"/>
 <line x1="1203.0" y1="266.0" x2="1203.0" y2="276.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="1194.0" cy="271.0" r="3.5" fill="white" stroke="#526579"/>
@@ -177,6 +192,7 @@
 </g>
 <g class="edge" id="edge-R026" data-child="production_archive_responsibility" data-parent="production_booking">
 <title>R026 production_archive_responsibility(booking_id) → production_booking(booking_id)</title>
+<path d="M 1208,546 L 1192,546 L 1192,796 L 1160,796 L 1160,821 L 1144,821" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R026" d="M 1208,546 L 1192,546 L 1192,796 L 1160,796 L 1160,821 L 1144,821"/>
 <line x1="1203.0" y1="541.0" x2="1203.0" y2="551.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="1194.0" cy="546.0" r="3.5" fill="white" stroke="#526579"/>
@@ -185,6 +201,7 @@
 </g>
 <g class="edge" id="edge-R029" data-child="task_stage" data-parent="workflow">
 <title>R029 task_stage(workflow_id) → workflow(workflow_id)</title>
+<path d="M 224.0,1623 L 224.0,1577" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R029" d="M 224.0,1623 L 224.0,1577"/>
 <line x1="219.0" y1="1621.0" x2="224.0" y2="1611.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="224.0" y1="1621.0" x2="224.0" y2="1611.0" stroke="#526579" stroke-width="1.3"/>
@@ -195,6 +212,7 @@
 </g>
 <g class="edge" id="edge-R032" data-child="stage_assignment" data-parent="task_stage">
 <title>R032 stage_assignment(stage_id) → task_stage(stage_id)</title>
+<path d="M 224.0,1948 L 224.0,1902" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R032" d="M 224.0,1948 L 224.0,1902"/>
 <line x1="229.0" y1="1943.0" x2="219.0" y2="1943.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="224.0" cy="1934.0" r="3.5" fill="white" stroke="#526579"/>
@@ -203,6 +221,7 @@
 </g>
 <g class="edge" id="edge-R033" data-child="business_source" data-parent="task_stage">
 <title>R033 business_source(stage_id) → task_stage(stage_id)</title>
+<path d="M 428,1489 L 390,1489 L 390,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R033" d="M 428,1489 L 390,1489 L 390,1714 L 374,1714"/>
 <line x1="423.0" y1="1484.0" x2="423.0" y2="1494.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="414.0" cy="1489.0" r="3.5" fill="white" stroke="#526579"/>
@@ -211,6 +230,7 @@
 </g>
 <g class="edge" id="edge-R034" data-child="business_source" data-parent="production_booking">
 <title>R034 business_source(booking_id) → production_booking(booking_id)</title>
+<path d="M 728,1464 L 768,1464 L 768,821 L 844,821" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R034" d="M 728,1464 L 768,1464 L 768,821 L 844,821"/>
 <line x1="733.0" y1="1469.0" x2="733.0" y2="1459.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="742.0" cy="1464.0" r="3.5" fill="white" stroke="#526579"/>
@@ -219,6 +239,7 @@
 </g>
 <g class="edge" id="edge-R035" data-child="business_source" data-parent="editorial">
 <title>R035 business_source(editorial_id) → editorial(editorial_id)</title>
+<path d="M 728,1439 L 766,1439 L 766,1125 L 2044,1125 L 2044,271 L 2058,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R035" d="M 728,1439 L 766,1439 L 766,1125 L 2044,1125 L 2044,271 L 2058,271"/>
 <line x1="733.0" y1="1444.0" x2="733.0" y2="1434.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="742.0" cy="1439.0" r="3.5" fill="white" stroke="#526579"/>
@@ -227,6 +248,7 @@
 </g>
 <g class="edge" id="edge-R036" data-child="stage_source" data-parent="business_source">
 <title>R036 stage_source(source_id) → business_source(source_id)</title>
+<path d="M 578.0,1573 L 578.0,1527" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R036" d="M 578.0,1573 L 578.0,1527"/>
 <line x1="573.0" y1="1571.0" x2="578.0" y2="1561.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="578.0" y1="1571.0" x2="578.0" y2="1561.0" stroke="#526579" stroke-width="1.3"/>
@@ -237,6 +259,7 @@
 </g>
 <g class="edge" id="edge-R037" data-child="stage_source" data-parent="task_stage">
 <title>R037 stage_source(stage_id) → task_stage(stage_id)</title>
+<path d="M 428,1664 L 412,1664 L 412,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R037" d="M 428,1664 L 412,1664 L 412,1714 L 374,1714"/>
 <line x1="423.0" y1="1659.0" x2="423.0" y2="1669.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="414.0" cy="1664.0" r="3.5" fill="white" stroke="#526579"/>
@@ -245,6 +268,7 @@
 </g>
 <g class="edge" id="edge-R039" data-child="outcome" data-parent="business_source">
 <title>R039 outcome(source_id) → business_source(source_id)</title>
+<path d="M 1228,1439 L 1212,1439 L 1212,1314 L 744,1314 L 744,1414 L 728,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R039" d="M 1228,1439 L 1212,1439 L 1212,1314 L 744,1314 L 744,1414 L 728,1414"/>
 <line x1="1226.0" y1="1444.0" x2="1216.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1226.0" y1="1439.0" x2="1216.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
@@ -255,6 +279,7 @@
 </g>
 <g class="edge" id="edge-R040" data-child="outcome_attachment" data-parent="outcome">
 <title>R040 outcome_attachment(outcome_id) → outcome(outcome_id)</title>
+<path d="M 1378.0,1623 L 1378.0,1577" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R040" d="M 1378.0,1623 L 1378.0,1577"/>
 <line x1="1373.0" y1="1621.0" x2="1378.0" y2="1611.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1378.0" y1="1621.0" x2="1378.0" y2="1611.0" stroke="#526579" stroke-width="1.3"/>
@@ -265,6 +290,7 @@
 </g>
 <g class="edge" id="edge-R041" data-child="outcome_version" data-parent="manuscript_version">
 <title>R041 outcome_version(version_id) → manuscript_version(version_id)</title>
+<path d="M 1548,1989 L 1588,1989 L 1588,675 L 1676,675 L 1676,496 L 1704,496" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R041" d="M 1548,1989 L 1588,1989 L 1588,675 L 1676,675 L 1676,496 L 1704,496"/>
 <line x1="1550.0" y1="1984.0" x2="1560.0" y2="1989.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1550.0" y1="1989.0" x2="1560.0" y2="1989.0" stroke="#526579" stroke-width="1.3"/>
@@ -275,6 +301,7 @@
 </g>
 <g class="edge" id="edge-R042" data-child="outcome_version" data-parent="outcome">
 <title>R042 outcome_version(outcome_id) → outcome(outcome_id)</title>
+<path d="M 1548,1964 L 1556,1964 L 1556,1414 L 1528,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R042" d="M 1548,1964 L 1556,1964 L 1556,1414 L 1528,1414"/>
 <line x1="1550.0" y1="1959.0" x2="1560.0" y2="1964.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1550.0" y1="1964.0" x2="1560.0" y2="1964.0" stroke="#526579" stroke-width="1.3"/>
@@ -285,6 +312,7 @@
 </g>
 <g class="edge" id="edge-R043" data-child="publication" data-parent="outcome_version">
 <title>R043 publication(outcome_id, version_id) → outcome_version(outcome_id, version_id)</title>
+<path d="M 1602,2039 L 1586,2039 L 1586,1964 L 1548,1964" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R043" d="M 1602,2039 L 1586,2039 L 1586,1964 L 1548,1964"/>
 <line x1="1600.0" y1="2044.0" x2="1590.0" y2="2039.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1600.0" y1="2039.0" x2="1590.0" y2="2039.0" stroke="#526579" stroke-width="1.3"/>
@@ -295,6 +323,7 @@
 </g>
 <g class="edge" id="edge-R044" data-child="publication" data-parent="platform">
 <title>R044 publication(platform_id) → platform(platform_id)</title>
+<path d="M 1952,2089 L 1968,2089 L 1968,875 L 1676,875 L 1676,796 L 1704,796" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R044" d="M 1952,2089 L 1968,2089 L 1968,875 L 1676,875 L 1676,796 L 1704,796"/>
 <line x1="1954.0" y1="2084.0" x2="1964.0" y2="2089.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1954.0" y1="2089.0" x2="1964.0" y2="2089.0" stroke="#526579" stroke-width="1.3"/>
@@ -305,6 +334,7 @@
 </g>
 <g class="edge" id="edge-R045" data-child="publication" data-parent="outcome">
 <title>R045 publication(outcome_id) → outcome(outcome_id)</title>
+<path d="M 1602,2039 L 1562,2039 L 1562,1439 L 1544,1439 L 1544,1414 L 1528,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R045" d="M 1602,2039 L 1562,2039 L 1562,1439 L 1544,1439 L 1544,1414 L 1528,1414"/>
 <line x1="1600.0" y1="2044.0" x2="1590.0" y2="2039.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1600.0" y1="2039.0" x2="1590.0" y2="2039.0" stroke="#526579" stroke-width="1.3"/>
@@ -315,6 +345,7 @@
 </g>
 <g class="edge" id="edge-R046" data-child="stage_current_draft" data-parent="outcome_version">
 <title>R046 stage_current_draft(outcome_id, version_id) → outcome_version(outcome_id, version_id)</title>
+<path d="M 1602,1814 L 1564,1814 L 1564,1964 L 1548,1964" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R046" d="M 1602,1814 L 1564,1814 L 1564,1964 L 1548,1964"/>
 <line x1="1600.0" y1="1819.0" x2="1590.0" y2="1814.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1600.0" y1="1814.0" x2="1590.0" y2="1814.0" stroke="#526579" stroke-width="1.3"/>
@@ -325,6 +356,7 @@
 </g>
 <g class="edge" id="edge-R047" data-child="stage_current_draft" data-parent="task_stage">
 <title>R047 stage_current_draft(stage_id) → task_stage(stage_id)</title>
+<path d="M 1602,1789 L 1586,1789 L 1586,1843 L 742,1843 L 742,1743 L 390,1743 L 390,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R047" d="M 1602,1789 L 1586,1789 L 1586,1843 L 742,1843 L 742,1743 L 390,1743 L 390,1714 L 374,1714"/>
 <line x1="1597.0" y1="1784.0" x2="1597.0" y2="1794.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="1588.0" cy="1789.0" r="3.5" fill="white" stroke="#526579"/>
@@ -333,6 +365,7 @@
 </g>
 <g class="edge" id="edge-R048" data-child="manuscript_review" data-parent="manuscript_review">
 <title>R048 manuscript_review(prior_review_id) → manuscript_review(review_id)</title>
+<path d="M 1762.0,1652 L 1762.0,1668 L 1930,1668 L 1930,1307 L 1762.0,1307 L 1762.0,1323" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R048" d="M 1762.0,1652 L 1762.0,1668 L 1930,1668 L 1930,1307 L 1762.0,1307 L 1762.0,1323"/>
 <line x1="1767.0" y1="1654.0" x2="1762.0" y2="1664.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1762.0" y1="1654.0" x2="1762.0" y2="1664.0" stroke="#526579" stroke-width="1.3"/>
@@ -343,6 +376,7 @@
 </g>
 <g class="edge" id="edge-R050" data-child="manuscript_review" data-parent="manuscript_version">
 <title>R050 manuscript_review(version_id) → manuscript_version(version_id)</title>
+<path d="M 1922,1439 L 1938,1439 L 1938,871 L 1688,871 L 1688,496 L 1704,496" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R050" d="M 1922,1439 L 1938,1439 L 1938,871 L 1688,871 L 1688,496 L 1704,496"/>
 <line x1="1924.0" y1="1434.0" x2="1934.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1924.0" y1="1439.0" x2="1934.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
@@ -353,7 +387,8 @@
 </g>
 <g class="edge" id="edge-R052" data-child="editorial_review" data-parent="outcome">
 <title>R052 editorial_review(outcome_id) → outcome(outcome_id)</title>
-<path class="relation" id="R052" d="M 2412,296 L 2382,296 L 2382,1175 L 1556,1175 L 1556,1314 L 1544,1314 L 1544,1414 L 1528,1414"/>
+<path d="M 2412,296 L 2372,296 L 2372,1175 L 1556,1175 L 1556,1314 L 1544,1314 L 1544,1414 L 1528,1414" fill="none" stroke="white" stroke-width="4.8"/>
+<path class="relation" id="R052" d="M 2412,296 L 2372,296 L 2372,1175 L 1556,1175 L 1556,1314 L 1544,1314 L 1544,1414 L 1528,1414"/>
 <line x1="2407.0" y1="291.0" x2="2407.0" y2="301.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="2398.0" cy="296.0" r="3.5" fill="white" stroke="#526579"/>
 <line x1="1533.0" y1="1419.0" x2="1533.0" y2="1409.0" stroke="#526579" stroke-width="1.3"/>
@@ -361,7 +396,8 @@
 </g>
 <g class="edge" id="edge-R053" data-child="editorial_review_item" data-parent="manuscript_review">
 <title>R053 editorial_review_item(review_id) → manuscript_review(review_id)</title>
-<path class="relation" id="R053" d="M 2412,596 L 2372,596 L 2372,1314 L 1942,1314 L 1942,1414 L 1922,1414"/>
+<path d="M 2412,596 L 2382,596 L 2382,1314 L 1942,1314 L 1942,1414 L 1922,1414" fill="none" stroke="white" stroke-width="4.8"/>
+<path class="relation" id="R053" d="M 2412,596 L 2382,596 L 2382,1314 L 1942,1314 L 1942,1414 L 1922,1414"/>
 <line x1="2410.0" y1="601.0" x2="2400.0" y2="596.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2410.0" y1="596.0" x2="2400.0" y2="596.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2410.0" y1="591.0" x2="2400.0" y2="596.0" stroke="#526579" stroke-width="1.3"/>
@@ -371,6 +407,7 @@
 </g>
 <g class="edge" id="edge-R054" data-child="editorial_review_item" data-parent="editorial_review">
 <title>R054 editorial_review_item(editorial_review_id) → editorial_review(editorial_review_id)</title>
+<path d="M 2597.0,480 L 2597.0,450 L 2562.0,450 L 2562.0,434" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R054" d="M 2597.0,480 L 2597.0,450 L 2562.0,450 L 2562.0,434"/>
 <line x1="2592.0" y1="478.0" x2="2597.0" y2="468.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2597.0" y1="478.0" x2="2597.0" y2="468.0" stroke="#526579" stroke-width="1.3"/>
@@ -381,6 +418,7 @@
 </g>
 <g class="edge" id="edge-R055" data-child="editorial_archive" data-parent="editorial_review">
 <title>R055 editorial_archive(editorial_review_id) → editorial_review(editorial_review_id)</title>
+<path d="M 2762,796 L 2790,796 L 2790,271 L 2712,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R055" d="M 2762,796 L 2790,796 L 2790,271 L 2712,271"/>
 <line x1="2767.0" y1="801.0" x2="2767.0" y2="791.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="2776.0" cy="796.0" r="3.5" fill="white" stroke="#526579"/>
@@ -389,6 +427,7 @@
 </g>
 <g class="edge" id="edge-R056" data-child="editorial_archive" data-parent="editorial">
 <title>R056 editorial_archive(editorial_id) → editorial(editorial_id)</title>
+<path d="M 2412,771 L 2396,771 L 2396,271 L 2358,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R056" d="M 2412,771 L 2396,771 L 2396,271 L 2358,271"/>
 <line x1="2407.0" y1="766.0" x2="2407.0" y2="776.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="2398.0" cy="771.0" r="3.5" fill="white" stroke="#526579"/>
@@ -397,6 +436,7 @@
 </g>
 <g class="edge" id="edge-R058" data-child="production_archive" data-parent="outcome">
 <title>R058 production_archive(outcome_id) → outcome(outcome_id)</title>
+<path d="M 1528,821 L 1544,821 L 1544,1314 L 1212,1314 L 1212,1414 L 1228,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R058" d="M 1528,821 L 1544,821 L 1544,1314 L 1212,1314 L 1212,1414 L 1228,1414"/>
 <line x1="1533.0" y1="826.0" x2="1533.0" y2="816.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="1542.0" cy="821.0" r="3.5" fill="white" stroke="#526579"/>
@@ -405,6 +445,7 @@
 </g>
 <g class="edge" id="edge-R059" data-child="production_archive" data-parent="production_booking">
 <title>R059 production_archive(booking_id) → production_booking(booking_id)</title>
+<path d="M 1208,796 L 1192,796 L 1192,821 L 1144,821" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R059" d="M 1208,796 L 1192,796 L 1192,821 L 1144,821"/>
 <line x1="1203.0" y1="791.0" x2="1203.0" y2="801.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="1194.0" cy="796.0" r="3.5" fill="white" stroke="#526579"/>
@@ -413,6 +454,7 @@
 </g>
 <g class="edge" id="edge-R061" data-child="stage_confirmation" data-parent="outcome">
 <title>R061 stage_confirmation(outcome_id) → outcome(outcome_id)</title>
+<path d="M 1082,1464 L 1098,1464 L 1098,1414 L 1228,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R061" d="M 1082,1464 L 1098,1464 L 1098,1414 L 1228,1414"/>
 <line x1="1084.0" y1="1459.0" x2="1094.0" y2="1464.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1084.0" y1="1464.0" x2="1094.0" y2="1464.0" stroke="#526579" stroke-width="1.3"/>
@@ -423,6 +465,7 @@
 </g>
 <g class="edge" id="edge-R062" data-child="stage_confirmation" data-parent="task_stage">
 <title>R062 stage_confirmation(stage_id) → task_stage(stage_id)</title>
+<path d="M 782,1439 L 766,1439 L 766,1557 L 388,1557 L 388,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R062" d="M 782,1439 L 766,1439 L 766,1557 L 388,1557 L 388,1714 L 374,1714"/>
 <line x1="780.0" y1="1444.0" x2="770.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="780.0" y1="1439.0" x2="770.0" y2="1439.0" stroke="#526579" stroke-width="1.3"/>
@@ -433,6 +476,7 @@
 </g>
 <g class="edge" id="edge-R063" data-child="stage_completion" data-parent="manuscript_review">
 <title>R063 stage_completion(second_review_id) → manuscript_review(review_id)</title>
+<path d="M 1112,1789 L 1128,1789 L 1128,1593 L 1586,1593 L 1586,1414 L 1602,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R063" d="M 1112,1789 L 1128,1789 L 1128,1593 L 1586,1593 L 1586,1414 L 1602,1414"/>
 <line x1="1114.0" y1="1784.0" x2="1124.0" y2="1789.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="1114.0" y1="1789.0" x2="1124.0" y2="1789.0" stroke="#526579" stroke-width="1.3"/>
@@ -443,6 +487,7 @@
 </g>
 <g class="edge" id="edge-R064" data-child="stage_completion" data-parent="stage_confirmation">
 <title>R064 stage_completion(confirmation_id) → stage_confirmation(confirmation_id)</title>
+<path d="M 947.0,1648 L 947.0,1618 L 932.0,1618 L 932.0,1602" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R064" d="M 947.0,1648 L 947.0,1618 L 932.0,1618 L 932.0,1602"/>
 <line x1="952.0" y1="1643.0" x2="942.0" y2="1643.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="947.0" cy="1634.0" r="3.5" fill="white" stroke="#526579"/>
@@ -451,6 +496,7 @@
 </g>
 <g class="edge" id="edge-R065" data-child="stage_completion" data-parent="task_stage">
 <title>R065 stage_completion(stage_id) → task_stage(stage_id)</title>
+<path d="M 782,1739 L 390,1739 L 390,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R065" d="M 782,1739 L 390,1739 L 390,1714 L 374,1714"/>
 <line x1="777.0" y1="1734.0" x2="777.0" y2="1744.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="768.0" cy="1739.0" r="3.5" fill="white" stroke="#526579"/>
@@ -459,6 +505,7 @@
 </g>
 <g class="edge" id="edge-R066" data-child="workflow_completion" data-parent="workflow">
 <title>R066 workflow_completion(workflow_id) → workflow(workflow_id)</title>
+<path d="M 428,1864 L 400,1864 L 400,1414 L 374,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R066" d="M 428,1864 L 400,1864 L 400,1414 L 374,1414"/>
 <line x1="423.0" y1="1859.0" x2="423.0" y2="1869.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="414.0" cy="1864.0" r="3.5" fill="white" stroke="#526579"/>
@@ -467,6 +514,7 @@
 </g>
 <g class="edge" id="edge-R068" data-child="contribution_policy" data-parent="contribution_type">
 <title>R068 contribution_policy(type_id) → contribution_type(type_id)</title>
+<path d="M 2368,1739 L 2384,1739 L 2384,1414 L 2422,1414" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R068" d="M 2368,1739 L 2384,1739 L 2384,1414 L 2422,1414"/>
 <line x1="2370.0" y1="1734.0" x2="2380.0" y2="1739.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2370.0" y1="1739.0" x2="2380.0" y2="1739.0" stroke="#526579" stroke-width="1.3"/>
@@ -477,6 +525,7 @@
 </g>
 <g class="edge" id="edge-R069" data-child="contribution_policy" data-parent="allowance_standard">
 <title>R069 contribution_policy(standard_id) → allowance_standard(standard_id)</title>
+<path d="M 2218.0,1598 L 2218.0,1552" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R069" d="M 2218.0,1598 L 2218.0,1552"/>
 <line x1="2213.0" y1="1596.0" x2="2218.0" y2="1586.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2218.0" y1="1596.0" x2="2218.0" y2="1586.0" stroke="#526579" stroke-width="1.3"/>
@@ -487,6 +536,7 @@
 </g>
 <g class="edge" id="edge-R072" data-child="contribution_basis" data-parent="contribution_type">
 <title>R072 contribution_basis(type_id) → contribution_type(type_id)</title>
+<path d="M 2572.0,1548 L 2572.0,1502" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R072" d="M 2572.0,1548 L 2572.0,1502"/>
 <line x1="2567.0" y1="1546.0" x2="2572.0" y2="1536.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2572.0" y1="1546.0" x2="2572.0" y2="1536.0" stroke="#526579" stroke-width="1.3"/>
@@ -497,7 +547,8 @@
 </g>
 <g class="edge" id="edge-R073" data-child="contribution_basis" data-parent="business_source">
 <title>R073 contribution_basis(source_id) → business_source(source_id)</title>
-<path class="relation" id="R073" d="M 2422,1664 L 2382,1664 L 2382,1295 L 754,1295 L 754,1414 L 728,1414"/>
+<path d="M 2422,1664 L 2382,1664 L 2382,1582 L 1938,1582 L 1938,1664 L 1544,1664 L 1544,1607 L 1098,1607 L 1098,1620 L 744,1620 L 744,1414 L 728,1414" fill="none" stroke="white" stroke-width="4.8"/>
+<path class="relation" id="R073" d="M 2422,1664 L 2382,1664 L 2382,1582 L 1938,1582 L 1938,1664 L 1544,1664 L 1544,1607 L 1098,1607 L 1098,1620 L 744,1620 L 744,1414 L 728,1414"/>
 <line x1="2420.0" y1="1669.0" x2="2410.0" y2="1664.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2420.0" y1="1664.0" x2="2410.0" y2="1664.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2420.0" y1="1659.0" x2="2410.0" y2="1664.0" stroke="#526579" stroke-width="1.3"/>
@@ -507,6 +558,7 @@
 </g>
 <g class="edge" id="edge-R074" data-child="stage_contribution" data-parent="contribution_basis">
 <title>R074 stage_contribution(basis_id) → contribution_basis(basis_id)</title>
+<path d="M 2572.0,1873 L 2572.0,1827" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R074" d="M 2572.0,1873 L 2572.0,1827"/>
 <line x1="2567.0" y1="1871.0" x2="2572.0" y2="1861.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2572.0" y1="1871.0" x2="2572.0" y2="1861.0" stroke="#526579" stroke-width="1.3"/>
@@ -517,6 +569,7 @@
 </g>
 <g class="edge" id="edge-R075" data-child="stage_contribution" data-parent="task_stage">
 <title>R075 stage_contribution(stage_id) → task_stage(stage_id)</title>
+<path d="M 2422,1964 L 2408,1964 L 2408,1864 L 1918,1864 L 1918,1893 L 1568,1893 L 1568,1845 L 744,1845 L 744,1745 L 388,1745 L 388,1714 L 374,1714" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R075" d="M 2422,1964 L 2408,1964 L 2408,1864 L 1918,1864 L 1918,1893 L 1568,1893 L 1568,1845 L 744,1845 L 744,1745 L 388,1745 L 388,1714 L 374,1714"/>
 <line x1="2420.0" y1="1969.0" x2="2410.0" y2="1964.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2420.0" y1="1964.0" x2="2410.0" y2="1964.0" stroke="#526579" stroke-width="1.3"/>
@@ -527,6 +580,7 @@
 </g>
 <g class="edge" id="edge-R076" data-child="contribution_measurement" data-parent="contribution_policy">
 <title>R076 contribution_measurement(policy_id) → contribution_policy(policy_id)</title>
+<path d="M 2218.0,1873 L 2218.0,1827" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R076" d="M 2218.0,1873 L 2218.0,1827"/>
 <line x1="2213.0" y1="1871.0" x2="2218.0" y2="1861.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="2218.0" y1="1871.0" x2="2218.0" y2="1861.0" stroke="#526579" stroke-width="1.3"/>
@@ -537,6 +591,7 @@
 </g>
 <g class="edge" id="edge-R077" data-child="contribution_measurement" data-parent="contribution_basis">
 <title>R077 contribution_measurement(basis_id) → contribution_basis(basis_id)</title>
+<path d="M 2368,1964 L 2406,1964 L 2406,1639 L 2422,1639" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R077" d="M 2368,1964 L 2406,1964 L 2406,1639 L 2422,1639"/>
 <line x1="2373.0" y1="1969.0" x2="2373.0" y2="1959.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="2382.0" cy="1964.0" r="3.5" fill="white" stroke="#526579"/>
@@ -545,6 +600,7 @@
 </g>
 <g class="edge" id="edge-R080" data-child="report_department" data-parent="weekly_report">
 <title>R080 report_department(report_id) → weekly_report(report_id)</title>
+<path d="M 3048.0,455 L 3048.0,409" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R080" d="M 3048.0,455 L 3048.0,409"/>
 <line x1="3043.0" y1="453.0" x2="3048.0" y2="443.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="3048.0" y1="453.0" x2="3048.0" y2="443.0" stroke="#526579" stroke-width="1.3"/>
@@ -555,6 +611,7 @@
 </g>
 <g class="edge" id="edge-R081" data-child="report_contribution" data-parent="contribution_measurement">
 <title>R081 report_contribution(basis_id) → contribution_measurement(basis_id)</title>
+<path d="M 3252,296 L 3224,296 L 3224,1307 L 2386,1307 L 2386,1955 L 2384,1955 L 2384,1964 L 2368,1964" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R081" d="M 3252,296 L 3224,296 L 3224,1307 L 2386,1307 L 2386,1955 L 2384,1955 L 2384,1964 L 2368,1964"/>
 <line x1="3250.0" y1="301.0" x2="3240.0" y2="296.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="3250.0" y1="296.0" x2="3240.0" y2="296.0" stroke="#526579" stroke-width="1.3"/>
@@ -565,6 +622,7 @@
 </g>
 <g class="edge" id="edge-R082" data-child="report_contribution" data-parent="weekly_report">
 <title>R082 report_contribution(report_id) → weekly_report(report_id)</title>
+<path d="M 3252,271 L 3198,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R082" d="M 3252,271 L 3198,271"/>
 <line x1="3250.0" y1="276.0" x2="3240.0" y2="271.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="3250.0" y1="271.0" x2="3240.0" y2="271.0" stroke="#526579" stroke-width="1.3"/>
@@ -575,6 +633,7 @@
 </g>
 <g class="edge" id="edge-R083" data-child="report_pending" data-parent="contribution_basis">
 <title>R083 report_pending(basis_id) → contribution_basis(basis_id)</title>
+<path d="M 3252,496 L 3236,496 L 3236,1314 L 2738,1314 L 2738,1639 L 2722,1639" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R083" d="M 3252,496 L 3236,496 L 3236,1314 L 2738,1314 L 2738,1639 L 2722,1639"/>
 <line x1="3250.0" y1="501.0" x2="3240.0" y2="496.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="3250.0" y1="496.0" x2="3240.0" y2="496.0" stroke="#526579" stroke-width="1.3"/>
@@ -585,6 +644,7 @@
 </g>
 <g class="edge" id="edge-R084" data-child="report_pending" data-parent="weekly_report">
 <title>R084 report_pending(report_id) → weekly_report(report_id)</title>
+<path d="M 3252,471 L 3214,471 L 3214,271 L 3198,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R084" d="M 3252,471 L 3214,471 L 3214,271 L 3198,271"/>
 <line x1="3250.0" y1="476.0" x2="3240.0" y2="471.0" stroke="#526579" stroke-width="1.3"/>
 <line x1="3250.0" y1="471.0" x2="3240.0" y2="471.0" stroke="#526579" stroke-width="1.3"/>
@@ -595,6 +655,7 @@
 </g>
 <g class="edge" id="edge-R085" data-child="report_seal" data-parent="weekly_report">
 <title>R085 report_seal(report_id) → weekly_report(report_id)</title>
+<path d="M 3198,746 L 3212,746 L 3212,271 L 3198,271" fill="none" stroke="white" stroke-width="4.8"/>
 <path class="relation" id="R085" d="M 3198,746 L 3212,746 L 3212,271 L 3198,271"/>
 <line x1="3203.0" y1="751.0" x2="3203.0" y2="741.0" stroke="#526579" stroke-width="1.3"/>
 <circle cx="3212.0" cy="746.0" r="3.5" fill="white" stroke="#526579"/>

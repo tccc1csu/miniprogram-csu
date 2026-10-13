@@ -1,4 +1,4 @@
-PASS: 105 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
+PASS: 107 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
 PASS canonical timestamps reject mixed T formatting
 PASS invalid timestamp is rejected
 PASS non-admin requires a department
@@ -95,13 +95,15 @@ PASS db-overview rendered .svg
 PASS db-overview has no render error
 PASS db-overview render is current
 PASS compact SVG contains exactly all tables and views
-PASS compact SVG draws only selected true FK relations
+PASS compact SVG draws ALL business FK relations and local shared references
+PASS only remote member/department shared-reference lines are omitted
+PASS every external relationship visibly carries cardinality markers at both ends
 PASS all FK columns retain exact references in model metadata
 PASS every FK field displays its referenced table name
 PASS main diagram omits R labels, type/null columns and constraint expressions
 PASS every base-table field and every primary-key icon is visible
 PASS cards do not overlap and no relationship crosses a table interior
-PASS every region reserves a bounded extension strip
+PASS every region reserves a small extension strip
 PASS compact canvas is under half the prior diagram area
 PASS rendered overview has only straight line segments and polylines (no curved Beziers)
 

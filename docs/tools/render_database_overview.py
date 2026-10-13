@@ -148,6 +148,7 @@ for r in routes:
     xs.update([r['start'][0],r['end'][0]]);ys.update([r['start'][1],r['end'][1]])
 xs=sorted(xs);ys=sorted(ys);xi={v:i for i,v in enumerate(xs)};yi={v:i for i,v in enumerate(ys)}
 blocked=set();rects=[(c['x']-7,c['y']-7,c['x']+c['width']+7,c['y']+c['height']+7) for c in cards.values()]
+rects += [(z['x']+PAD-5,z['y']+8,z['x']+PAD+310,z['y']+42) for z in zones]
 # Grid nodes and edges whose geometric segment intersects a card are blocked.
 adj=collections.defaultdict(list)
 for i,x in enumerate(xs):
@@ -241,6 +242,7 @@ for r in routes:
         if any(c is None for c in targetcols):targetcols=[c['name'] for c in sorted(tables[rr['parent']]['columns'],key=lambda c:c['pk']) if c['pk']]
         title=rr['code']+' '+rr['child']+'('+', '.join(rr['columns'])+') → '+rr['parent']+'('+', '.join(targetcols)+')'
         emit('<title>'+escape(title)+'</title>')
+        emit(f'<path d="{path}" fill="none" stroke="white" stroke-width="4.8"/>')
         emit(f'<path class="relation" id="{r["id"]}" d="{path}"/>')
         marker(points[0],points[1],'0..1' if rr['unique'] else '0..*','#526579')
         marker(points[-1],points[-2],'0..1' if rr['nullable'] else '1','#526579')
