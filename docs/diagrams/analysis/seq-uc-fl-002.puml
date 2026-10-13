@@ -1,0 +1,52 @@
+@startuml
+title UC-FL-002 派发部门阶段任务 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "阶段所属部长" as A
+boundary "接口:部长接口" as B
+control "控制:派发部门阶段任务控制" as C
+participant "M:成员" as M
+participant "F:流转任务" as F
+participant "G:任务阶段" as G
+participant "N:成员" as N
+A -> B: 派发部门阶段任务(业务信息)
+activate B
+B -> C: 派发部门阶段任务(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> F: 派发阶段(部长、目标阶段、承接人、排班依据)
+activate F
+F -> G: 检查可开始(前序阶段完成情况)
+G --> F: 可开始或等待前序
+F -> G: 派发(部长、承接人、排班依据)
+activate G
+G -> N: 验证归属(阶段所属部门)
+N --> G: 成员资格
+G --> F: 唯一承接结果或拒绝原因
+deactivate G
+F --> C: 派发结果
+deactivate F
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

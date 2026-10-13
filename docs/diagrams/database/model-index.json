@@ -1,0 +1,4475 @@
+{
+  "tables": {
+    "organization": {
+      "name": "organization",
+      "label": "中心组织",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "organization_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_organization_1",
+          "columns": [
+            "name"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "department": {
+      "name": "department",
+      "label": "部门",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "organization_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "enabled",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "1",
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "organization",
+          "col": "organization_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_department_1",
+          "columns": [
+            "organization_id",
+            "name"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "member": {
+      "name": "member",
+      "label": "成员与账号",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "login_name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "password_hash",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "account_role",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "enabled",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "1",
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_member_1",
+          "columns": [
+            "login_name"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "external_identity": {
+      "name": "external_identity",
+      "label": "外部身份绑定",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "identity_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "provider",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "app_scope",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "subject",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "member_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_external_identity_2",
+          "columns": [
+            "member_id",
+            "provider",
+            "app_scope"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_external_identity_1",
+          "columns": [
+            "provider",
+            "app_scope",
+            "subject"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "login_session": {
+      "name": "login_session",
+      "label": "登录会话",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "session_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "token_hash",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "issued_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "expires_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "terminated_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "member_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_login_session_1",
+          "columns": [
+            "token_hash"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "archive_preference": {
+      "name": "archive_preference",
+      "label": "归档人偏好",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "production_member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "office_member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "office_member_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "production_member_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "platform": {
+      "name": "platform",
+      "label": "发布平台",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "platform_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_platform_1",
+          "columns": [
+            "name"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "work": {
+      "name": "work",
+      "label": "作品",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "work_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "origin_kind",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [],
+      "uniques": []
+    },
+    "manuscript_version": {
+      "name": "manuscript_version",
+      "label": "稿件版本",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "version_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "work_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "revision_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "content",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "submitted_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "submitted_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "submitted_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "work",
+          "col": "work_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_manuscript_version_1",
+          "columns": [
+            "work_id",
+            "revision_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial": {
+      "name": "editorial",
+      "label": "采编协同",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "initiator_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "submitted_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "deadline_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "initiator_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "editorial_work": {
+      "name": "editorial_work",
+      "label": "协同作品",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "work_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "work",
+          "col": "work_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "editorial",
+          "col": "editorial_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_editorial_work_1",
+          "columns": [
+            "editorial_id",
+            "work_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial_target": {
+      "name": "editorial_target",
+      "label": "作品目标平台",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "work_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        },
+        {
+          "cid": 2,
+          "name": "platform_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 3
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "editorial_work",
+          "col": "editorial_id",
+          "to": null
+        },
+        {
+          "id": 0,
+          "seq": 1,
+          "target": "editorial_work",
+          "col": "work_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "platform",
+          "col": "platform_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_editorial_target_1",
+          "columns": [
+            "editorial_id",
+            "work_id",
+            "platform_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial_assignment": {
+      "name": "editorial_assignment",
+      "label": "办公承接责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "assignee_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "assignee_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "editorial",
+          "col": "editorial_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "production_schedule": {
+      "name": "production_schedule",
+      "label": "摄制日程",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "schedule_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_production_schedule_1",
+          "columns": [
+            "department_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "booking_terms": {
+      "name": "booking_terms",
+      "label": "摄制约定版本",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "terms_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "schedule_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "version_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "effective_from",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "urgent_threshold_days",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "day_basis",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "urgent_factor_bp",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "conflict_scope_note",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "production_schedule",
+          "col": "schedule_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_booking_terms_2",
+          "columns": [
+            "schedule_id",
+            "effective_from"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_booking_terms_1",
+          "columns": [
+            "schedule_id",
+            "version_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "production_booking": {
+      "name": "production_booking",
+      "label": "摄制预约",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "booking_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "requester_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "terms_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "starts_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "ends_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "location",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "contact",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "submitted_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "urgent_decision",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "claim_open",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "0",
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "booking_terms",
+          "col": "terms_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "requester_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "production_assignment": {
+      "name": "production_assignment",
+      "label": "摄制承接责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "booking_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "assignee_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "method",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "assignee_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "production_booking",
+          "col": "booking_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "production_archive_responsibility": {
+      "name": "production_archive_responsibility",
+      "label": "指定办公归档责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "booking_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "office_member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "specified_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "specified_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "specified_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "office_member_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "production_booking",
+          "col": "booking_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "workflow": {
+      "name": "workflow",
+      "label": "流转任务",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "workflow_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "initiator_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "request_origin",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "objective",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "initiator_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "task_stage": {
+      "name": "task_stage",
+      "label": "任务阶段",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "workflow_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "sequence_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "result_requirement",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "review_policy",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "deadline_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "workflow",
+          "col": "workflow_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_task_stage_1",
+          "columns": [
+            "workflow_id",
+            "sequence_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "stage_assignment": {
+      "name": "stage_assignment",
+      "label": "阶段承接责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "assignee_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "roster_basis",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "assignee_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "business_source": {
+      "name": "business_source",
+      "label": "唯一业务来源",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "booking_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "production_booking",
+          "col": "booking_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "editorial",
+          "col": "editorial_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_business_source_3",
+          "columns": [
+            "stage_id"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_business_source_2",
+          "columns": [
+            "booking_id"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_business_source_1",
+          "columns": [
+            "editorial_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "stage_source": {
+      "name": "stage_source",
+      "label": "阶段来源映射",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "outcome": {
+      "name": "outcome",
+      "label": "成果提交",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "submission_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "submitted_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "completed_note",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "submitted_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "submitted_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_outcome_1",
+          "columns": [
+            "source_id",
+            "submission_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "outcome_attachment": {
+      "name": "outcome_attachment",
+      "label": "成果附件",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "attachment_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "file_name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "storage_ref",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_outcome_attachment_1",
+          "columns": [
+            "outcome_id",
+            "storage_ref"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "outcome_version": {
+      "name": "outcome_version",
+      "label": "成果稿件版本",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "version_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "manuscript_version",
+          "col": "version_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_outcome_version_1",
+          "columns": [
+            "outcome_id",
+            "version_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "publication": {
+      "name": "publication",
+      "label": "发布成果",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "publication_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "version_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "platform_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "result_url",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "outcome_version",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 0,
+          "seq": 1,
+          "target": "outcome_version",
+          "col": "version_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "platform",
+          "col": "platform_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "publication_other_unique",
+          "columns": [
+            "outcome_id",
+            "platform_id",
+            "result_url"
+          ],
+          "partial": true
+        },
+        {
+          "name": "publication_manuscript_unique",
+          "columns": [
+            "outcome_id",
+            "version_id",
+            "platform_id"
+          ],
+          "partial": true
+        }
+      ]
+    },
+    "stage_current_draft": {
+      "name": "stage_current_draft",
+      "label": "阶段当前送审版",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "version_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "outcome_version",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 0,
+          "seq": 1,
+          "target": "outcome_version",
+          "col": "version_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "manuscript_review": {
+      "name": "manuscript_review",
+      "label": "稿件审查结论",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "version_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "level",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "round_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "reviewer_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "decision",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "opinion",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "reviewed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "prior_review_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "manuscript_review",
+          "col": "prior_review_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "reviewer_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "manuscript_version",
+          "col": "version_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_manuscript_review_1",
+          "columns": [
+            "version_id",
+            "level",
+            "round_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial_review": {
+      "name": "editorial_review",
+      "label": "同步审核结论",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "reviewer_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "decision",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "opinion",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "reviewed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "reviewer_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_editorial_review_1",
+          "columns": [
+            "outcome_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial_review_item": {
+      "name": "editorial_review_item",
+      "label": "同步审核稿件依据",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "manuscript_review",
+          "col": "review_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "editorial_review",
+          "col": "editorial_review_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_editorial_review_item_1",
+          "columns": [
+            "editorial_review_id",
+            "review_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "editorial_archive": {
+      "name": "editorial_archive",
+      "label": "采编归档完成",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "editorial_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "editorial_review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "archived_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "editorial_review",
+          "col": "editorial_review_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "editorial",
+          "col": "editorial_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_editorial_archive_1",
+          "columns": [
+            "editorial_review_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "production_archive": {
+      "name": "production_archive",
+      "label": "摄制归档完成",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "booking_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "archived_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "archived_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "archived_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "production_booking",
+          "col": "booking_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_production_archive_1",
+          "columns": [
+            "outcome_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "stage_confirmation": {
+      "name": "stage_confirmation",
+      "label": "阶段确认结论",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "confirmation_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "confirmed_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "decision",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "opinion",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "confirmed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "confirmed_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "stage_completion": {
+      "name": "stage_completion",
+      "label": "阶段完成",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "confirmation_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "second_review_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "manuscript_review",
+          "col": "second_review_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "stage_confirmation",
+          "col": "confirmation_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_stage_completion_1",
+          "columns": [
+            "confirmation_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "workflow_completion": {
+      "name": "workflow_completion",
+      "label": "任务完成",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "workflow_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "completed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "workflow",
+          "col": "workflow_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "contribution_type": {
+      "name": "contribution_type",
+      "label": "贡献类型",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "type_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "code",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_contribution_type_2",
+          "columns": [
+            "name"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_contribution_type_1",
+          "columns": [
+            "code"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "allowance_standard": {
+      "name": "allowance_standard",
+      "label": "部门津贴标准版本",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "standard_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "version_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "effective_from",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "hourly_rate_cents",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_allowance_standard_2",
+          "columns": [
+            "department_id",
+            "effective_from"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_allowance_standard_1",
+          "columns": [
+            "department_id",
+            "version_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "contribution_policy": {
+      "name": "contribution_policy",
+      "label": "贡献计量规则",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "policy_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "standard_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "type_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "basis_rule",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "urgent_applies",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "contribution_type",
+          "col": "type_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "allowance_standard",
+          "col": "standard_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_contribution_policy_1",
+          "columns": [
+            "standard_id",
+            "type_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "contribution_basis": {
+      "name": "contribution_basis",
+      "label": "工作贡献依据",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "basis_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "type_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "member_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "occurred_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "evidence",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "member_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "contribution_type",
+          "col": "type_id",
+          "to": null
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_contribution_basis_1",
+          "columns": [
+            "source_id",
+            "type_id",
+            "member_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "stage_contribution": {
+      "name": "stage_contribution",
+      "label": "阶段贡献引用",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "stage_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "basis_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "contribution_basis",
+          "col": "basis_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "task_stage",
+          "col": "stage_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_stage_contribution_1",
+          "columns": [
+            "stage_id",
+            "basis_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "contribution_measurement": {
+      "name": "contribution_measurement",
+      "label": "已核实贡献计量",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "basis_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "policy_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "base_hours_u",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assessed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "contribution_policy",
+          "col": "policy_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "contribution_basis",
+          "col": "basis_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "weekly_report": {
+      "name": "weekly_report",
+      "label": "中心周报批次",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "report_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "week_start",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "generated_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "generated_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "export_ref",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "generated_by",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "report_department": {
+      "name": "report_department",
+      "label": "周报部门范围",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "report_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "department_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "weekly_report",
+          "col": "report_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_report_department_1",
+          "columns": [
+            "report_id",
+            "department_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "report_contribution": {
+      "name": "report_contribution",
+      "label": "周报有效明细集合",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "report_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "basis_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "contribution_measurement",
+          "col": "basis_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "weekly_report",
+          "col": "report_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_report_contribution_1",
+          "columns": [
+            "report_id",
+            "basis_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "report_pending": {
+      "name": "report_pending",
+      "label": "周报待核对项",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "report_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "basis_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        },
+        {
+          "cid": 2,
+          "name": "reason",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "contribution_basis",
+          "col": "basis_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "weekly_report",
+          "col": "report_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_report_pending_1",
+          "columns": [
+            "report_id",
+            "basis_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "report_seal": {
+      "name": "report_seal",
+      "label": "周报封存",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "report_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "weekly_report",
+          "col": "report_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    }
+  },
+  "figures": [
+    {
+      "slug": "db-organization",
+      "title": "组织、账号与会话",
+      "tables": [
+        "organization",
+        "department",
+        "member",
+        "external_identity",
+        "login_session",
+        "archive_preference"
+      ],
+      "context": []
+    },
+    {
+      "slug": "db-editorial",
+      "title": "采编协同与作品",
+      "tables": [
+        "editorial",
+        "editorial_work",
+        "editorial_target",
+        "editorial_assignment",
+        "work",
+        "manuscript_version",
+        "platform"
+      ],
+      "context": [
+        "member"
+      ]
+    },
+    {
+      "slug": "db-production",
+      "title": "摄制预约与唯一承接",
+      "tables": [
+        "production_schedule",
+        "booking_terms",
+        "production_booking",
+        "production_assignment",
+        "production_archive_responsibility",
+        "production_archive"
+      ],
+      "context": [
+        "department",
+        "member",
+        "outcome"
+      ]
+    },
+    {
+      "slug": "db-workflow",
+      "title": "任务、阶段与来源",
+      "tables": [
+        "workflow",
+        "task_stage",
+        "stage_assignment",
+        "business_source",
+        "stage_source",
+        "stage_confirmation",
+        "stage_completion",
+        "workflow_completion"
+      ],
+      "context": [
+        "department",
+        "editorial",
+        "manuscript_review",
+        "member",
+        "outcome",
+        "production_booking"
+      ]
+    },
+    {
+      "slug": "db-results",
+      "title": "成果、发布与版本审核",
+      "tables": [
+        "outcome",
+        "outcome_attachment",
+        "outcome_version",
+        "publication",
+        "stage_current_draft",
+        "manuscript_review"
+      ],
+      "context": [
+        "business_source",
+        "manuscript_version",
+        "member",
+        "platform",
+        "task_stage"
+      ]
+    },
+    {
+      "slug": "db-editorial-review",
+      "title": "采编审核及归档依据",
+      "tables": [
+        "editorial_review",
+        "editorial_review_item",
+        "editorial_archive"
+      ],
+      "context": [
+        "editorial",
+        "manuscript_review",
+        "member",
+        "outcome"
+      ]
+    },
+    {
+      "slug": "db-accounting",
+      "title": "贡献依据、计量与规则",
+      "tables": [
+        "contribution_type",
+        "allowance_standard",
+        "contribution_policy",
+        "contribution_basis",
+        "stage_contribution",
+        "contribution_measurement"
+      ],
+      "context": [
+        "business_source",
+        "department",
+        "member",
+        "task_stage"
+      ]
+    },
+    {
+      "slug": "db-reports",
+      "title": "周报范围、明细及封存",
+      "tables": [
+        "weekly_report",
+        "report_department",
+        "report_contribution",
+        "report_pending",
+        "report_seal"
+      ],
+      "context": [
+        "contribution_basis",
+        "contribution_measurement",
+        "department",
+        "member"
+      ]
+    }
+  ],
+  "views": [
+    "v_contribution_detail",
+    "v_contribution_money",
+    "v_member_weekly_summary",
+    "v_pending_contribution",
+    "v_report_member_summary"
+  ],
+  "immutable": [
+    "work",
+    "manuscript_version",
+    "booking_terms",
+    "editorial_assignment",
+    "production_assignment",
+    "production_archive_responsibility",
+    "business_source",
+    "stage_source",
+    "outcome",
+    "outcome_attachment",
+    "outcome_version",
+    "publication",
+    "manuscript_review",
+    "editorial_review",
+    "editorial_review_item",
+    "editorial_archive",
+    "production_archive",
+    "stage_assignment",
+    "stage_confirmation",
+    "stage_completion",
+    "workflow_completion",
+    "allowance_standard",
+    "contribution_policy",
+    "contribution_basis",
+    "stage_contribution",
+    "contribution_measurement",
+    "weekly_report",
+    "report_department",
+    "report_contribution",
+    "report_pending",
+    "report_seal"
+  ],
+  "overview": {
+    "slug": "db-overview",
+    "regions": [
+      {
+        "label": "组织与账号",
+        "tables": [
+          "organization",
+          "department",
+          "member",
+          "external_identity",
+          "login_session",
+          "archive_preference"
+        ]
+      },
+      {
+        "label": "采编协同与稿件",
+        "tables": [
+          "editorial",
+          "editorial_work",
+          "editorial_target",
+          "editorial_assignment",
+          "work",
+          "manuscript_version",
+          "platform",
+          "editorial_review",
+          "editorial_review_item",
+          "editorial_archive"
+        ]
+      },
+      {
+        "label": "摄制预约",
+        "tables": [
+          "production_schedule",
+          "booking_terms",
+          "production_booking",
+          "production_assignment",
+          "production_archive_responsibility",
+          "production_archive"
+        ]
+      },
+      {
+        "label": "流转任务与阶段",
+        "tables": [
+          "workflow",
+          "task_stage",
+          "stage_assignment",
+          "business_source",
+          "stage_source",
+          "stage_confirmation",
+          "stage_completion",
+          "workflow_completion"
+        ]
+      },
+      {
+        "label": "成果与版本审核",
+        "tables": [
+          "outcome",
+          "outcome_attachment",
+          "outcome_version",
+          "publication",
+          "stage_current_draft",
+          "manuscript_review"
+        ]
+      },
+      {
+        "label": "工作贡献与津贴规则",
+        "tables": [
+          "contribution_type",
+          "allowance_standard",
+          "contribution_policy",
+          "contribution_basis",
+          "stage_contribution",
+          "contribution_measurement",
+          "v_contribution_detail",
+          "v_contribution_money",
+          "v_member_weekly_summary",
+          "v_pending_contribution"
+        ]
+      },
+      {
+        "label": "中心周报",
+        "tables": [
+          "weekly_report",
+          "report_department",
+          "report_contribution",
+          "report_pending",
+          "report_seal",
+          "v_report_member_summary"
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "code": "R001",
+        "child": "department",
+        "parent": "organization",
+        "columns": [
+          "organization_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R002",
+        "child": "member",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": false
+      },
+      {
+        "code": "R003",
+        "child": "external_identity",
+        "parent": "member",
+        "columns": [
+          "member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R004",
+        "child": "login_session",
+        "parent": "member",
+        "columns": [
+          "member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R005",
+        "child": "archive_preference",
+        "parent": "member",
+        "columns": [
+          "office_member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R006",
+        "child": "archive_preference",
+        "parent": "member",
+        "columns": [
+          "production_member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R007",
+        "child": "manuscript_version",
+        "parent": "member",
+        "columns": [
+          "submitted_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R008",
+        "child": "manuscript_version",
+        "parent": "work",
+        "columns": [
+          "work_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R009",
+        "child": "editorial",
+        "parent": "member",
+        "columns": [
+          "initiator_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R010",
+        "child": "editorial_work",
+        "parent": "work",
+        "columns": [
+          "work_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R011",
+        "child": "editorial_work",
+        "parent": "editorial",
+        "columns": [
+          "editorial_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R012",
+        "child": "editorial_target",
+        "parent": "editorial_work",
+        "columns": [
+          "editorial_id",
+          "work_id"
+        ],
+        "target_columns": [
+          null,
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R013",
+        "child": "editorial_target",
+        "parent": "platform",
+        "columns": [
+          "platform_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R014",
+        "child": "editorial_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R015",
+        "child": "editorial_assignment",
+        "parent": "member",
+        "columns": [
+          "assignee_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R016",
+        "child": "editorial_assignment",
+        "parent": "editorial",
+        "columns": [
+          "editorial_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R017",
+        "child": "production_schedule",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R018",
+        "child": "booking_terms",
+        "parent": "production_schedule",
+        "columns": [
+          "schedule_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R019",
+        "child": "production_booking",
+        "parent": "booking_terms",
+        "columns": [
+          "terms_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R020",
+        "child": "production_booking",
+        "parent": "member",
+        "columns": [
+          "requester_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R021",
+        "child": "production_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R022",
+        "child": "production_assignment",
+        "parent": "member",
+        "columns": [
+          "assignee_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R023",
+        "child": "production_assignment",
+        "parent": "production_booking",
+        "columns": [
+          "booking_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R024",
+        "child": "production_archive_responsibility",
+        "parent": "member",
+        "columns": [
+          "specified_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R025",
+        "child": "production_archive_responsibility",
+        "parent": "member",
+        "columns": [
+          "office_member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R026",
+        "child": "production_archive_responsibility",
+        "parent": "production_booking",
+        "columns": [
+          "booking_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R027",
+        "child": "workflow",
+        "parent": "member",
+        "columns": [
+          "initiator_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R028",
+        "child": "task_stage",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R029",
+        "child": "task_stage",
+        "parent": "workflow",
+        "columns": [
+          "workflow_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R030",
+        "child": "stage_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R031",
+        "child": "stage_assignment",
+        "parent": "member",
+        "columns": [
+          "assignee_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R032",
+        "child": "stage_assignment",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R033",
+        "child": "business_source",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": true
+      },
+      {
+        "code": "R034",
+        "child": "business_source",
+        "parent": "production_booking",
+        "columns": [
+          "booking_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": true
+      },
+      {
+        "code": "R035",
+        "child": "business_source",
+        "parent": "editorial",
+        "columns": [
+          "editorial_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": true
+      },
+      {
+        "code": "R036",
+        "child": "stage_source",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R037",
+        "child": "stage_source",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R038",
+        "child": "outcome",
+        "parent": "member",
+        "columns": [
+          "submitted_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R039",
+        "child": "outcome",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R040",
+        "child": "outcome_attachment",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R041",
+        "child": "outcome_version",
+        "parent": "manuscript_version",
+        "columns": [
+          "version_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R042",
+        "child": "outcome_version",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R043",
+        "child": "publication",
+        "parent": "outcome_version",
+        "columns": [
+          "outcome_id",
+          "version_id"
+        ],
+        "target_columns": [
+          null,
+          null
+        ],
+        "nullable": true,
+        "unique": false
+      },
+      {
+        "code": "R044",
+        "child": "publication",
+        "parent": "platform",
+        "columns": [
+          "platform_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R045",
+        "child": "publication",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R046",
+        "child": "stage_current_draft",
+        "parent": "outcome_version",
+        "columns": [
+          "outcome_id",
+          "version_id"
+        ],
+        "target_columns": [
+          null,
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R047",
+        "child": "stage_current_draft",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R048",
+        "child": "manuscript_review",
+        "parent": "manuscript_review",
+        "columns": [
+          "prior_review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": false
+      },
+      {
+        "code": "R049",
+        "child": "manuscript_review",
+        "parent": "member",
+        "columns": [
+          "reviewer_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R050",
+        "child": "manuscript_review",
+        "parent": "manuscript_version",
+        "columns": [
+          "version_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R051",
+        "child": "editorial_review",
+        "parent": "member",
+        "columns": [
+          "reviewer_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R052",
+        "child": "editorial_review",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R053",
+        "child": "editorial_review_item",
+        "parent": "manuscript_review",
+        "columns": [
+          "review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R054",
+        "child": "editorial_review_item",
+        "parent": "editorial_review",
+        "columns": [
+          "editorial_review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R055",
+        "child": "editorial_archive",
+        "parent": "editorial_review",
+        "columns": [
+          "editorial_review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R056",
+        "child": "editorial_archive",
+        "parent": "editorial",
+        "columns": [
+          "editorial_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R057",
+        "child": "production_archive",
+        "parent": "member",
+        "columns": [
+          "archived_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R058",
+        "child": "production_archive",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R059",
+        "child": "production_archive",
+        "parent": "production_booking",
+        "columns": [
+          "booking_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R060",
+        "child": "stage_confirmation",
+        "parent": "member",
+        "columns": [
+          "confirmed_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R061",
+        "child": "stage_confirmation",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R062",
+        "child": "stage_confirmation",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R063",
+        "child": "stage_completion",
+        "parent": "manuscript_review",
+        "columns": [
+          "second_review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": false
+      },
+      {
+        "code": "R064",
+        "child": "stage_completion",
+        "parent": "stage_confirmation",
+        "columns": [
+          "confirmation_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R065",
+        "child": "stage_completion",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R066",
+        "child": "workflow_completion",
+        "parent": "workflow",
+        "columns": [
+          "workflow_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R067",
+        "child": "allowance_standard",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R068",
+        "child": "contribution_policy",
+        "parent": "contribution_type",
+        "columns": [
+          "type_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R069",
+        "child": "contribution_policy",
+        "parent": "allowance_standard",
+        "columns": [
+          "standard_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R070",
+        "child": "contribution_basis",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R071",
+        "child": "contribution_basis",
+        "parent": "member",
+        "columns": [
+          "member_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R072",
+        "child": "contribution_basis",
+        "parent": "contribution_type",
+        "columns": [
+          "type_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R073",
+        "child": "contribution_basis",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R074",
+        "child": "stage_contribution",
+        "parent": "contribution_basis",
+        "columns": [
+          "basis_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R075",
+        "child": "stage_contribution",
+        "parent": "task_stage",
+        "columns": [
+          "stage_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R076",
+        "child": "contribution_measurement",
+        "parent": "contribution_policy",
+        "columns": [
+          "policy_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R077",
+        "child": "contribution_measurement",
+        "parent": "contribution_basis",
+        "columns": [
+          "basis_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R078",
+        "child": "weekly_report",
+        "parent": "member",
+        "columns": [
+          "generated_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R079",
+        "child": "report_department",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R080",
+        "child": "report_department",
+        "parent": "weekly_report",
+        "columns": [
+          "report_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R081",
+        "child": "report_contribution",
+        "parent": "contribution_measurement",
+        "columns": [
+          "basis_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R082",
+        "child": "report_contribution",
+        "parent": "weekly_report",
+        "columns": [
+          "report_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R083",
+        "child": "report_pending",
+        "parent": "contribution_basis",
+        "columns": [
+          "basis_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R084",
+        "child": "report_pending",
+        "parent": "weekly_report",
+        "columns": [
+          "report_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R085",
+        "child": "report_seal",
+        "parent": "weekly_report",
+        "columns": [
+          "report_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      }
+    ],
+    "dependencies": {
+      "v_contribution_detail": [
+        "contribution_basis",
+        "contribution_measurement",
+        "contribution_policy",
+        "allowance_standard",
+        "business_source",
+        "production_booking",
+        "booking_terms"
+      ],
+      "v_contribution_money": [
+        "v_contribution_detail"
+      ],
+      "v_member_weekly_summary": [
+        "v_contribution_money"
+      ],
+      "v_pending_contribution": [
+        "contribution_basis",
+        "contribution_measurement"
+      ],
+      "v_report_member_summary": [
+        "report_contribution",
+        "report_seal",
+        "v_contribution_money"
+      ]
+    }
+  },
+  "class_mapping": {
+    "Organization": [
+      "organization"
+    ],
+    "Department": [
+      "department"
+    ],
+    "Member": [
+      "member",
+      "external_identity",
+      "archive_preference"
+    ],
+    "Session": [
+      "login_session"
+    ],
+    "Editorial": [
+      "editorial",
+      "editorial_work",
+      "editorial_target",
+      "editorial_assignment",
+      "editorial_archive"
+    ],
+    "Work": [
+      "work",
+      "platform"
+    ],
+    "Version": [
+      "manuscript_version"
+    ],
+    "Outcome": [
+      "outcome",
+      "outcome_attachment",
+      "outcome_version"
+    ],
+    "Publication": [
+      "publication"
+    ],
+    "Review": [
+      "manuscript_review",
+      "editorial_review",
+      "editorial_review_item"
+    ],
+    "Schedule": [
+      "production_schedule"
+    ],
+    "BookingTerms": [
+      "booking_terms"
+    ],
+    "Booking": [
+      "production_booking",
+      "production_assignment",
+      "production_archive_responsibility",
+      "production_archive"
+    ],
+    "Workflow": [
+      "workflow",
+      "workflow_completion",
+      "business_source"
+    ],
+    "Stage": [
+      "task_stage",
+      "stage_assignment",
+      "stage_source",
+      "stage_current_draft",
+      "stage_confirmation",
+      "stage_completion",
+      "stage_contribution"
+    ],
+    "Ledger": [
+      "contribution_basis",
+      "contribution_measurement",
+      "v_contribution_detail",
+      "v_contribution_money",
+      "v_pending_contribution"
+    ],
+    "Contribution": [
+      "contribution_basis",
+      "contribution_measurement",
+      "contribution_type",
+      "v_contribution_detail",
+      "v_contribution_money"
+    ],
+    "Weekly": [
+      "v_member_weekly_summary"
+    ],
+    "Allowance": [
+      "allowance_standard",
+      "contribution_policy"
+    ],
+    "Report": [
+      "weekly_report",
+      "report_department",
+      "report_contribution",
+      "report_pending",
+      "report_seal",
+      "v_report_member_summary"
+    ]
+  }
+}

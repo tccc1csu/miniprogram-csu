@@ -1,0 +1,27 @@
+@startuml
+title 系统用例图（二）— 部门与跨部门流转
+left to right direction
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 20
+skinparam ranksep 40
+skinparam usecaseBackgroundColor #F5FAFF
+actor "普通成员\n（发起人／阶段承接人）" as Member
+actor "部长\n（阶段所属部门）" as Minister
+actor "管理员\n（指导老师承担审核）" as Admin
+rectangle "青年传媒中心工作统计与协作系统" {
+ usecase "UC-FL-001 登记部门与跨部门任务" as U0
+ usecase "UC-FL-002 派发部门阶段任务" as U1
+ usecase "UC-FL-003 提交部门阶段成果" as U2
+ usecase "UC-FL-004 确认部门阶段完成" as U3
+ usecase "UC-RV-001 一审运营部推文" as U4
+ usecase "UC-RV-002 二审稿件" as U5
+}
+Member --> U0
+Minister --> U1
+Member --> U2
+Minister --> U3
+Minister --> U4
+Admin --> U5
+@enduml

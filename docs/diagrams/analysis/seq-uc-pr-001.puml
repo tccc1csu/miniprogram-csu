@@ -1,0 +1,54 @@
+@startuml
+title UC-PR-001 发起摄制预约 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "中心预约成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:发起摄制预约控制" as C
+participant "M:成员" as M
+participant "S:摄制日程" as S
+participant "R:摄制约定" as R
+A -> B: 发起摄制预约(业务信息)
+activate B
+B -> C: 发起摄制预约(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> S: 受理预约(预约人、时段、地点、联系方式)
+activate S
+S -> R: 检查预约条件(信息、有效预约集合)
+R --> S: 完整性与冲突结论
+alt 信息不全或时间冲突
+  S --> C: 拒绝原因，不建立预约对象
+else 可受理
+  S -> R: 判定加急(提交时刻、预约开始时刻)
+  R --> S: 加急结论、倍率及约定版本
+  create participant "P:摄制预约" as P
+  S -> P: 建立预约(完整信息、加急依据)
+  P --> S: 未承接的预约
+  S --> C: 受理结果
+end
+deactivate S
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title 现状业务序列图 — 采编办公人工协同基线（2026 年 9 月）
+
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n采编部成员" as E
+participant "<$worker>\n办公部成员" as O
+participant "<$worker>\n指导老师" as T
+
+E -> O: 挂网／同步稿件（稿件材料、目标平台）
+activate O
+note right of O
+  访谈中的任务和稿件通过微信群传递；
+  群聊是通信载体，不另设执行者。
+end note
+O -> T: 审核同步成果（成果链接、完成说明）
+activate T
+loop 审核需要修改
+  T -> O: 修改同步成果（修改意见）
+  O --> T: 修改后的成果
+end
+T --> O: 审核通过结论
+deactivate T
+deactivate O
+note over E,T
+  从需求发布到指导老师审核完成平均约 2 天。
+  本图只描述一次协同；每周人工整理另约 1 小时，
+  不把周统计拼接成每次审核都执行的步骤。
+end note
+@enduml

@@ -1,0 +1,76 @@
+@startuml
+title 数据库关系图 — 采编协同与作品
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam nodesep 65
+skinparam ranksep 85
+skinparam entityBackgroundColor #F5FAFF
+skinparam entityBorderColor #46637F
+skinparam ArrowColor #334155
+hide circle
+entity "采编协同\neditorial" as editorial {
+  editorial_id : INTEGER <<PK, NN>>
+  --
+  initiator_id : INTEGER <<FK, NN>>
+  title : TEXT <<NN>>
+  submitted_at : TEXT <<NN>>
+  deadline_at : TEXT <<NULL>>
+}
+entity "协同作品\neditorial_work" as editorial_work {
+  editorial_id : INTEGER <<PK, FK, NN>>
+  work_id : INTEGER <<PK, FK, NN>>
+}
+entity "作品目标平台\neditorial_target" as editorial_target {
+  editorial_id : INTEGER <<PK, FK, NN>>
+  work_id : INTEGER <<PK, FK, NN>>
+  platform_id : INTEGER <<PK, FK, NN>>
+}
+entity "办公承接责任\neditorial_assignment" as editorial_assignment {
+  editorial_id : INTEGER <<PK, FK, NN>>
+  --
+  assignee_id : INTEGER <<FK, NN>>
+  assigned_by : INTEGER <<FK, NN>>
+  assigned_at : TEXT <<NN>>
+}
+entity "作品\nwork" as work {
+  work_id : INTEGER <<PK, NN>>
+  --
+  name : TEXT <<NN>>
+  origin_kind : TEXT <<NN>>
+}
+entity "稿件版本\nmanuscript_version" as manuscript_version {
+  version_id : INTEGER <<PK, NN>>
+  --
+  work_id : INTEGER <<FK, NN>>
+  revision_no : INTEGER <<NN>>
+  content : TEXT <<NN>>
+  submitted_by : INTEGER <<FK, NN>>
+  submitted_at : TEXT <<NN>>
+}
+entity "发布平台\nplatform" as platform {
+  platform_id : INTEGER <<PK, NN>>
+  --
+  name : TEXT <<UQ, NN>>
+}
+entity "成员与账号\nmember" as member {
+  member_id : INTEGER <<PK, NN>>
+}
+member ||--o{ editorial
+work ||--o{ editorial_work
+editorial ||--o{ editorial_work
+editorial_work ||--o{ editorial_target
+platform ||--o{ editorial_target
+member ||--o{ editorial_assignment
+editorial ||--o| editorial_assignment
+member ||--o{ manuscript_version
+work ||--o{ manuscript_version
+legend bottom
+  PK 主键；FK 外键；UQ 单列唯一；NN 非空；NULL 可空。
+  || 恰一；|o 零或一；o{ 零到多。复合唯一约束见数据字典。
+  图为分视图，外部上下文表只显示主键；同名表为同一张表。
+  连线为正交折线；具体外键字段及关联角色以数据字典为准。
+endlegend
+@enduml

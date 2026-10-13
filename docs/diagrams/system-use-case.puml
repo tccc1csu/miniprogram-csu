@@ -1,0 +1,35 @@
+@startuml
+title 系统用例图（一）— 稿件协同与摄制
+left to right direction
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 20
+skinparam ranksep 40
+skinparam usecaseBackgroundColor #F5FAFF
+actor "普通成员\n（按部门与任务分工）" as Member
+actor "部长\n（办公部／摄制部）" as Minister
+actor "管理员\n（指导老师承担审核）" as Admin
+rectangle "青年传媒中心工作统计与协作系统" {
+ usecase "UC-ED-001 提交采编协同需求" as U0
+ usecase "UC-ED-002 派发采编同步任务" as U1
+ usecase "UC-ED-003 提交采编同步结果" as U2
+ usecase "UC-ED-004 审核并归档采编协同" as U3
+ usecase "UC-PR-001 发起摄制预约" as U4
+ usecase "UC-PR-002 派发摄制任务" as U5
+ usecase "UC-PR-003 提交摄制成果" as U6
+ usecase "UC-PR-004 归档摄制成果" as U7
+ usecase "UC-PR-005 抢接摄制任务" as U8
+}
+Member --> U0
+Minister --> U1
+Member --> U2
+Admin --> U3
+Member --> U4
+Minister --> U5
+Member --> U6
+Member --> U7
+Member --> U8
+Minister --> U4
+Admin --> U4
+@enduml

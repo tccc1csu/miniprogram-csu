@@ -1,0 +1,92 @@
+@startuml
+title 数据库关系图 — 摄制预约与唯一承接
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam nodesep 65
+skinparam ranksep 85
+skinparam entityBackgroundColor #F5FAFF
+skinparam entityBorderColor #46637F
+skinparam ArrowColor #334155
+hide circle
+entity "摄制日程\nproduction_schedule" as production_schedule {
+  schedule_id : INTEGER <<PK, NN>>
+  --
+  department_id : INTEGER <<FK, UQ, NN>>
+}
+entity "摄制约定版本\nbooking_terms" as booking_terms {
+  terms_id : INTEGER <<PK, NN>>
+  --
+  schedule_id : INTEGER <<FK, NN>>
+  version_no : INTEGER <<NN>>
+  effective_from : TEXT <<NN>>
+  urgent_threshold_days : INTEGER <<NN>>
+  day_basis : TEXT <<NN>>
+  urgent_factor_bp : INTEGER <<NN>>
+  conflict_scope_note : TEXT <<NN>>
+}
+entity "摄制预约\nproduction_booking" as production_booking {
+  booking_id : INTEGER <<PK, NN>>
+  --
+  requester_id : INTEGER <<FK, NN>>
+  terms_id : INTEGER <<FK, NN>>
+  title : TEXT <<NN>>
+  starts_at : TEXT <<NN>>
+  ends_at : TEXT <<NN>>
+  location : TEXT <<NN>>
+  contact : TEXT <<NN>>
+  submitted_at : TEXT <<NN>>
+  urgent_decision : INTEGER <<NN>>
+  claim_open : INTEGER <<NN>>
+}
+entity "摄制承接责任\nproduction_assignment" as production_assignment {
+  booking_id : INTEGER <<PK, FK, NN>>
+  --
+  assignee_id : INTEGER <<FK, NN>>
+  assigned_by : INTEGER <<FK, NN>>
+  method : TEXT <<NN>>
+  assigned_at : TEXT <<NN>>
+}
+entity "指定办公归档责任\nproduction_archive_responsibility" as production_archive_responsibility {
+  booking_id : INTEGER <<PK, FK, NN>>
+  --
+  office_member_id : INTEGER <<FK, NN>>
+  specified_by : INTEGER <<FK, NN>>
+  specified_at : TEXT <<NN>>
+}
+entity "摄制归档完成\nproduction_archive" as production_archive {
+  booking_id : INTEGER <<PK, FK, NN>>
+  --
+  outcome_id : INTEGER <<FK, UQ, NN>>
+  archived_by : INTEGER <<FK, NN>>
+  archived_at : TEXT <<NN>>
+}
+entity "部门\ndepartment" as department {
+  department_id : INTEGER <<PK, NN>>
+}
+entity "成员与账号\nmember" as member {
+  member_id : INTEGER <<PK, NN>>
+}
+entity "成果提交\noutcome" as outcome {
+  outcome_id : INTEGER <<PK, NN>>
+}
+department ||--o| production_schedule
+production_schedule ||--o{ booking_terms
+booking_terms ||--o{ production_booking
+member ||--o{ production_booking
+member ||--o{ production_assignment
+production_booking ||--o| production_assignment
+member ||--o{ production_archive_responsibility
+production_booking ||--o| production_archive_responsibility
+member ||--o{ production_archive
+outcome ||--o| production_archive
+production_booking ||--o| production_archive
+legend bottom
+  PK 主键；FK 外键；UQ 单列唯一；NN 非空；NULL 可空。
+  || 恰一；|o 零或一；o{ 零到多。复合唯一约束见数据字典。
+  图为分视图，外部上下文表只显示主键；同名表为同一张表。
+  连线为正交折线；具体外键字段及关联角色以数据字典为准。
+endlegend
+@enduml

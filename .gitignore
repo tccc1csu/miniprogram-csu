@@ -1,6 +1,19 @@
 # WeChat DevTools local state
 project.private.config.json
 
+# ============================================================
+# 秘密与私有信息 —— 严禁提交到公开仓库
+# ============================================================
+# 秘密清单：记录真实的 AppID / 云环境 ID / 邀请码等，仅本地保管
+SECRETS_INVENTORY.md
+secrets/
+*.secrets.md
+.env
+.env.*
+!.env.example
+*-secret.json
+credentials*.json
+
 # Local archives and generated files
 *.zip
 *.7z

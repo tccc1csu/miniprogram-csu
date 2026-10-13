@@ -1,0 +1,608 @@
+{
+  "classes": [
+    [
+      "class-editorial",
+      "分析类图（一）— 组织与稿件协同"
+    ],
+    [
+      "class-production",
+      "分析类图（二）— 摄制预约"
+    ],
+    [
+      "class-workflow",
+      "分析类图（三）— 部门与跨部门流转"
+    ],
+    [
+      "class-accounting",
+      "分析类图（四）— 工作贡献与津贴核算"
+    ],
+    [
+      "class-responsibilities",
+      "分析类图（五）— 归档摄制成果的边界、控制与实体职责"
+    ],
+    [
+      "class-controls-editorial",
+      "分析类图（六）— 采编协同用例职责"
+    ],
+    [
+      "class-controls-production",
+      "分析类图（七）— 摄制预约用例职责"
+    ],
+    [
+      "class-controls-workflow",
+      "分析类图（八）— 部门流转与稿件审核用例职责"
+    ],
+    [
+      "class-controls-support",
+      "分析类图（九）— 登录、统计与组织用例职责"
+    ]
+  ],
+  "sequences": [
+    {
+      "code": "UC-AUTH-001",
+      "slug": "seq-uc-auth-001",
+      "title": "登录系统",
+      "description": "微信授权边界封装外部身份服务，成员承担账号有效性与角色关系验证；图中的登录入口为三类角色共用。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "S": "Session"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-ED-001",
+      "slug": "seq-uc-ed-001",
+      "title": "提交采编协同需求",
+      "description": "协同负责建立可追踪的需求，作品验证稿件来源；截止日期为空不作为拒绝理由。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "Editorial",
+        "W": "Work"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-ED-002",
+      "slug": "seq-uc-ed-002",
+      "title": "派发采编同步任务",
+      "description": "派发资格由成员和协同各自验证；协同保证待派发条件及唯一承接责任。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "Editorial",
+        "O": "Member"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-ED-003",
+      "slug": "seq-uc-ed-003",
+      "title": "提交采编同步结果",
+      "description": "协同接收当前承接人的成果，并保留退回重提历史；成果对象验证完整性，控制类不逐项读取属性判断。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "Editorial",
+        "O": "Outcome"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-ED-004",
+      "slug": "seq-uc-ed-004",
+      "title": "审核并归档采编协同",
+      "description": "通过时分别归集原创采编和办公同步贡献；转载不产生原创写作贡献。退回不计量，重复合法归档返回原结果。归档与明细归集作为一致的业务结果完成；失败不留下半份有效结果。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "Editorial",
+        "O": "Outcome",
+        "L": "Ledger",
+        "R": "Allowance",
+        "W": "Weekly"
+      },
+      "boundary": "管理员接口"
+    },
+    {
+      "code": "UC-PR-001",
+      "slug": "seq-uc-pr-001",
+      "title": "发起摄制预约",
+      "description": "摄制日程负责受理并委托摄制约定判断冲突和加急；冲突分支没有预约对象。两天与 1.5 倍率作为约定依据保留，未明确的冲突资源范围不在分析中擅自定死。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "S": "Schedule",
+        "R": "BookingTerms"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-PR-002",
+      "slug": "seq-uc-pr-002",
+      "title": "派发摄制任务",
+      "description": "派发与抢单都请求摄制预约的确定承接操作，由同一对象保护唯一承接关系。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "P": "Booking",
+        "N": "Member"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-PR-003",
+      "slug": "seq-uc-pr-003",
+      "title": "提交摄制成果",
+      "description": "预约核验当前承接人，成果与办公成员分别承担完整性及归属验证；沿用归档偏好不能替代本次责任确认。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "P": "Booking",
+        "O": "Outcome",
+        "N": "Member"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-PR-004",
+      "slug": "seq-uc-pr-004",
+      "title": "归档摄制成果",
+      "description": "指定办公成员归档后形成摄制、归档两项贡献。加急是否适用于某类贡献由生效标准决定，不能直接把两类工时都乘 1.5；重复请求不再增加工时。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "P": "Booking",
+        "O": "Outcome",
+        "L": "Ledger",
+        "R": "Allowance",
+        "W": "Weekly"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-PR-005",
+      "slug": "seq-uc-pr-005",
+      "title": "抢接摄制任务",
+      "description": "抢单与派发冲突时只有一个当前承接结果；抢单成功本身不计工时。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "P": "Booking"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-FL-001",
+      "slug": "seq-uc-fl-001",
+      "title": "登记部门与跨部门任务",
+      "description": "发起人登记的部门和阶段由任务整体组织；需求来源可以是外部门，登记人仍按当前规约描述为中心成员。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "D": "Department"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-FL-002",
+      "slug": "seq-uc-fl-002",
+      "title": "派发部门阶段任务",
+      "description": "控制类先请求流转任务整体，再由任务委托阶段。前序未完成时阶段拒绝派发，排班仅作为部长安排依据。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "N": "Member"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-FL-003",
+      "slug": "seq-uc-fl-003",
+      "title": "提交部门阶段成果",
+      "description": "阶段根据成果性质决定后续责任。稿件内容变更需重新审查；已审稿件仅补充发布链接时进入完成确认，不把链接补充误当新一版稿件。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "O": "Outcome",
+        "V": "Version"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-FL-004",
+      "slug": "seq-uc-fl-004",
+      "title": "确认部门阶段完成",
+      "description": "完成确认先由阶段验证稿件审核与成果条件。任务最后一阶段完成后归集贡献，依据不足的项标为待核对；专门流程已计入的相同实际贡献不能重复计量。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "Next": "Stage",
+        "L": "Ledger",
+        "R": "Allowance",
+        "W": "Weekly"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-RV-001",
+      "slug": "seq-uc-rv-001",
+      "title": "一审运营部推文",
+      "description": "运营部长一审通过后转老师二审；稿件版本持有该版审查依据，不能以旧版本通过结论处理修改后的稿件。采编专门流程由 UC-ED-004 处理。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "V": "Version",
+        "R": "Review"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-RV-002",
+      "slug": "seq-uc-rv-002",
+      "title": "二审稿件",
+      "description": "老师二审检查适用的前序结论；稿件版本持有该版审查依据，不能以旧版本通过结论处理修改后的稿件。采编专门流程由 UC-ED-004 处理。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "F": "Workflow",
+        "G": "Stage",
+        "V": "Version",
+        "R": "Review"
+      },
+      "boundary": "管理员接口"
+    },
+    {
+      "code": "UC-REC-001",
+      "slug": "seq-uc-rec-001",
+      "title": "核对部门任务明细与周汇总",
+      "description": "核对只比较有效明细及周汇总并标明差异，不能在查询期间悄悄补造贡献。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "Ledger",
+        "W": "Weekly"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-STAT-001",
+      "slug": "seq-uc-stat-001",
+      "title": "生成并导出中心周报",
+      "description": "台账组织汇总，成员周汇总委托各项贡献核算，贡献按关联标准计算津贴。控制类不自行计算工时或时薪；周报生成不新增工作贡献。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "Ledger",
+        "W": "Weekly",
+        "G": "Contribution",
+        "R": "Allowance",
+        "P": "Report"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-ORG-001",
+      "slug": "seq-uc-org-001",
+      "title": "管理组织与人员",
+      "description": "中心组织维护有效部门和成员关系；历史贡献保留计量时部门与规则依据，人员调整不改写既有统计。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "O": "Organization",
+        "D": "Department"
+      },
+      "boundary": "管理员接口"
+    },
+    {
+      "code": "UC-VIEW-001",
+      "slug": "seq-uc-view-001",
+      "title": "查看个人工作记录",
+      "description": "个人查询返回本人明细、周汇总及异常；系统内部的台账和汇总对象不是外部执行者。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "Ledger",
+        "W": "Weekly"
+      },
+      "boundary": "普通成员接口"
+    }
+  ],
+  "states": [
+    {
+      "slug": "state-editorial",
+      "title": "分析状态机图（一）— 采编协同",
+      "owner": "Editorial",
+      "description": "状态属于一条采编协同。迁移前核验审核、材料和可用计量依据，迁移动作完成贡献归集与归档；已归档仍可查询，重复合法归档用内部响应表示。"
+    },
+    {
+      "slug": "state-production",
+      "title": "分析状态机图（二）— 摄制预约",
+      "owner": "Booking",
+      "description": "同一个确定承接事件按派发／抢单条件处理，未承接检查与建立承接关系作为一个对象责任。冲突拒绝发生在对象创建前。"
+    },
+    {
+      "slug": "state-stage",
+      "title": "分析状态机图（三）— 任务阶段（运营推文实例）",
+      "owner": "Stage",
+      "description": "以已明确审核岗位的运营推文阶段为例。状态由承接、稿件版本、审核结论、发布依据共同决定；退回后分清稿件修改与发布依据补正。"
+    },
+    {
+      "slug": "state-stage-design",
+      "title": "分析状态机图（四）— 任务阶段（美编设计实例）",
+      "owner": "Stage",
+      "description": "美编设计阶段直接交部长确认，不套用运营稿件的一审、二审；退回保留原责任人与历史成果。"
+    },
+    {
+      "slug": "state-workflow",
+      "title": "分析状态机图（五）— 流转任务",
+      "owner": "Workflow",
+      "description": "整体任务只在全部阶段完成后结束；规则或贡献依据缺失时保留待核对项，不把任务完成等同于津贴已核实。"
+    }
+  ],
+  "catalog": {
+    "Member": [
+      "成员",
+      [
+        "姓名",
+        "账号角色",
+        "启用"
+      ],
+      [
+        "验证身份",
+        "验证业务资格",
+        "验证归属",
+        "沿用归档偏好"
+      ]
+    ],
+    "Session": [
+      "登录会话",
+      [
+        "有效期",
+        "终止时刻（可选）"
+      ],
+      [
+        "建立会话"
+      ]
+    ],
+    "Department": [
+      "部门",
+      [
+        "名称",
+        "启用"
+      ],
+      [
+        "验证成员归属",
+        "检查承办资格"
+      ]
+    ],
+    "Organization": [
+      "中心组织",
+      [
+        "名称"
+      ],
+      [
+        "维护组织人员"
+      ]
+    ],
+    "Editorial": [
+      "采编协同",
+      [
+        "标题",
+        "截止日期（可选）",
+        "提交时刻",
+        "归档时刻（可选）"
+      ],
+      [
+        "建立协同",
+        "派发同步",
+        "提交同步结果",
+        "审核并归档",
+        "提取应计贡献",
+        "完成归档"
+      ]
+    ],
+    "Work": [
+      "作品",
+      [
+        "名称",
+        "原创或转载"
+      ],
+      [
+        "验证来源"
+      ]
+    ],
+    "Version": [
+      "稿件版本",
+      [
+        "版次",
+        "内容",
+        "提交时刻"
+      ],
+      [
+        "验证送审条件",
+        "接受审查结论"
+      ]
+    ],
+    "Outcome": [
+      "成果",
+      [
+        "完成说明",
+        "提交时刻"
+      ],
+      [
+        "验证完整性"
+      ]
+    ],
+    "Publication": [
+      "发布成果",
+      [
+        "平台",
+        "成果链接"
+      ],
+      [
+        "验证发布依据"
+      ]
+    ],
+    "Review": [
+      "审核结论",
+      [
+        "审查层次",
+        "结论",
+        "意见",
+        "审查时刻"
+      ],
+      [
+        "验证适用版本"
+      ]
+    ],
+    "Schedule": [
+      "摄制日程",
+      [],
+      [
+        "受理预约"
+      ]
+    ],
+    "BookingTerms": [
+      "摄制约定",
+      [
+        "版本",
+        "生效范围",
+        "加急阈值",
+        "加急倍率"
+      ],
+      [
+        "检查预约条件",
+        "判定加急"
+      ]
+    ],
+    "Booking": [
+      "摄制预约",
+      [
+        "任务名称",
+        "预约时段",
+        "地点",
+        "联系方式",
+        "提交时刻",
+        "抢单开放",
+        "承接方式",
+        "加急倍率",
+        "归档时刻（可选）"
+      ],
+      [
+        "建立预约",
+        "确定承接",
+        "提交摄制成果",
+        "归档摄制成果",
+        "提取应计贡献",
+        "完成归档"
+      ]
+    ],
+    "Workflow": [
+      "流转任务",
+      [
+        "名称",
+        "需求来源",
+        "工作目标",
+        "结束时刻（可选）"
+      ],
+      [
+        "建立任务",
+        "派发阶段",
+        "提交阶段成果",
+        "审查阶段稿件",
+        "确认阶段完成",
+        "提供待计量贡献"
+      ]
+    ],
+    "Stage": [
+      "任务阶段",
+      [
+        "次序",
+        "成果要求",
+        "截止日期（可选）",
+        "完成时刻（可选）"
+      ],
+      [
+        "派发",
+        "提交成果",
+        "审查稿件",
+        "确认完成",
+        "检查可开始",
+        "提供贡献依据"
+      ]
+    ],
+    "Ledger": [
+      "工作量台账",
+      [],
+      [
+        "归集贡献",
+        "查询个人工作量",
+        "核对部门工作量",
+        "生成中心周报",
+        "识别未计入贡献"
+      ]
+    ],
+    "Contribution": [
+      "工作贡献",
+      [
+        "贡献类型",
+        "发生时刻",
+        "基础工时",
+        "计入工时",
+        "适用倍率"
+      ],
+      [
+        "验证计量依据",
+        "确认计量",
+        "核算津贴"
+      ]
+    ],
+    "Weekly": [
+      "成员周汇总",
+      [
+        "周次",
+        "/有效工时"
+      ],
+      [
+        "按明细汇总",
+        "核对一致性",
+        "核算津贴"
+      ]
+    ],
+    "Allowance": [
+      "津贴标准",
+      [
+        "版本",
+        "生效范围",
+        "部门时薪",
+        "贡献计量约定"
+      ],
+      [
+        "核定贡献工时",
+        "计算津贴"
+      ]
+    ],
+    "Report": [
+      "中心周报",
+      [
+        "周次",
+        "生成时刻"
+      ],
+      [
+        "汇编统计结果"
+      ]
+    ]
+  }
+}

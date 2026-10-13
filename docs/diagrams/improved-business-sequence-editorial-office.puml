@@ -1,0 +1,56 @@
+@startuml
+title 改进业务序列图 — 采编办公协同
+
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n采编部成员" as E
+participant "<$entity>\n工作统计与协作系统" as S
+participant "<$worker>\n办公部部长" as M
+participant "<$worker>\n办公部成员" as O
+participant "<$worker>\n指导老师\n（管理员）" as T
+
+E -> S: 登记采编协同需求（作品信息、平台、可选截止日期）
+activate S
+break 需求信息不合法
+  S --> E: 拒绝登记及原因
+end
+S --> E: 需求受理结果
+S -> M: 指定同步责任人（待派发需求）
+deactivate S
+M -> S: 登记同步任务派发结果（承接成员、可选截止时间）
+S -> O: 挂网／同步稿件（任务材料、可选截止时间）
+activate O
+O -> S: 登记同步结果（平台、成果链接、完成说明）
+deactivate O
+S -> T: 审核同步成果（作品与同步材料）
+activate T
+loop 审核需要修改
+  T -> S: 登记退回结论（修改意见）
+  S -> O: 修改同步成果（修改意见）
+  O -> S: 登记修订后的同步结果（修订材料）
+  S -> T: 重新审核同步成果（修订材料）
+end
+T -> S: 登记通过结论并归档（审核意见）
+deactivate T
+activate S
+S -> S: 生成原创采编／办公同步应计明细\n并更新成员周汇总
+S --> T: 审核归档结果及核算依据
+deactivate S
+note over S,T
+  人负责派发、同步和审核；系统负责记录、归档和核算。
+  仅原创稿件产生原创采编贡献；办公同步按规则计量。
+  重复归档不重复计入，保留各项贡献来源。
+end note
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+title 分析状态机图（四）— 任务阶段（美编设计实例）
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "待前序" as Waiting
+state "可派发" as Ready
+state "待完成" as Working
+state "待完成确认" as Confirm
+state "待修改" as Returned
+state "已完成" as Done
+[*] --> Waiting
+Waiting --> Ready : 检查可开始()\n[无前序或前序已完成]
+Ready --> Working : 派发()\n[本部门部长有权且承接人有效]\n/ 确立承接关系
+Working --> Confirm : 提交成果()\n[当前承接人且设计成果完整]\n/ 保存成果及贡献依据
+Confirm --> Returned : 确认完成()\n[本部门部长退回且意见完整]\n/ 保存修改要求
+Returned --> Confirm : 提交成果()\n[当前承接人且修订完整]\n/ 保留历次成果
+Confirm --> Done : 确认完成()\n[本部门部长通过且成果齐备]\n/ 确认贡献依据
+Done : 确认完成()\n[重复合法请求]\n/ 返回原结果
+note bottom of Done
+  本图限定为不涉及稿件内容审核的设计阶段。
+  已完成阶段保留查询能力；计量由任务整体组织。
+end note
+
+@enduml

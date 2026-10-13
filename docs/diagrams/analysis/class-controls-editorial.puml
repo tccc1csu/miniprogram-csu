@@ -1,0 +1,45 @@
+@startuml
+title 分析类图（六）— 采编协同用例职责
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+left to right direction
+hide empty members
+class "提交采编协同需求控制" as CUCED001 <<control>> {
+  + 提交采编协同需求(业务信息)
+}
+class "派发采编同步任务控制" as CUCED002 <<control>> {
+  + 派发采编同步任务(业务信息)
+}
+class "提交采编同步结果控制" as CUCED003 <<control>> {
+  + 提交采编同步结果(业务信息)
+}
+class "审核并归档采编协同控制" as CUCED004 <<control>> {
+  + 审核并归档采编协同(业务信息)
+}
+class "普通成员接口" as B0 <<boundary>>
+class "部长接口" as B1 <<boundary>>
+class "管理员接口" as B2 <<boundary>>
+class "成员" as E0 <<entity>>
+class "采编协同" as E4 <<entity>>
+B0 ..> CUCED001 : UC-ED-001
+CUCED001 ..> E4 : 委派责任
+CUCED001 ..> E0 : 委派责任
+B1 ..> CUCED002 : UC-ED-002
+CUCED002 ..> E4 : 委派责任
+CUCED002 ..> E0 : 委派责任
+B0 ..> CUCED003 : UC-ED-003
+CUCED003 ..> E4 : 委派责任
+CUCED003 ..> E0 : 委派责任
+B2 ..> CUCED004 : UC-ED-004
+CUCED004 ..> E4 : 委派责任
+CUCED004 ..> E0 : 委派责任
+note "实体属性与操作详见前四张类图；\n实体间协作详见对应序列图。\n虚线表示职责依赖，不表示业务流转先后。" as Guidance
+@enduml

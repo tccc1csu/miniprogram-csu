@@ -1,0 +1,108 @@
+PASS: 105 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
+PASS canonical timestamps reject mixed T formatting
+PASS invalid timestamp is rejected
+PASS non-admin requires a department
+PASS unique login name
+PASS FK rejects orphan member department
+PASS source requires exactly one owner
+PASS source may not have two owners
+PASS specialized source is unique
+PASS assignment and claim compete for one PK
+PASS claim actor must claim for self
+PASS source type member deduplicates contribution
+PASS unarchived work cannot be measured
+PASS wrong archive member
+PASS duplicate archive
+PASS zero is not valid measured work
+PASS policy must match historical department and type
+PASS urgent multiplier is applied once
+PASS non-urgent-applicable archive does not multiply
+PASS member transfer does not change historical department or rate
+PASS new standard does not reprice history
+PASS cannot rewrite historical rate
+PASS cannot rewrite measurement
+PASS weekly view has one member week row
+PASS Sunday and Monday belong to correct weeks
+PASS old first review cannot authorize new second review
+PASS old passed version cannot complete changed draft
+PASS publication version must belong to outcome
+PASS workflow cannot end before stages complete
+PASS completed draft cannot be changed
+PASS cannot append stage to completed workflow
+PASS cannot assign stage before predecessor completes
+PASS final-stage counting waits for whole workflow
+PASS unmeasured basis is pending rather than zero
+PASS report cannot seal while in-scope items missing
+PASS repeat report does not double work
+PASS report totals equal selected detail amounts
+PASS sealed report input cannot grow
+PASS later measurement does not change historical report
+PASS historic pending reason retained after later resolution
+PASS wrong week cannot enter report
+PASS referenced member cannot be deleted
+PASS all foreign keys remain valid
+PASS diagram catalog covers every physical table
+PASS every table has a complete ER subview
+PASS ONE overview declares each table and view exactly once
+PASS ONE overview uses orthogonal connectors
+PASS ONE overview preserves EVERY real FK including composite and parallel FKs
+PASS all FK relation IDs are drawn in the ONE overview
+PASS class mapping covers original analysis entity catalog
+PASS class mapping accounts for all tables and views
+PASS db-organization uses orthogonal connectors
+PASS db-organization rendered .png
+PASS db-organization rendered .svg
+PASS db-organization has no render error
+PASS db-organization render is current
+PASS db-editorial uses orthogonal connectors
+PASS db-editorial rendered .png
+PASS db-editorial rendered .svg
+PASS db-editorial has no render error
+PASS db-editorial render is current
+PASS db-production uses orthogonal connectors
+PASS db-production rendered .png
+PASS db-production rendered .svg
+PASS db-production has no render error
+PASS db-production render is current
+PASS db-workflow uses orthogonal connectors
+PASS db-workflow rendered .png
+PASS db-workflow rendered .svg
+PASS db-workflow has no render error
+PASS db-workflow render is current
+PASS db-results uses orthogonal connectors
+PASS db-results rendered .png
+PASS db-results rendered .svg
+PASS db-results has no render error
+PASS db-results render is current
+PASS db-editorial-review uses orthogonal connectors
+PASS db-editorial-review rendered .png
+PASS db-editorial-review rendered .svg
+PASS db-editorial-review has no render error
+PASS db-editorial-review render is current
+PASS db-accounting uses orthogonal connectors
+PASS db-accounting rendered .png
+PASS db-accounting rendered .svg
+PASS db-accounting has no render error
+PASS db-accounting render is current
+PASS db-reports uses orthogonal connectors
+PASS db-reports rendered .png
+PASS db-reports rendered .svg
+PASS db-reports has no render error
+PASS db-reports render is current
+PASS db-overview uses orthogonal connectors
+PASS db-overview rendered .png
+PASS db-overview rendered .svg
+PASS db-overview has no render error
+PASS db-overview render is current
+PASS compact SVG contains exactly all tables and views
+PASS compact SVG draws only selected true FK relations
+PASS all FK columns retain exact references in model metadata
+PASS every FK field displays its referenced table name
+PASS main diagram omits R labels, type/null columns and constraint expressions
+PASS every base-table field and every primary-key icon is visible
+PASS cards do not overlap and no relationship crosses a table interior
+PASS every region reserves a bounded extension strip
+PASS compact canvas is under half the prior diagram area
+PASS rendered overview has only straight line segments and polylines (no curved Beziers)
+
+Reference SQLite constraints verified; live cloud database and application behavior were not tested.

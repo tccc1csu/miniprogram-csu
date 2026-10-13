@@ -44,7 +44,7 @@
     "swc": false,
     "disableSWC": true
   },
-  "appid": "wx4972972007bb6a4e",
+  "appid": "YOUR_WECHAT_APPID",
   "projectname": "youth-media-center",
   "libVersion": "3.17.0",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",

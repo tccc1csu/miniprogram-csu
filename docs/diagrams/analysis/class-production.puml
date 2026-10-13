@@ -1,0 +1,66 @@
+@startuml
+title 分析类图（二）— 摄制预约
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty members
+class "成员" as Member <<entity>> {
+  - 姓名
+  - 账号角色
+  - 启用
+  + 验证身份(业务信息)
+  + 验证业务资格(业务信息)
+  + 验证归属(业务信息)
+  + 沿用归档偏好(业务信息)
+}
+class "摄制日程" as Schedule <<entity>> {
+  + 受理预约(业务信息)
+}
+class "摄制约定" as BookingTerms <<entity>> {
+  - 版本
+  - 生效范围
+  - 加急阈值
+  - 加急倍率
+  + 检查预约条件(业务信息)
+  + 判定加急(业务信息)
+}
+class "摄制预约" as Booking <<entity>> {
+  - 任务名称
+  - 预约时段
+  - 地点
+  - 联系方式
+  - 提交时刻
+  - 抢单开放
+  - 承接方式
+  - 加急倍率
+  - 归档时刻（可选）
+  + 建立预约(业务信息)
+  + 确定承接(业务信息)
+  + 提交摄制成果(业务信息)
+  + 归档摄制成果(业务信息)
+  + 提取应计贡献()
+  + 完成归档()
+}
+class "成果" as Outcome <<entity>> {
+  - 完成说明
+  - 提交时刻
+  + 验证完整性(业务信息)
+}
+
+Schedule "1" -- "0..*" Booking : 有效预约
+Schedule "1" -- "1..*" BookingTerms : 历次约定
+Booking "0..*" -- "1" BookingTerms : 受理依据
+Booking "0..*" -- "1" Member : 预约人
+Booking "0..*" -- "0..1" Member : 当前摄制承接人
+Booking "0..*" -- "0..1" Member : 指定办公归档人
+Booking "0..1" *-- "0..1" Outcome : 提交的成果
+
+note "派发和抢单共同调用确定承接()。\n该对象操作保证最多一名当前承接人。\n有冲突不建立摄制预约；加急判断保留受理时依据。\n冲突资源口径、两天的精度待确认，由摄制约定封装。" as Guidance
+@enduml

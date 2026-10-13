@@ -1,0 +1,95 @@
+@startuml
+title 分析类图（一）— 组织与稿件协同
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty members
+class "中心组织" as Organization <<entity>> {
+  - 名称
+  + 维护组织人员(业务信息)
+}
+class "部门" as Department <<entity>> {
+  - 名称
+  - 启用
+  + 验证成员归属(业务信息)
+  + 检查承办资格(业务信息)
+}
+class "成员" as Member <<entity>> {
+  - 姓名
+  - 账号角色
+  - 启用
+  + 验证身份(业务信息)
+  + 验证业务资格(业务信息)
+  + 验证归属(业务信息)
+  + 沿用归档偏好(业务信息)
+}
+class "登录会话" as Session <<entity>> {
+  - 有效期
+  - 终止时刻（可选）
+  + 建立会话(业务信息)
+}
+class "采编协同" as Editorial <<entity>> {
+  - 标题
+  - 截止日期（可选）
+  - 提交时刻
+  - 归档时刻（可选）
+  + 建立协同(业务信息)
+  + 派发同步(业务信息)
+  + 提交同步结果(业务信息)
+  + 审核并归档(业务信息)
+  + 提取应计贡献()
+  + 完成归档()
+}
+class "作品" as Work <<entity>> {
+  - 名称
+  - 原创或转载
+  + 验证来源(业务信息)
+}
+class "稿件版本" as Version <<entity>> {
+  - 版次
+  - 内容
+  - 提交时刻
+  + 验证送审条件(业务信息)
+  + 接受审查结论(业务信息)
+}
+class "成果" as Outcome <<entity>> {
+  - 完成说明
+  - 提交时刻
+  + 验证完整性(业务信息)
+}
+class "发布成果" as Publication <<entity>> {
+  - 平台
+  - 成果链接
+  + 验证发布依据(业务信息)
+}
+class "审核结论" as Review <<entity>> {
+  - 审查层次
+  - 结论
+  - 意见
+  - 审查时刻
+  + 验证适用版本(业务信息)
+}
+
+Organization "1" -- "1..*" Department : 部门
+Department "0..1" -- "0..*" Member : 当前所属
+Member "1" -- "0..*" Session : 登录身份
+Member "1" -- "0..*" Editorial : 发起人
+Editorial "0..*" -- "0..1" Member : 当前办公承接人
+Editorial "0..*" -- "1..*" Work : 同步作品
+Work "1" *-- "1..*" Version : 历次稿件
+Editorial "0..1" *-- "0..*" Outcome : 历次同步成果
+Outcome "1" *-- "0..*" Publication : 各平台发布依据
+Version "1" -- "0..*" Review : 对应版本审查
+Editorial "0..1" -- "0..*" Review : 同步审核
+Member "1" -- "0..*" Review : 审核人
+Outcome "0..*" -- "0..*" Version : 涉及稿件
+
+note "图中角色名限定关联意义。管理员可无所属部门。\n已派发协同恰有一名承接人；未派发时为 0。\n稿件版本及审核结论保留历史，重复提交不改写旧版本。" as Guidance
+@enduml

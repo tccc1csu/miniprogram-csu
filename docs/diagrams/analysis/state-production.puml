@@ -1,0 +1,40 @@
+@startuml
+title 分析状态机图（二）— 摄制预约
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "未承接" as Open
+state "已承接待完成" as Assigned
+state "成果齐备待归档" as Submitted
+state "已归档" as Archived
+[*] --> Open
+note left of Open: 通过冲突检查后建立预约，默认未承接；保留加急依据。
+Open --> Assigned : 确定承接()\n[部长派发合法且当前无人承接]\n/ 确立承接关系
+Open --> Assigned : 确定承接()\n[抢单开放且首个申请有效]\n/ 确立承接关系
+Assigned --> Submitted : 提交摄制成果()\n[当前承接人、成果齐备、归档人有效]\n/ 确立归档责任
+Submitted --> Archived : 归档摄制成果()\n[指定办公成员、成果齐备且计量依据可用]\n/ 归集贡献并保存归档依据
+Assigned : 确定承接()\n[本人重复抢单]\n/ 返回已有承接结果
+Assigned : 确定承接()\n[其他承接请求]\n/ 拒绝，不覆盖责任人
+Archived : 归档摄制成果()\n[原归档人重复请求]\n/ 返回已有归档结果
+note bottom of Open
+  时间冲突在受理前拒绝，不产生预约对象，
+  因而没有“冲突预约”状态。
+  抢单开放条件由业务约定输入，不推定开放时机。
+end note
+note bottom of Archived
+  未满足资格、成果或计量条件的事件被拒绝，原状态保持。
+  已归档保留查询能力，不进入对象消亡终态。
+end note
+
+@enduml

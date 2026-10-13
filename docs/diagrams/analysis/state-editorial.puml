@@ -1,0 +1,36 @@
+@startuml
+title 分析状态机图（一）— 采编协同
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "待派发" as Unassigned
+state "待同步" as Assigned
+state "待审核" as Submitted
+state "待修改" as Returned
+state "已归档" as Archived
+[*] --> Unassigned
+note left of Unassigned: 有效需求建立协同后，默认进入待派发。
+Unassigned --> Assigned : 派发同步()\n[部长有权且承接人属于办公部]\n/ 确立承接关系
+Assigned --> Submitted : 提交同步结果()\n[当前承接人且成果完整]\n/ 保存成果版本
+Submitted --> Returned : 审核并归档()\n[老师退回且意见完整]\n/ 保留修改意见
+Returned --> Submitted : 提交同步结果()\n[当前承接人且修订完整]\n/ 保存修订版本
+Submitted --> Archived : 审核并归档()\n[老师通过、材料齐备且计量依据可用]\n/ 归集贡献并保存归档依据
+Archived : 审核并归档()\n[同一合法归档请求]\n/ 返回原结果，不重复计量
+note bottom of Archived
+  已归档对象继续供查询和重复请求核对，
+  因此不画成对象消亡的终态。
+  不满足事件资格或警戒条件时，拒绝并保持原状态。
+end note
+
+@enduml

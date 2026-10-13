@@ -1,0 +1,62 @@
+@startuml
+title 青年传媒中心工作统计与协作系统 — 系统用例总图
+left to right direction
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 16
+skinparam ranksep 65
+skinparam usecaseBackgroundColor #F5FAFF
+actor "普通成员" as Member
+actor "部长" as Minister
+actor "管理员" as Admin
+actor "微信授权服务\n（辅执行者）" as WeChat
+rectangle "青年传媒中心工作统计与协作系统" {
+  usecase "UC-ED-001 提交采编协同需求" as UC_ED_001
+  usecase "UC-ED-003 提交采编同步结果" as UC_ED_003
+  usecase "UC-PR-001 发起摄制预约" as UC_PR_001
+  usecase "UC-PR-003 提交摄制成果" as UC_PR_003
+  usecase "UC-PR-004 归档摄制成果" as UC_PR_004
+  usecase "UC-PR-005 抢接摄制任务" as UC_PR_005
+  usecase "UC-FL-001 登记部门与跨部门任务" as UC_FL_001
+  usecase "UC-FL-003 提交部门阶段成果" as UC_FL_003
+  usecase "UC-VIEW-001 查看个人工作记录" as UC_VIEW_001
+  usecase "UC-ED-002 派发采编同步任务" as UC_ED_002
+  usecase "UC-PR-002 派发摄制任务" as UC_PR_002
+  usecase "UC-FL-002 派发部门阶段任务" as UC_FL_002
+  usecase "UC-FL-004 确认部门阶段完成" as UC_FL_004
+  usecase "UC-RV-001 一审运营部推文" as UC_RV_001
+  usecase "UC-REC-001 核对部门任务明细与周汇总" as UC_REC_001
+  usecase "UC-STAT-001 生成并导出中心周报" as UC_STAT_001
+  usecase "UC-ED-004 审核并归档采编协同" as UC_ED_004
+  usecase "UC-RV-002 二审稿件" as UC_RV_002
+  usecase "UC-ORG-001 管理组织与人员" as UC_ORG_001
+  usecase "UC-AUTH-001 登录系统" as UC_AUTH_001
+}
+Member --> UC_ED_001
+Member --> UC_ED_003
+Member --> UC_PR_001
+Member --> UC_PR_003
+Member --> UC_PR_004
+Member --> UC_PR_005
+Member --> UC_FL_001
+Member --> UC_FL_003
+Member --> UC_VIEW_001
+Minister --> UC_ED_002
+Minister --> UC_PR_002
+Minister --> UC_FL_002
+Minister --> UC_FL_004
+Minister --> UC_RV_001
+Minister --> UC_REC_001
+Minister --> UC_STAT_001
+Admin --> UC_ED_004
+Admin --> UC_RV_002
+Admin --> UC_ORG_001
+Minister --> UC_PR_001
+Admin --> UC_PR_001
+Member --> UC_AUTH_001
+Minister --> UC_AUTH_001
+Admin --> UC_AUTH_001
+UC_AUTH_001 --> WeChat : 微信授权时
+@enduml

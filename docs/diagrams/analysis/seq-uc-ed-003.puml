@@ -1,0 +1,45 @@
+@startuml
+title UC-ED-003 提交采编同步结果 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "办公承接成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:提交采编同步结果控制" as C
+participant "M:成员" as M
+participant "E:采编协同" as E
+participant "O:成果" as O
+A -> B: 提交采编同步结果(业务信息)
+activate B
+B -> C: 提交采编同步结果(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 提交同步结果(承接人、平台、链接、说明)
+activate E
+E -> O: 验证完整性(成果材料)
+O --> E: 完整性结论
+E --> C: 待审核结果或拒绝原因
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

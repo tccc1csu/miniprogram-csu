@@ -1,0 +1,115 @@
+@startuml
+title 数据库关系图 — 任务、阶段与来源
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam nodesep 65
+skinparam ranksep 85
+skinparam entityBackgroundColor #F5FAFF
+skinparam entityBorderColor #46637F
+skinparam ArrowColor #334155
+hide circle
+entity "流转任务\nworkflow" as workflow {
+  workflow_id : INTEGER <<PK, NN>>
+  --
+  initiator_id : INTEGER <<FK, NN>>
+  name : TEXT <<NN>>
+  request_origin : TEXT <<NN>>
+  objective : TEXT <<NN>>
+  created_at : TEXT <<NN>>
+}
+entity "任务阶段\ntask_stage" as task_stage {
+  stage_id : INTEGER <<PK, NN>>
+  --
+  workflow_id : INTEGER <<FK, NN>>
+  department_id : INTEGER <<FK, NN>>
+  sequence_no : INTEGER <<NN>>
+  result_requirement : TEXT <<NN>>
+  review_policy : TEXT <<NN>>
+  deadline_at : TEXT <<NULL>>
+}
+entity "阶段承接责任\nstage_assignment" as stage_assignment {
+  stage_id : INTEGER <<PK, FK, NN>>
+  --
+  assignee_id : INTEGER <<FK, NN>>
+  assigned_by : INTEGER <<FK, NN>>
+  assigned_at : TEXT <<NN>>
+  roster_basis : TEXT <<NULL>>
+}
+entity "唯一业务来源\nbusiness_source" as business_source {
+  source_id : INTEGER <<PK, NN>>
+  --
+  editorial_id : INTEGER <<FK, UQ, NULL>>
+  booking_id : INTEGER <<FK, UQ, NULL>>
+  stage_id : INTEGER <<FK, UQ, NULL>>
+}
+entity "阶段来源映射\nstage_source" as stage_source {
+  stage_id : INTEGER <<PK, FK, NN>>
+  --
+  source_id : INTEGER <<FK, NN>>
+}
+entity "阶段确认结论\nstage_confirmation" as stage_confirmation {
+  confirmation_id : INTEGER <<PK, NN>>
+  --
+  stage_id : INTEGER <<FK, NN>>
+  outcome_id : INTEGER <<FK, NN>>
+  confirmed_by : INTEGER <<FK, NN>>
+  decision : TEXT <<NN>>
+  opinion : TEXT <<NN>>
+  confirmed_at : TEXT <<NN>>
+}
+entity "阶段完成\nstage_completion" as stage_completion {
+  stage_id : INTEGER <<PK, FK, NN>>
+  --
+  confirmation_id : INTEGER <<FK, UQ, NN>>
+  second_review_id : INTEGER <<FK, NULL>>
+}
+entity "任务完成\nworkflow_completion" as workflow_completion {
+  workflow_id : INTEGER <<PK, FK, NN>>
+  --
+  completed_at : TEXT <<NN>>
+}
+entity "部门\ndepartment" as department {
+  department_id : INTEGER <<PK, NN>>
+}
+entity "采编协同\neditorial" as editorial {
+  editorial_id : INTEGER <<PK, NN>>
+}
+entity "稿件审查结论\nmanuscript_review" as manuscript_review {
+  review_id : INTEGER <<PK, NN>>
+}
+entity "成员与账号\nmember" as member {
+  member_id : INTEGER <<PK, NN>>
+}
+entity "成果提交\noutcome" as outcome {
+  outcome_id : INTEGER <<PK, NN>>
+}
+entity "摄制预约\nproduction_booking" as production_booking {
+  booking_id : INTEGER <<PK, NN>>
+}
+member ||--o{ workflow
+department ||--o{ task_stage
+workflow ||--o{ task_stage
+member ||--o{ stage_assignment
+task_stage ||--o| stage_assignment
+task_stage |o--o| business_source
+production_booking |o--o| business_source
+editorial |o--o| business_source
+business_source ||--o{ stage_source
+task_stage ||--o| stage_source
+member ||--o{ stage_confirmation
+outcome ||--o{ stage_confirmation
+task_stage ||--o{ stage_confirmation
+manuscript_review |o--o{ stage_completion
+stage_confirmation ||--o| stage_completion
+task_stage ||--o| stage_completion
+workflow ||--o| workflow_completion
+legend bottom
+  PK 主键；FK 外键；UQ 单列唯一；NN 非空；NULL 可空。
+  || 恰一；|o 零或一；o{ 零到多。复合唯一约束见数据字典。
+  图为分视图，外部上下文表只显示主键；同名表为同一张表。
+  连线为正交折线；具体外键字段及关联角色以数据字典为准。
+endlegend
+@enduml

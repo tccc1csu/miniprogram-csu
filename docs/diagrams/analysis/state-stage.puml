@@ -1,0 +1,49 @@
+@startuml
+title 分析状态机图（三）— 任务阶段（运营推文实例）
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "待前序" as Waiting
+state "可派发" as Ready
+state "待制作" as Working
+state "待一审" as First
+state "待二审" as Second
+state "待修改" as Returned
+state "审核通过待发布" as Publish
+state "待完成确认" as Confirm
+state "待补正成果" as Correct
+state "已完成" as Done
+[*] --> Waiting
+Waiting --> Ready : 检查可开始()\n[无前序或前序已完成]
+Ready --> Working : 派发()\n[部长有权且成员有效]\n/ 确立阶段承接关系
+Working --> First : 提交成果()\n[稿件完整且为当前承接人]\n/ 保存稿件版本
+First --> Second : 审查稿件()\n[运营部长一审通过且版本一致]\n/ 保存一审结论
+First --> Returned : 审查稿件()\n[一审退回且意见完整]\n/ 保存修改意见
+Second --> Returned : 审查稿件()\n[老师二审退回且意见完整]\n/ 保存修改意见
+Returned --> First : 提交成果()\n[修订完整]\n/ 保存新版本，重新审核
+Second --> Publish : 审查稿件()\n[老师二审通过且版本一致]\n/ 保存二审结论
+Publish --> Confirm : 提交成果()\n[稿件未变且发布依据完整]\n/ 保存平台与链接
+Publish --> First : 提交成果()\n[稿件内容改变]\n/ 保存新版本，重新审核
+Confirm --> Done : 确认完成()\n[部长有权、成果完整且适用审核通过]\n/ 保留贡献依据
+Confirm --> Correct : 确认完成()\n[成果退回且意见完整]\n/ 保留补正要求
+Correct --> Confirm : 提交成果()\n[仅补正发布依据且完整]
+Correct --> First : 提交成果()\n[稿件内容改变]\n/ 重新审核
+Done : 确认完成()\n[重复合法确认]\n/ 返回原结果，不重复归集
+note bottom of Done
+  本图只描述运营推文阶段对象，非整个组织审批流程。
+  普通美编阶段不套用稿件一审、二审，见文字说明。
+  未通过审核不得确认完成；阶段完成不等于已计入津贴。
+end note
+
+@enduml

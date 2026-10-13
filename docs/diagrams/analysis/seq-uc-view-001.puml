@@ -1,0 +1,45 @@
+@startuml
+title UC-VIEW-001 查看个人工作记录 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "普通成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:查看个人工作记录控制" as C
+participant "M:成员" as M
+participant "L:工作量台账" as L
+participant "W:成员周汇总" as W
+A -> B: 查看个人工作记录(业务信息)
+activate B
+B -> C: 查看个人工作记录(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> L: 查询个人工作量(本人、周次范围)
+activate L
+L -> W: 核对一致性(本人有效明细)
+W --> L: 汇总、明细与异常
+L --> C: 本人可访问工作记录
+deactivate L
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

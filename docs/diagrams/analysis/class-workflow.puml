@@ -1,0 +1,85 @@
+@startuml
+title 分析类图（三）— 部门与跨部门流转
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty members
+class "成员" as Member <<entity>> {
+  - 姓名
+  - 账号角色
+  - 启用
+  + 验证身份(业务信息)
+  + 验证业务资格(业务信息)
+  + 验证归属(业务信息)
+  + 沿用归档偏好(业务信息)
+}
+class "部门" as Department <<entity>> {
+  - 名称
+  - 启用
+  + 验证成员归属(业务信息)
+  + 检查承办资格(业务信息)
+}
+class "流转任务" as Workflow <<entity>> {
+  - 名称
+  - 需求来源
+  - 工作目标
+  - 结束时刻（可选）
+  + 建立任务(业务信息)
+  + 派发阶段(业务信息)
+  + 提交阶段成果(业务信息)
+  + 审查阶段稿件(业务信息)
+  + 确认阶段完成(业务信息)
+  + 提供待计量贡献()
+}
+class "任务阶段" as Stage <<entity>> {
+  - 次序
+  - 成果要求
+  - 截止日期（可选）
+  - 完成时刻（可选）
+  + 派发(业务信息)
+  + 提交成果(业务信息)
+  + 审查稿件(业务信息)
+  + 确认完成(业务信息)
+  + 检查可开始(业务信息)
+  + 提供贡献依据()
+}
+class "成果" as Outcome <<entity>> {
+  - 完成说明
+  - 提交时刻
+  + 验证完整性(业务信息)
+}
+class "稿件版本" as Version <<entity>> {
+  - 版次
+  - 内容
+  - 提交时刻
+  + 验证送审条件(业务信息)
+  + 接受审查结论(业务信息)
+}
+class "审核结论" as Review <<entity>> {
+  - 审查层次
+  - 结论
+  - 意见
+  - 审查时刻
+  + 验证适用版本(业务信息)
+}
+
+Member "1" -- "0..*" Workflow : 发起人
+Workflow "1" *-- "1..*" Stage : 顺序阶段
+Stage "后继 0..1" --> "前序 0..1" Stage : 相邻阶段
+Stage "0..*" -- "1" Department : 承办部门
+Stage "0..*" -- "0..1" Member : 当前承接人
+Stage "0..1" *-- "0..*" Outcome : 历次成果
+Stage "0..*" -- "0..1" Version : 当前送审版
+Outcome "0..*" -- "0..*" Version : 涉及稿件
+Version "1" -- "0..*" Review : 版本审查
+Member "1" -- "0..*" Review : 审核人
+
+note "任务拥有阶段，控制类先请求流转任务，再由任务委派阶段。\n每阶段一名当前承接人，贡献人员不等同于当前负责人。\n本轮按已有规约的顺序流转方案分析，不新增并行汇合制度。" as Guidance
+@enduml

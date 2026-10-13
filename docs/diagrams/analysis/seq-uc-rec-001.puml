@@ -1,0 +1,47 @@
+@startuml
+title UC-REC-001 核对部门任务明细与周汇总 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "部门部长" as A
+boundary "接口:部长接口" as B
+control "控制:核对部门任务明细与周汇总控制" as C
+participant "M:成员" as M
+participant "L:工作量台账" as L
+participant "W:成员周汇总" as W
+A -> B: 核对部门任务明细与周汇总(业务信息)
+activate B
+B -> C: 核对部门任务明细与周汇总(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> L: 核对部门工作量(部长、本部门、周次)
+activate L
+loop 本部门各成员周汇总
+  L -> W: 核对一致性(对应有效贡献)
+  W --> L: 一致结果或差异及来源
+end
+L --> C: 核对结果与异常，不补造明细
+deactivate L
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

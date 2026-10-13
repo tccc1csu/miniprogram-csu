@@ -1,0 +1,51 @@
+@startuml
+title 分析类图（七）— 摄制预约用例职责
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+left to right direction
+hide empty members
+class "发起摄制预约控制" as CUCPR001 <<control>> {
+  + 发起摄制预约(业务信息)
+}
+class "派发摄制任务控制" as CUCPR002 <<control>> {
+  + 派发摄制任务(业务信息)
+}
+class "提交摄制成果控制" as CUCPR003 <<control>> {
+  + 提交摄制成果(业务信息)
+}
+class "归档摄制成果控制" as CUCPR004 <<control>> {
+  + 归档摄制成果(业务信息)
+}
+class "抢接摄制任务控制" as CUCPR005 <<control>> {
+  + 抢接摄制任务(业务信息)
+}
+class "普通成员接口" as B0 <<boundary>>
+class "部长接口" as B1 <<boundary>>
+class "成员" as E0 <<entity>>
+class "摄制日程" as E10 <<entity>>
+class "摄制预约" as E12 <<entity>>
+B0 ..> CUCPR001 : UC-PR-001
+CUCPR001 ..> E0 : 委派责任
+CUCPR001 ..> E10 : 委派责任
+B1 ..> CUCPR002 : UC-PR-002
+CUCPR002 ..> E0 : 委派责任
+CUCPR002 ..> E12 : 委派责任
+B0 ..> CUCPR003 : UC-PR-003
+CUCPR003 ..> E0 : 委派责任
+CUCPR003 ..> E12 : 委派责任
+B0 ..> CUCPR004 : UC-PR-004
+CUCPR004 ..> E0 : 委派责任
+CUCPR004 ..> E12 : 委派责任
+B0 ..> CUCPR005 : UC-PR-005
+CUCPR005 ..> E0 : 委派责任
+CUCPR005 ..> E12 : 委派责任
+note "实体属性与操作详见前四张类图；\n实体间协作详见对应序列图。\n虚线表示职责依赖，不表示业务流转先后。" as Guidance
+@enduml

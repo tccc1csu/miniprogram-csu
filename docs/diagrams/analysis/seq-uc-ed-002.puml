@@ -1,0 +1,45 @@
+@startuml
+title UC-ED-002 派发采编同步任务 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "办公部部长" as A
+boundary "接口:部长接口" as B
+control "控制:派发采编同步任务控制" as C
+participant "M:成员" as M
+participant "E:采编协同" as E
+participant "O:成员" as O
+A -> B: 派发采编同步任务(业务信息)
+activate B
+B -> C: 派发采编同步任务(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 派发同步(部长、承接成员、可选期限)
+activate E
+E -> O: 验证归属(办公部)
+O --> E: 成员资格
+E --> C: 唯一承接结果或状态不允许原因
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

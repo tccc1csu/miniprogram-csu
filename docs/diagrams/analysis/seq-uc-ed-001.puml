@@ -1,0 +1,45 @@
+@startuml
+title UC-ED-001 提交采编协同需求 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "采编成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:提交采编协同需求控制" as C
+participant "M:成员" as M
+participant "E:采编协同" as E
+participant "W:作品" as W
+A -> B: 提交采编协同需求(业务信息)
+activate B
+B -> C: 提交采编协同需求(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 建立协同(来源成员、作品、平台、可选期限)
+activate E
+E -> W: 验证来源(材料、原创或转载)
+W --> E: 来源验证结果
+E --> C: 待派发协同或信息不合法原因
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+title 分析类图（五）— 归档摄制成果的边界、控制与实体职责
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+
+left to right direction
+class "普通成员接口" as UI <<boundary>> {
+  + 归档摄制成果(业务信息)
+}
+class "归档摄制成果控制" as CT <<control>> {
+  + 归档摄制成果(业务信息)
+}
+class "成员" as Member <<entity>> {
+  - 姓名
+  - 账号角色
+  - 启用
+  + 验证身份(业务信息)
+  + 验证业务资格(业务信息)
+  + 验证归属(业务信息)
+  + 沿用归档偏好(业务信息)
+}
+class "摄制预约" as Booking <<entity>> {
+  - 任务名称
+  - 预约时段
+  - 地点
+  - 联系方式
+  - 提交时刻
+  - 抢单开放
+  - 承接方式
+  - 加急倍率
+  - 归档时刻（可选）
+  + 建立预约(业务信息)
+  + 确定承接(业务信息)
+  + 提交摄制成果(业务信息)
+  + 归档摄制成果(业务信息)
+  + 提取应计贡献()
+  + 完成归档()
+}
+class "工作量台账" as Ledger <<entity>> {
+  + 归集贡献(业务信息)
+  + 查询个人工作量(业务信息)
+  + 核对部门工作量(业务信息)
+  + 生成中心周报(业务信息)
+  + 识别未计入贡献(业务信息)
+}
+class "津贴标准" as Allowance <<entity>> {
+  - 版本
+  - 生效范围
+  - 部门时薪
+  - 贡献计量约定
+  + 核定贡献工时(业务信息)
+  + 计算津贴(业务信息)
+}
+class "成员周汇总" as Weekly <<entity>> {
+  - 周次
+  - /有效工时
+  + 按明细汇总(业务信息)
+  + 核对一致性(业务信息)
+  + 核算津贴()
+}
+
+UI ..> CT : 请求用例服务
+CT ..> Member : 验证操作人资格
+CT ..> Booking : 委派归档责任
+Booking ..> Ledger : 归集已确认贡献
+Ledger ..> Allowance : 核定贡献工时
+Ledger ..> Weekly : 按有效明细汇总
+note bottom of CT
+  控制类控制用例路径并分配责任。
+  它不自行判断预约状态或计算津贴。
+end note
+@enduml

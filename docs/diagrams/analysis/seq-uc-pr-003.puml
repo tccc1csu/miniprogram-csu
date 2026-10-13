@@ -1,0 +1,52 @@
+@startuml
+title UC-PR-003 提交摄制成果 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "摄制承接成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:提交摄制成果控制" as C
+participant "M:成员" as M
+participant "P:摄制预约" as P
+participant "O:成果" as O
+participant "N:成员" as N
+A -> B: 提交摄制成果(业务信息)
+activate B
+B -> C: 提交摄制成果(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> P: 提交摄制成果(承接人、成果、指定归档人)
+activate P
+P -> O: 验证完整性(拍摄或制作成果)
+O --> P: 完整性结论
+P -> N: 验证归属(办公部普通成员)
+N --> P: 归档资格
+P --> C: 待归档结果或拒绝原因
+deactivate P
+opt 提交成功
+  C -> M: 沿用归档偏好(本次指定归档人)
+  M --> C: 偏好已保留
+end
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

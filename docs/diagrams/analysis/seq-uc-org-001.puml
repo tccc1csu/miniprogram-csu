@@ -1,0 +1,46 @@
+@startuml
+title UC-ORG-001 管理组织与人员 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "维护管理员" as A
+boundary "接口:管理员接口" as B
+control "控制:管理组织与人员控制" as C
+participant "M:成员" as M
+participant "O:中心组织" as O
+participant "D:部门" as D
+A -> B: 管理组织与人员(业务信息)
+activate B
+B -> C: 管理组织与人员(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> O: 维护组织人员(管理员、部门成员变更、生效时间)
+activate O
+O -> D: 验证成员归属(拟变更关系)
+D --> O: 归属合法性
+O --> C: 变更结果或拒绝原因
+deactivate O
+note over C,O: 停用不删除历史贡献与责任关联。
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+title 数据库关系图 — 周报范围、明细及封存
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam nodesep 65
+skinparam ranksep 85
+skinparam entityBackgroundColor #F5FAFF
+skinparam entityBorderColor #46637F
+skinparam ArrowColor #334155
+hide circle
+entity "中心周报批次\nweekly_report" as weekly_report {
+  report_id : INTEGER <<PK, NN>>
+  --
+  week_start : TEXT <<NN>>
+  generated_by : INTEGER <<FK, NN>>
+  generated_at : TEXT <<NN>>
+  export_ref : TEXT <<NULL>>
+}
+entity "周报部门范围\nreport_department" as report_department {
+  report_id : INTEGER <<PK, FK, NN>>
+  department_id : INTEGER <<PK, FK, NN>>
+}
+entity "周报有效明细集合\nreport_contribution" as report_contribution {
+  report_id : INTEGER <<PK, FK, NN>>
+  basis_id : INTEGER <<PK, FK, NN>>
+}
+entity "周报待核对项\nreport_pending" as report_pending {
+  report_id : INTEGER <<PK, FK, NN>>
+  basis_id : INTEGER <<PK, FK, NN>>
+  --
+  reason : TEXT <<NN>>
+}
+entity "周报封存\nreport_seal" as report_seal {
+  report_id : INTEGER <<PK, FK, NN>>
+}
+entity "工作贡献依据\ncontribution_basis" as contribution_basis {
+  basis_id : INTEGER <<PK, NN>>
+}
+entity "已核实贡献计量\ncontribution_measurement" as contribution_measurement {
+  basis_id : INTEGER <<PK, FK, NN>>
+}
+entity "部门\ndepartment" as department {
+  department_id : INTEGER <<PK, NN>>
+}
+entity "成员与账号\nmember" as member {
+  member_id : INTEGER <<PK, NN>>
+}
+member ||--o{ weekly_report
+department ||--o{ report_department
+weekly_report ||--o{ report_department
+contribution_measurement ||--o{ report_contribution
+weekly_report ||--o{ report_contribution
+contribution_basis ||--o{ report_pending
+weekly_report ||--o{ report_pending
+weekly_report ||--o| report_seal
+legend bottom
+  PK 主键；FK 外键；UQ 单列唯一；NN 非空；NULL 可空。
+  || 恰一；|o 零或一；o{ 零到多。复合唯一约束见数据字典。
+  图为分视图，外部上下文表只显示主键；同名表为同一张表。
+  连线为正交折线；具体外键字段及关联角色以数据字典为准。
+endlegend
+@enduml

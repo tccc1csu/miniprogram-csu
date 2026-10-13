@@ -1,0 +1,23 @@
+@startuml
+title 系统用例图（三）— 工作量统计与组织支撑
+left to right direction
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 20
+skinparam ranksep 40
+skinparam usecaseBackgroundColor #F5FAFF
+actor "普通成员" as Member
+actor "部长\n（本部门核对；办公部导出）" as Minister
+actor "管理员\n（维护职责）" as Admin
+rectangle "青年传媒中心工作统计与协作系统" {
+ usecase "UC-VIEW-001 查看个人工作记录" as U0
+ usecase "UC-REC-001 核对部门任务明细与周汇总" as U1
+ usecase "UC-STAT-001 生成并导出中心周报" as U2
+ usecase "UC-ORG-001 管理组织与人员" as U3
+}
+Member --> U0
+Minister --> U1
+Minister --> U2
+Admin --> U3
+@enduml

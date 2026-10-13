@@ -1,0 +1,57 @@
+@startuml
+title 分析类图（八）— 部门流转与稿件审核用例职责
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+left to right direction
+hide empty members
+class "登记部门与跨部门任务控制" as CUCFL001 <<control>> {
+  + 登记部门与跨部门任务(业务信息)
+}
+class "派发部门阶段任务控制" as CUCFL002 <<control>> {
+  + 派发部门阶段任务(业务信息)
+}
+class "提交部门阶段成果控制" as CUCFL003 <<control>> {
+  + 提交部门阶段成果(业务信息)
+}
+class "确认部门阶段完成控制" as CUCFL004 <<control>> {
+  + 确认部门阶段完成(业务信息)
+}
+class "一审运营部推文控制" as CUCRV001 <<control>> {
+  + 一审运营部推文(业务信息)
+}
+class "二审稿件控制" as CUCRV002 <<control>> {
+  + 二审稿件(业务信息)
+}
+class "普通成员接口" as B0 <<boundary>>
+class "部长接口" as B1 <<boundary>>
+class "管理员接口" as B2 <<boundary>>
+class "成员" as E0 <<entity>>
+class "流转任务" as E13 <<entity>>
+B0 ..> CUCFL001 : UC-FL-001
+CUCFL001 ..> E13 : 委派责任
+CUCFL001 ..> E0 : 委派责任
+B1 ..> CUCFL002 : UC-FL-002
+CUCFL002 ..> E13 : 委派责任
+CUCFL002 ..> E0 : 委派责任
+B0 ..> CUCFL003 : UC-FL-003
+CUCFL003 ..> E13 : 委派责任
+CUCFL003 ..> E0 : 委派责任
+B1 ..> CUCFL004 : UC-FL-004
+CUCFL004 ..> E13 : 委派责任
+CUCFL004 ..> E0 : 委派责任
+B1 ..> CUCRV001 : UC-RV-001
+CUCRV001 ..> E13 : 委派责任
+CUCRV001 ..> E0 : 委派责任
+B2 ..> CUCRV002 : UC-RV-002
+CUCRV002 ..> E13 : 委派责任
+CUCRV002 ..> E0 : 委派责任
+note "实体属性与操作详见前四张类图；\n实体间协作详见对应序列图。\n虚线表示职责依赖，不表示业务流转先后。" as Guidance
+@enduml

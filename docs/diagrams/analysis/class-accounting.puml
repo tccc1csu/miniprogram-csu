@@ -1,0 +1,95 @@
+@startuml
+title 分析类图（四）— 工作贡献与津贴核算
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty members
+class "工作量台账" as Ledger <<entity>> {
+  + 归集贡献(业务信息)
+  + 查询个人工作量(业务信息)
+  + 核对部门工作量(业务信息)
+  + 生成中心周报(业务信息)
+  + 识别未计入贡献(业务信息)
+}
+class "工作贡献" as Contribution <<entity>> {
+  - 贡献类型
+  - 发生时刻
+  - 基础工时
+  - 计入工时
+  - 适用倍率
+  + 验证计量依据(业务信息)
+  + 确认计量(业务信息)
+  + 核算津贴()
+}
+class "成员周汇总" as Weekly <<entity>> {
+  - 周次
+  - /有效工时
+  + 按明细汇总(业务信息)
+  + 核对一致性(业务信息)
+  + 核算津贴()
+}
+class "津贴标准" as Allowance <<entity>> {
+  - 版本
+  - 生效范围
+  - 部门时薪
+  - 贡献计量约定
+  + 核定贡献工时(业务信息)
+  + 计算津贴(业务信息)
+}
+class "中心周报" as Report <<entity>> {
+  - 周次
+  - 生成时刻
+  + 汇编统计结果(业务信息)
+}
+class "成员" as Member <<entity>> {
+  - 姓名
+  - 账号角色
+  - 启用
+  + 验证身份(业务信息)
+  + 验证业务资格(业务信息)
+  + 验证归属(业务信息)
+  + 沿用归档偏好(业务信息)
+}
+class "部门" as Department <<entity>> {
+  - 名称
+  - 启用
+  + 验证成员归属(业务信息)
+  + 检查承办资格(业务信息)
+}
+
+class "采编协同" as Editorial <<entity>>
+class "摄制预约" as Booking <<entity>>
+class "任务阶段" as Stage <<entity>>
+class "流转任务" as Workflow <<entity>>
+Ledger "1" -- "0..*" Contribution : 已确认贡献
+Ledger "1" -- "0..*" Weekly : 成员周汇总
+Ledger "1" -- "1..*" Allowance : 可用规则版本
+Ledger "1" -- "0..*" Report : 生成周报
+Editorial ..> Ledger : 归档时归集贡献
+Booking ..> Ledger : 归档时归集贡献
+Workflow ..> Ledger : 最后阶段完成时归集
+Contribution "0..*" -- "1" Member : 贡献人
+Contribution "0..*" -- "1" Department : 计量时所属部门
+Contribution "0..*" -- "1" Allowance : 计量依据
+Department "1" -- "1..*" Allowance : 历次标准
+Weekly "0..*" -- "1" Member : 汇总对象
+Weekly "1" -- "0..*" Contribution : 本周有效明细
+Report "0..*" -- "0..*" Weekly : 统计依据
+Editorial "0..1" -- "0..*" Contribution : 协同来源
+Booking "0..1" -- "0..*" Contribution : 摄制来源
+Stage "0..1" -- "0..*" Contribution : 阶段来源
+note bottom of Contribution
+  {xor} 三种来源恰有一种成立。
+  每项贡献关联一个实际来源；
+  来源、贡献类型、成员共同防止重复。
+end note
+
+note "工作贡献对应需求中的任务明细；成员周汇总对应每周一条汇总。\n每项贡献恰关联一个来源协同、预约或任务阶段，不能重复计量。\n同一成员、周次只有一份汇总；有效工时由明细推导。\n基础工时 → 计入工时 → 津贴，加急倍率只应用一次。" as Guidance
+@enduml

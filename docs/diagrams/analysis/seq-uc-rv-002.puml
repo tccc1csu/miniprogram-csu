@@ -1,0 +1,59 @@
+@startuml
+title UC-RV-002 二审稿件 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "指导老师" as A
+boundary "接口:管理员接口" as B
+control "控制:二审稿件控制" as C
+participant "M:成员" as M
+participant "F:流转任务" as F
+participant "G:任务阶段" as G
+participant "V:稿件版本" as V
+participant "R:审核结论" as R
+A -> B: 二审稿件(业务信息)
+activate B
+B -> C: 二审稿件(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> F: 审查阶段稿件(审核人、阶段、二审结论、意见、版次)
+activate F
+F -> G: 审查稿件(审核人、二审结论、意见、版次)
+activate G
+G -> V: 验证送审条件(二审、前序结论、当前版次)
+V --> G: 送审条件结论
+alt 资格、版次或前序结论不符
+  G --> F: 拒绝保存审查结论
+else 审查条件满足
+  G -> V: 接受审查结论(审核人、二审结论、意见)
+  V -> R: 验证适用版本(本稿件版次)
+  R --> V: 结论关联成立
+  V --> G: 已保存的通过或退回结论
+  G --> F: 待发布或待修改
+end
+deactivate G
+F --> C: 审查结果
+deactivate F
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title UC-STAT-001 生成并导出中心周报 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "办公部部长" as A
+boundary "接口:部长接口" as B
+control "控制:生成并导出中心周报控制" as C
+participant "M:成员" as M
+participant "L:工作量台账" as L
+participant "W:成员周汇总" as W
+participant "G:工作贡献" as G
+participant "R:津贴标准" as R
+participant "P:中心周报" as P
+A -> B: 生成并导出中心周报(业务信息)
+activate B
+B -> C: 生成并导出中心周报(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> L: 生成中心周报(办公部部长、周次、范围)
+activate L
+loop 范围内各成员周汇总
+  L -> W: 核对一致性(有效贡献)
+  W --> L: 核对结果及异常
+  L -> W: 核算津贴()
+  activate W
+  loop 每项有效贡献
+    W -> G: 核算津贴()
+    G -> R: 计算津贴(计入工时、计量部门)
+    R --> G: 津贴及标准版本
+    G --> W: 本项金额及依据
+  end
+  W --> L: 本人汇总与津贴依据
+  deactivate W
+end
+L -> P: 汇编统计结果(成员结果、异常、规则依据)
+P --> L: 可导出的中心周报
+L --> C: 周报及异常说明
+deactivate L
+note over G,R: 使用已核定计入工时，导出不再乘加急倍率。
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

@@ -1,0 +1,72 @@
+@startuml
+title UC-ED-004 审核并归档采编协同 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "指导老师" as A
+boundary "接口:管理员接口" as B
+control "控制:审核并归档采编协同控制" as C
+participant "M:成员" as M
+participant "E:采编协同" as E
+participant "O:成果" as O
+participant "L:工作量台账" as L
+participant "R:津贴标准" as R
+participant "W:成员周汇总" as W
+A -> B: 审核并归档采编协同(业务信息)
+activate B
+B -> C: 审核并归档采编协同(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+participant "G:工作贡献" as G
+
+C -> E: 审核并归档(老师、结论、意见、对应版本)
+activate E
+E -> O: 验证完整性(本次同步成果)
+O --> E: 完整性结论
+alt 无审核资格、状态不允许或材料不全
+  E --> C: 拒绝且保持原结果
+else 合法退回结论
+  E --> C: 修改意见及待修改责任，未计量
+else 已归档后的同一合法请求
+  E --> C: 原归档结果，不重新计量
+else 合法通过结论
+  E -> E: 提取应计贡献()
+  E -> L: 归集贡献(来源协同、原创采编及办公同步依据)
+  activate L
+  L -> L: 识别未计入贡献(来源、类型、成员)
+  loop 每项未计入的有效贡献
+    L -> R: 核定贡献工时(贡献依据)
+    R --> L: 计入工时及生效版本
+    L -> G: 确认计量(来源、成员、部门、工时、标准版本)
+    G --> L: 有效贡献
+  end
+  L -> W: 按明细汇总(本周有效贡献)
+  W --> L: 更新后的汇总
+  L --> E: 计量结果
+  deactivate L
+  E -> E: 完成归档()
+  E --> C: 归档结果及计量依据
+end
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

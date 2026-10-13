@@ -1,0 +1,60 @@
+@startuml
+title 改进业务序列图 — 摄制预约
+
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n中心预约成员" as R
+participant "<$entity>\n工作统计与协作系统" as S
+participant "<$worker>\n摄制部部长" as M
+participant "<$worker>\n摄制部成员" as P
+participant "<$worker>\n指定办公部\n归档成员" as A
+
+R -> S: 登记摄制预约（任务、预约时段、地点）
+activate S
+S -> S: 校验预约信息和时间冲突
+break 时间冲突或信息不合法
+  S --> R: 拒绝结果及原因，不创建预约
+end
+S -> S: 登记待派发预约并确定加急标记
+S --> R: 预约受理结果
+deactivate S
+alt 部长派发
+  S -> M: 指定摄制责任人（待派发预约）
+  M -> S: 登记摄制任务派发结果（承接成员）
+else 已开放抢单的未承接任务
+  P -> S: 登记抢单请求（任务、本人身份）
+  S -> S: 校验抢单资格并确定首个有效承接人
+  break 已被承接或无抢单资格
+    S --> P: 拒绝承接及原因
+  end
+  S --> P: 承接结果
+end
+S -> P: 完成摄制任务（预约要求）
+activate P
+P -> S: 登记摄制成果（成果、指定归档成员）
+deactivate P
+S -> A: 核对归档成果（成果材料）
+activate A
+A -> S: 归档摄制成果（归档结论）
+deactivate A
+activate S
+S -> S: 生成摄制和归档明细并更新成员周汇总
+S --> A: 归档结果及核算依据
+deactivate S
+note over R,S
+  提交时距预约开始不足 2 天标记加急，倍率 1.5。
+  冲突分支终止本次预约，不进入派发和归档。
+end note
+@enduml

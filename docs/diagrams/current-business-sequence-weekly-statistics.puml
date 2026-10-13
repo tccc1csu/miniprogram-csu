@@ -1,0 +1,27 @@
+@startuml
+title 现状业务序列图 — 每周人工统计
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n办公部部长" as O
+
+O -> O: 收集、核对本周工作量材料
+O -> O: 汇总成员工时并整理津贴统计依据
+note right of O
+  办公部承担统计，部长负责中心周报。
+  现状每周人工整理约 1 小时。
+  本图仅表达已确认的责任片段，
+  不增设未确认的逐级报送岗位。
+end note
+@enduml

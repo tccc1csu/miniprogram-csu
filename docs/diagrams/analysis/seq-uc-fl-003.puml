@@ -1,0 +1,55 @@
+@startuml
+title UC-FL-003 提交部门阶段成果 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "阶段承接成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:提交部门阶段成果控制" as C
+participant "M:成员" as M
+participant "F:流转任务" as F
+participant "G:任务阶段" as G
+participant "O:成果" as O
+participant "V:稿件版本" as V
+A -> B: 提交部门阶段成果(业务信息)
+activate B
+B -> C: 提交部门阶段成果(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> F: 提交阶段成果(承接人、阶段、成果与贡献依据)
+activate F
+F -> G: 提交成果(承接人、成果与贡献依据)
+activate G
+G -> O: 验证完整性(成果材料)
+O --> G: 完整性结论
+opt 稿件成果
+  G -> V: 验证送审条件(本版材料及已有结论)
+  V --> G: 需一审、需二审、可发布或须重新审核
+end
+G --> F: 待审、待确认或拒绝结果
+deactivate G
+F --> C: 提交结果
+deactivate F
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

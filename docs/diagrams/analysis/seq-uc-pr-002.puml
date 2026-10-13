@@ -1,0 +1,49 @@
+@startuml
+title UC-PR-002 派发摄制任务 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "摄制部部长" as A
+boundary "接口:部长接口" as B
+control "控制:派发摄制任务控制" as C
+participant "M:成员" as M
+participant "P:摄制预约" as P
+participant "N:成员" as N
+A -> B: 派发摄制任务(业务信息)
+activate B
+B -> C: 派发摄制任务(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> P: 确定承接(部长、指定成员、派发)
+activate P
+P -> N: 验证归属(摄制部)
+N --> P: 成员资格
+alt 无承接人且资格有效
+  P --> C: 唯一承接结果
+else 已被派发、抢单或资格无效
+  P --> C: 拒绝，保留已有承接关系
+end
+deactivate P
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

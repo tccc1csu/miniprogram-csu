@@ -1,0 +1,52 @@
+@startuml
+title UC-AUTH-001 登录系统 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "登录用户" as A
+boundary "接口:普通成员接口" as B
+control "控制:登录系统控制" as C
+participant "M:成员" as M
+participant "S:登录会话" as S
+A -> B: 登录系统(业务信息)
+activate B
+B -> C: 登录系统(业务信息)
+activate C
+
+alt 微信授权凭据
+  boundary "授权接口:微信授权服务接口" as W
+  actor "微信授权服务" as X
+  C -> W: 验证授权凭据(凭据)
+  W -> X: 验证授权凭据(凭据)
+  X --> W: 授权身份或失败
+  W --> C: 授权身份或失败
+else 账号登录凭据
+  note right of C: 账号凭据直接交给成员验证。
+end
+break 授权凭据验证失败
+  C --> B: 登录失败
+  B --> A: 登录失败
+end
+C -> M: 验证身份(凭据或授权身份)
+M --> C: 身份、有效职责及会话依据，或拒绝原因
+opt 身份有效且账号角色关系合法
+  C -> S: 建立会话(成员、有效职责、有效期)
+  S --> C: 有效会话
+end
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

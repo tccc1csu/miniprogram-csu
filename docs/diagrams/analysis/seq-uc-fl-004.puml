@@ -1,0 +1,72 @@
+@startuml
+title UC-FL-004 确认部门阶段完成 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "阶段所属部长" as A
+boundary "接口:部长接口" as B
+control "控制:确认部门阶段完成控制" as C
+participant "M:成员" as M
+participant "F:流转任务" as F
+participant "G:任务阶段" as G
+participant "Next:任务阶段" as Next
+participant "L:工作量台账" as L
+participant "R:津贴标准" as R
+participant "W:成员周汇总" as W
+A -> B: 确认部门阶段完成(业务信息)
+activate B
+B -> C: 确认部门阶段完成(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+participant "Item:工作贡献" as Item
+
+C -> F: 确认阶段完成(部长、阶段、结论、依据)
+activate F
+F -> G: 确认完成(部长、结论、审核与成果依据)
+G --> F: 完成、退回或拒绝
+alt 退回或所需审核未通过
+  F --> C: 本阶段结果，不开启后续阶段
+else 已完成且还有后续阶段
+  F -> Next: 检查可开始(前序条件)
+  Next --> F: 下一阶段可安排
+  F --> C: 阶段完成及下阶段责任
+else 最后阶段已完成
+  F -> F: 提供待计量贡献()
+  F -> L: 归集贡献(各来源阶段、已确认贡献)
+  L -> L: 识别未计入贡献(实际来源、类型、成员)
+  loop 每项待计量贡献
+    L -> R: 核定贡献工时(贡献依据)
+    R --> L: 计量依据或待核对原因
+    opt 计量依据齐备
+      L -> Item: 确认计量(实际来源、成员、部门、工时、标准版本)
+      Item --> L: 有效贡献
+    end
+  end
+  L -> W: 按明细汇总(有效贡献)
+  W --> L: 汇总结果
+  L --> F: 有效明细、汇总及待核对项
+  F --> C: 任务完成结果
+end
+deactivate F
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

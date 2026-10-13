@@ -1,0 +1,74 @@
+@startuml
+title 改进业务序列图 — 跨部门实例：美编设计到运营推文（拟开发）
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n运营部\n发起成员" as R
+participant "<$entity>\n工作统计与协作系统" as S
+participant "<$worker>\n美编部部长" as M
+participant "<$worker>\n美编承接成员" as C
+participant "<$worker>\n运营部部长" as OM
+participant "<$worker>\n运营承接成员" as OC
+participant "<$worker>\n指导老师" as T
+
+R -> S: 登记推文协作任务（设计需求、推文要求、两个阶段）
+S -> S: 验证并建立任务及阶段关系
+S --> R: 受理结果
+group 美编设计阶段
+  S -> M: 安排设计任务（设计需求）
+  M -> S: 登记阶段派发结果（承接人、排班依据）
+  S -> C: 完成设计（材料与成果要求）
+  C -> S: 登记设计成果（作品与贡献依据）
+  S -> M: 确认设计阶段完成（成果）
+  M -> S: 登记完成结论
+  break 设计阶段退回
+    S -> C: 修改设计成果（修改意见）
+    note over S,C: 修改后重新提交，本次不流转至运营阶段。
+  end
+  S -> S: 保存设计贡献依据并流转至运营阶段
+end
+group 运营推文阶段
+  S -> OM: 安排推文制作（需求与设计成果）
+  OM -> S: 登记运营阶段承接人
+  S -> OC: 制作推文（稿件与设计成果）
+  OC -> S: 登记推文稿件（材料与贡献依据）
+  S -> OM: 一审推文（稿件材料）
+  OM -> S: 登记一审结论
+  break 一审退回
+    S -> OC: 修改推文（修改意见）
+    note over S,OC: 重新提交后重新一审，本次不进入二审。
+  end
+  S -> T: 二审稿件（稿件及一审依据）
+  T -> S: 登记二审结论
+  break 二审退回
+    S -> OC: 修改推文（修改意见）
+    note over S,OC: 重新提交后重走所需审核，本次不结束任务。
+  end
+  S -> OC: 完成推文发布（已审稿件）
+  OC -> S: 登记发布成果（平台、链接、贡献依据）
+  S -> OM: 确认运营阶段完成（成果）
+  OM -> S: 登记阶段完成结论
+  break 发布成果退回
+    S -> OC: 补正发布成果（修改意见）
+    note over S,OC: 补正后重新确认，本次不结束任务。
+  end
+end
+S -> S: 完成任务并按生效规则归集有效明细与周汇总
+S --> R: 任务结果与成果依据
+note over R,T
+  示例流程：运营提出需求 → 美编设计 → 运营制作、审核与发布。
+  每阶段有唯一当前负责人；本例是通用流转的拟开发实例。
+  采编专门流程的同步后审核顺序仍按其已确认流程表达。
+end note
+@enduml

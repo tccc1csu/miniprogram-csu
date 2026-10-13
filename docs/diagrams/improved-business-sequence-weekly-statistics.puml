@@ -1,0 +1,34 @@
+@startuml
+title 改进业务序列图 — 周工作量与津贴统计
+!include course-notation.iuml
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
+skinparam sequenceLifeLineBorderColor #8B96A5
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceMessageAlign center
+hide footbox
+autonumber
+participant "<$worker>\n各部门部长" as M
+participant "<$entity>\n工作统计与协作系统" as S
+participant "<$worker>\n办公部部长" as O
+participant "<$worker>\n指导老师" as T
+
+M -> S: 核对本部门周记录（周次、部门）
+S -> S: 核验有效明细与成员周汇总
+S --> M: 核对结果及异常来源
+O -> S: 生成并导出中心周报（周次、统计范围）
+S -> S: 汇总有效工时并按部门时薪及生效规则计算津贴
+S --> O: 中心周报、规则依据及异常项
+O -> T: 查阅中心津贴统计依据（周报）
+note over M,T
+  有效明细在相应业务完成确认／归档后形成。
+  一个成员每周一条汇总，保留每项贡献明细。
+  未确认、冲突拒绝及重复请求不新增计量。
+end note
+@enduml

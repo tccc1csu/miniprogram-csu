@@ -1,0 +1,55 @@
+@startuml
+title 分析类图（九）— 登录、统计与组织用例职责
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+left to right direction
+hide empty members
+class "登录系统控制" as CUCAUTH001 <<control>> {
+  + 登录系统(业务信息)
+}
+class "核对部门任务明细与周汇总控制" as CUCREC001 <<control>> {
+  + 核对部门任务明细与周汇总(业务信息)
+}
+class "生成并导出中心周报控制" as CUCSTAT001 <<control>> {
+  + 生成并导出中心周报(业务信息)
+}
+class "管理组织与人员控制" as CUCORG001 <<control>> {
+  + 管理组织与人员(业务信息)
+}
+class "查看个人工作记录控制" as CUCVIEW001 <<control>> {
+  + 查看个人工作记录(业务信息)
+}
+class "普通成员接口" as B0 <<boundary>>
+class "部长接口" as B1 <<boundary>>
+class "管理员接口" as B2 <<boundary>>
+class "中心组织" as E3 <<entity>>
+class "工作量台账" as E15 <<entity>>
+class "成员" as E0 <<entity>>
+class "登录会话" as E1 <<entity>>
+class "微信授权服务接口" as WX <<boundary>>
+CUCAUTH001 ..> WX : 请求身份验证
+B0 ..> CUCAUTH001 : UC-AUTH-001
+CUCAUTH001 ..> E0 : 委派责任
+CUCAUTH001 ..> E1 : 委派责任
+B1 ..> CUCREC001 : UC-REC-001
+CUCREC001 ..> E15 : 委派责任
+CUCREC001 ..> E0 : 委派责任
+B1 ..> CUCSTAT001 : UC-STAT-001
+CUCSTAT001 ..> E15 : 委派责任
+CUCSTAT001 ..> E0 : 委派责任
+B2 ..> CUCORG001 : UC-ORG-001
+CUCORG001 ..> E0 : 委派责任
+CUCORG001 ..> E3 : 委派责任
+B0 ..> CUCVIEW001 : UC-VIEW-001
+CUCVIEW001 ..> E15 : 委派责任
+CUCVIEW001 ..> E0 : 委派责任
+note "实体属性与操作详见前四张类图；\n实体间协作详见对应序列图。\n虚线表示职责依赖，不表示业务流转先后。" as Guidance
+@enduml
