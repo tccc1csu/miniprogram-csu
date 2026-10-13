@@ -1,0 +1,150 @@
+<!--pages/operationsLayout/operationsLayout.wxml-->
+<view class="container">
+  <view class="layout-summary">
+    <view class="summary-title">公众号排版排班表</view>
+    <view class="summary-path">部长排班创建 → 干事排版 → 固定部长审核归档（自动核算工时）</view>
+    <view class="summary-tips" wx:if="{{isBrother}}">兄弟部门报名需提前 2 天，不足 2 天将标记「加急」并提醒干事</view>
+  </view>
+
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <view class="create-entry" wx:if="{{activeTab === 'active' && canCreate}}">
+    <button class="btn-primary" bindtap="openCreateModal">+ 新增排版任务</button>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && weekGroups.length === 0}}">暂无排版任务</view>
+
+  <view wx:for="{{weekGroups}}" wx:key="key" class="week-group">
+    <view class="week-title">
+      <view class="week-line"></view>
+      <text>{{item.label}}</text>
+      <view class="week-line"></view>
+    </view>
+
+    <view wx:for="{{item.tasks}}" wx:for-item="task" wx:key="_id" class="handoff-card card" data-item="{{task}}" bindtap="openDetail">
+      <view class="handoff-head">
+        <view class="handoff-head-left">
+          <view class="handoff-title">{{task.title}}</view>
+          <view class="handoff-meta">{{task.layoutTypeLabel}} · 干事：{{task.assigneeName || '未分配'}}</view>
+        </view>
+        <view class="handoff-head-right">
+          <view class="urgent-tag" wx:if="{{task.urgent}}">加急</view>
+          <view class="status status-{{task.status}}">{{task.statusLabel}}</view>
+        </view>
+      </view>
+
+      <view class="deadline-bar" wx:if="{{task.deadline}}">
+        <view class="deadline-icon">⏰</view>
+        <text class="deadline-text {{task.countdownUrgent ? 'deadline-urgent' : ''}}">{{task.countdown || '计算中...'}}</text>
+        <text class="deadline-date">截止：{{task.deadline}}</text>
+      </view>
+
+      <view class="join-bar" wx:if="{{task.joinList.length > 0}}">
+        <text class="join-label">报名（{{task.joinList.length}}）：</text>
+        <block wx:for="{{task.joinList}}" wx:for-item="join" wx:key="name">
+          <text class="join-name {{join.urgent ? 'join-urgent' : ''}}">{{join.name}}{{join.urgent ? '(加急)' : ''}}</text>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增排版任务弹窗 -->
+  <view class="modal-mask" wx:if="{{showCreateModal}}" bindtap="closeCreateModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">新增排版任务</view>
+      <view class="form-group">
+        <text class="form-label">文章标题</text>
+        <input class="form-input" placeholder="例如：本周推送《校园活动》图文排版" value="{{createForm.title}}" bindinput="onCreateTitleInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">排版类型</text>
+        <picker mode="selector" range="{{layoutTypes}}" range-key="label" value="{{createForm.layoutTypeIndex}}" bindchange="onLayoutTypeChange">
+          <view class="form-picker"><text>{{layoutTypes[createForm.layoutTypeIndex].label}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">截止日期</text>
+        <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
+          <view class="form-picker"><text>{{createForm.deadline || '选择日期'}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">排版干事（运营部）</text>
+        <picker mode="selector" range="{{operationsMembers}}" range-key="name" value="{{createForm.assigneeIndex}}" bindchange="onAssigneeChange">
+          <view class="form-picker"><text>{{operationsMembers.length > 0 ? operationsMembers[createForm.assigneeIndex].name : '暂无运营部成员'}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">备注</text>
+        <input class="form-input" placeholder="可选，如素材来源、风格要求" value="{{createForm.note}}" bindinput="onCreateNoteInput" />
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCreateModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="submitCreate">创建并分配</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 任务详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
+    <view class="modal-content" catchtap="stopTap" wx:if="{{detailTarget}}">
+      <view class="modal-title detail-title">{{detailTarget.title}}</view>
+      <view class="detail-row"><text class="detail-label">排版类型</text><text class="detail-value">{{detailTarget.layoutTypeLabel}}</text></view>
+      <view class="detail-row"><text class="detail-label">截止日期</text><text class="detail-value">{{detailTarget.deadline || '未设置'}}</text></view>
+      <view class="detail-row"><text class="detail-label">排版干事</text><text class="detail-value">{{detailTarget.assigneeName || '未分配'}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.note}}"><text class="detail-label">备注</text><text class="detail-value">{{detailTarget.note}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.syncResult}}"><text class="detail-label">排版反馈</text><text class="detail-value">{{detailTarget.syncResult}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.reviewComment}}"><text class="detail-label">审核意见</text><text class="detail-value">{{detailTarget.reviewComment}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.urgent}}"><text class="detail-label">加急标记</text><text class="detail-value urgent-text">加急报名，请尽快处理</text></view>
+
+      <view class="join-detail" wx:if="{{detailTarget.joinList.length > 0}}">
+        <view class="join-detail-title">兄弟部门报名（{{detailTarget.joinList.length}}）</view>
+        <view class="join-item" wx:for="{{detailTarget.joinList}}" wx:for-item="join" wx:key="name">
+          <text class="join-item-name">{{join.name}}</text>
+          <text class="join-urgent-tag" wx:if="{{join.urgent}}">加急</text>
+          <text class="join-time">{{join.joinTime}}</text>
+        </view>
+      </view>
+
+      <view class="modal-actions" wx:if="{{detailTarget.canJoin || detailTarget.canComplete || detailTarget.canReview}}">
+        <button class="mini-btn join-btn" wx:if="{{detailTarget.canJoin}}" bindtap="joinTask">报名加入</button>
+        <button class="mini-btn" wx:if="{{detailTarget.canComplete}}" bindtap="openCompleteModal">提交排版结果</button>
+        <button class="mini-btn primary" wx:if="{{detailTarget.canReview}}" bindtap="openReviewModal">审核</button>
+      </view>
+      <view class="join-hint" wx:if="{{detailTarget.canJoin}}">距截止不足 2 天报名将标记为「加急」并通知干事</view>
+    </view>
+  </view>
+
+  <!-- 提交排版结果弹窗 -->
+  <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">提交排版结果</view>
+      <textarea class="form-textarea" placeholder="填写成品链接、预览图说明或处理反馈" value="{{syncResult}}" bindinput="onSyncResultInput" />
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmComplete">发送审核</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 审核弹窗（固定部长 / 管理员） -->
+  <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">审核排版任务</view>
+      <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
+      <view class="form-group" wx:if="{{returnTargets.length > 0}}">
+        <text class="form-label">退回修改时指定接收人</text>
+        <picker mode="selector" range="{{returnTargets}}" range-key="name" value="{{returnToIndex}}" bindchange="onReturnToChange">
+          <view class="form-picker"><text>{{returnTargets[returnToIndex].name}}（{{returnTargets[returnToIndex].department}}）</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
+        <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>
+      </view>
+      <view class="review-tip">归档后将按排版类型规则自动为干事和审核人核算工时</view>
+    </view>
+  </view>
+</view>

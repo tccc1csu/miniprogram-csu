@@ -19,7 +19,8 @@
     "pages/responsibilities/responsibilities",
     "pages/taskNotifications/taskNotifications",
     "pages/projectTasks/projectTasks",
-    "pages/fileLibrary/fileLibrary"
+    "pages/fileLibrary/fileLibrary",
+    "pages/operationsLayout/operationsLayout"
   ],
   "window": {
     "backgroundTextStyle": "light",
