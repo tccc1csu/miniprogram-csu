@@ -2,7 +2,7 @@
 <view class="container">
   <view class="flow-summary">
     <view class="summary-title">采编部稿件同步流程</view>
-    <view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 管理员审核 → 自动归档</view>
+<view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 部长/管理员审核 → 自动归档</view>
   </view>
 
   <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
@@ -43,8 +43,8 @@
     <view class="flow-step">
       <view class="step-index">4</view>
       <view class="step-body">
-        <view class="step-title">管理员老师审核归档</view>
-        <view class="step-text">审核通过后自动归档，并为原创采编稿件和办公同步动作核算工作量。</view>
+<view class="step-title">部长 / 管理员审核归档</view>
+<view class="step-text">部长或管理员审核，可选择退回修改并指定接收人；审核通过后自动归档，并按工时规则核算工作量。</view>
       </view>
     </view>
   </view>
@@ -142,6 +142,10 @@
         <view class="section-label">审核</view>
         <view class="section-text">{{item.reviewComment}}</view>
       </view>
+<view class="handoff-section" wx:if="{{item.returnToName}}">
+        <view class="section-label">退回给</view>
+        <view class="section-text">{{item.returnToName}} · 退回人：{{item.returnedBy}}</view>
+      </view>
       <view class="handoff-actions" wx:if="{{item.canAssign || item.canComplete || item.canReview}}">
         <button class="mini-btn" wx:if="{{item.canAssign}}" data-item="{{item}}" bindtap="openAssignModal">派发</button>
         <button class="mini-btn" wx:if="{{item.canComplete}}" data-item="{{item}}" bindtap="openCompleteModal">提交同步结果</button>
@@ -179,8 +183,17 @@
 
   <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
     <view class="modal-content" catchtap="stopTap">
-      <view class="modal-title">管理员审核</view>
+<view class="modal-title">审核（部长 / 管理员）</view>
       <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
+      <view class="form-group" wx:if="{{returnTargets.length > 0}}">
+        <text class="form-label">退回修改时指定接收人</text>
+        <picker mode="selector" range="{{returnTargets}}" range-key="name" value="{{returnToIndex}}" bindchange="onReturnToChange">
+          <view class="form-picker">
+            <text>{{returnTargets[returnToIndex].name}}（{{returnTargets[returnToIndex].department}}）</text>
+            <text>▾</text>
+          </view>
+        </picker>
+      </view>
       <view class="modal-actions">
         <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
         <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>

@@ -112,7 +112,11 @@ const DEFAULT_ALLOWANCE_RULES = [
   { key: 'office_handoff_sync', name: '采编办公对接', department: '办公部', role: '对接干事', workType: '日常办公', unit: '学期', hours: 4 },
   { key: 'production_video_member', name: '摄制任务完成', department: '摄制部', role: '摄制干事', workType: '视频制作', unit: '次', hours: 4 },
   { key: 'production_archive_review', name: '摄制任务归档', department: '办公部', role: '归档人员', workType: '日常办公', unit: '人次', hours: 2 },
-  { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '次', hours: 2 }
+  { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '次', hours: 2 },
+  { key: 'operations_basic_layout', name: '基础排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 4 },
+  { key: 'operations_photo_layout', name: '影像志排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 2 },
+  { key: 'operations_reprint_layout', name: '内容转载排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 1 },
+  { key: 'operations_layout_review', name: '排版审核', department: '运营部', role: '审核', workType: '日常办公', unit: '篇', hours: 1.5 }
 ]
 
 const DEFAULT_WORKFLOW_RESPONSIBILITIES = [
@@ -2122,6 +2126,20 @@ async function handleManageHandoffs(event, user, openid) {
     return success(rows.map(item => formatHandoff(item, user, openid)))
   }
 
+  // 可退回人员列表（供部长/管理员在退回修改时指定接收人）
+  if (action === 'getHandoffReturnTargets') {
+    const handoff = await getDoc(COLLECTIONS.HANDOFFS, event.handoffId)
+    if (!handoff) {
+      return fail('协同需求不存在')
+    }
+    if (!canReviewHandoff(user, handoff)) {
+      return fail('只有相关部长或管理员可以查看退回对象')
+    }
+    const members = await getAll(COLLECTIONS.MEMBERS, {})
+    members.sort(sortByDepartmentAndName)
+    return success(members.map(formatMember))
+  }
+
   if (action === 'createHandoff') {
     if (user.role !== 'admin' && user.department !== '采编部') {
       return fail('当前仅采编部可发起该协同流程')
@@ -2353,19 +2371,25 @@ async function handleManageHandoffs(event, user, openid) {
     })
     await addWorkflowNotification({
       title: '协同需求待审核',
-      content: handoff.title + ' 已完成同步，等待管理员老师审核。',
+      content: handoff.title + ' 已完成同步，等待部长或管理员审核。',
       targetDept: '',
       page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
-      recipientSpecs: [{ role: 'admin' }]
+      recipientSpecs: [
+        { role: 'admin' },
+        { role: 'minister', department: handoff.sourceDepartment || '采编部' },
+        { role: 'minister', department: handoff.targetDepartment || '办公部' }
+      ]
     })
     return success({ updated: 1 })
   }
 
   if (action === 'reviewHandoff') {
-    requireAdmin(user)
     const handoff = await getDoc(COLLECTIONS.HANDOFFS, event.handoffId)
     if (!handoff) {
       return fail('协同需求不存在')
+    }
+    if (!canReviewHandoff(user, handoff)) {
+      return fail('只有相关部长或管理员可以审核该任务')
     }
     if (handoff.status !== 'completed') {
       return fail('只有待审核需求可以审核')
@@ -2373,6 +2397,18 @@ async function handleManageHandoffs(event, user, openid) {
 
     const approved = !!event.approved
     const now = new Date()
+    // 退回修改时可指定接收人；未指定时退回办公部部长。
+    const returnToName = approved ? '' : trim(event.returnToName)
+    let returnToOpenid = ''
+    let returnToDepartment = handoff.targetDepartment || '办公部'
+    if (returnToName) {
+      const returnToMember = await findMemberByName(returnToName)
+      if (!returnToMember) {
+        return fail('请选择有效的退回对象')
+      }
+      returnToOpenid = returnToMember.openid || ''
+      returnToDepartment = returnToMember.department || returnToDepartment
+    }
     const settledRecords = approved
       ? await settleHandoffWorkload(event.handoffId, handoff, now, user, openid)
       : []
@@ -2386,18 +2422,29 @@ async function handleManageHandoffs(event, user, openid) {
         archivedTime: approved ? now : null,
         workloadSettled: approved,
         settledRecords,
+        returnToName,
+        returnToOpenid,
+        returnedBy: approved ? '' : user.name,
         updateTime: now
       }
     })
+    const recipients = approved
+      ? []
+      : (returnToName
+        ? [{ name: returnToName, department: returnToDepartment }]
+        : [{ role: 'minister', department: '办公部' }])
     await addWorkflowNotification({
       title: approved ? '协同需求已归档' : '协同需求审核退回',
-      content: handoff.title + (approved ? ' 已审核通过并归档。' : ' 未通过审核，请办公部修改后重新提交。'),
-      targetDept: approved ? '采编部' : '办公部',
+      content: approved
+        ? handoff.title + ' 已审核通过并归档。'
+        : (returnToName
+          ? handoff.title + ' 未通过审核，已退回给 ' + returnToName + ' 修改后重新处理。'
+          : handoff.title + ' 未通过审核，请办公部修改后重新提交。'),
+      targetDept: approved ? '采编部' : returnToDepartment,
       page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
-      // 审核退回后，下一个需要处理任务的是办公部部长。
-      recipientSpecs: approved ? [] : [{ role: 'minister', department: '办公部' }]
+      recipientSpecs: recipients
     })
-    return success({ updated: 1, archived: approved })
+    return success({ updated: 1, archived: approved, returnToName })
   }
 
   if (action === 'archiveProductionTask') {
@@ -2845,6 +2892,19 @@ function canCompleteHandoff(user, openid, handoff) {
   return user.department === handoff.targetDepartment && (
     handoff.assigneeOpenid === openid || handoff.assigneeName === user.name
   )
+}
+
+// 采编办公协同的审核权限：管理员，或来源部门/承接部门的部长
+function canReviewHandoff(user, handoff) {
+  if (user.role === 'admin') {
+    return true
+  }
+  if (user.role !== 'minister') {
+    return false
+  }
+  const sourceDepartment = handoff.sourceDepartment || '采编部'
+  const targetDepartment = handoff.targetDepartment || '办公部'
+  return user.department === sourceDepartment || user.department === targetDepartment
 }
 
 async function addWorkflowNotification(data) {
@@ -3585,6 +3645,8 @@ function formatHandoff(handoff, user, openid) {
     syncResult: handoff.syncResult || '',
     reviewComment: handoff.reviewComment || '',
     reviewerName: handoff.reviewerName || '',
+    returnToName: handoff.returnToName || '',
+    returnedBy: handoff.returnedBy || '',
     workloadSettled: !!handoff.workloadSettled,
     settledRecords: handoff.settledRecords || [],
     status,
@@ -3594,7 +3656,7 @@ function formatHandoff(handoff, user, openid) {
     canArchive: status === 'archive_assigned' && workflowType === 'productionReservation' &&
       (user.role === 'admin' || (user.department === '办公部' &&
         (handoff.archiveMemberName === user.name || handoff.archiveMemberOpenid === openid))),
-    canReview: status === 'completed' && user.role === 'admin',
+    canReview: status === 'completed' && canReviewHandoff(user, handoff),
     createTime: formatDateTime(handoff.createTime),
     updateTime: formatDateTime(handoff.updateTime),
     assignedTime: formatDateTime(handoff.assignedTime),
