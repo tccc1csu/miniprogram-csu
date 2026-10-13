@@ -1,11 +1,13 @@
 const cloud = require('wx-server-sdk')
 const crypto = require('crypto')
+const ledger = require('./workload-ledger')
+const schemaAudit = require('./schema-audit')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
-const db = cloud.database()
+const db = cloud.database({ throwOnNotFound: false })
 
 const COLLECTIONS = {
   USERS: 'users',
@@ -23,7 +25,8 @@ const COLLECTIONS = {
   NOTIFICATION_SETTINGS: 'notification_settings',
   NOTIFICATION_SUBSCRIPTIONS: 'notification_subscriptions',
   PROJECT_TASKS: 'project_tasks',
-  FILES: 'files'
+  FILES: 'files',
+  ...ledger.LEDGER_COLLECTIONS
 }
 
 const DEFAULT_DEPARTMENTS = [
@@ -136,6 +139,19 @@ exports.main = async (event) => {
   const functionName = event.functionName || event.name || event.type
 
   try {
+    // 只读审计必须在初始化／补集合前分流，否则“读取”会产生默认数据。
+    if (functionName === 'auditSchema') {
+      const user = await requireAuth(event, openid)
+      requireAdmin(user)
+      if (!Object.values(COLLECTIONS).includes(event.collection)) return fail('未知集合')
+      const total = await db.collection(event.collection).count()
+      const offset = Math.max(0, Number(event.offset) || 0)
+      const rows = await getAll(event.collection, {}, { skip: offset, limit: 1000 })
+      return success(Object.assign({ collection: event.collection, total: total.total,
+        offset, nextOffset: offset + rows.length < total.total ? offset + rows.length : null,
+        indexStatus: 'not-inspected', consistency: 'live-page-not-snapshot'
+      }, schemaAudit.inspect(rows)))
+    }
     // 定时器触发器：检查截止日期并发送提醒。
     const triggerName = event.TriggerName || event.triggerName || ''
     const isTimerTrigger = event.Trigger || event.Type === 'Timer' || event.type === 'timer' || triggerName.indexOf('deadline') >= 0
@@ -194,6 +210,33 @@ exports.main = async (event) => {
     }
     if (functionName === 'getRecords') {
       return await handleGetRecords(event, user, openid)
+    }
+    if (functionName === 'getContributionDetails') {
+      const where = {}
+      if (event.week) where.week = trim(event.week)
+      if (user.role === 'member') {
+        const memberId = await getMemberIdForUser(user)
+        if (!memberId) return success([])
+        where.member_id = memberId
+      } else if (user.role === 'minister') {
+        const departments = await getAll(COLLECTIONS.DEPARTMENTS, { name: user.department })
+        if (departments.length !== 1) return fail('请先核对部门资料')
+        where.department_id = departments[0]._id
+      }
+      const bases = await getAll(ledger.LEDGER_COLLECTIONS.CONTRIBUTIONS, where)
+      const items = await Promise.all(bases.map(async basis => {
+        const measurement = await getDoc(ledger.LEDGER_COLLECTIONS.MEASUREMENTS, basis.basis_id)
+        const policy = measurement && await getDoc(ledger.LEDGER_COLLECTIONS.POLICIES, measurement.policy_id)
+        const standard = policy && await getDoc(ledger.LEDGER_COLLECTIONS.STANDARDS, policy.standard_id)
+        const complete = !!(measurement && policy && standard)
+        const hoursU = complete ? Math.round(measurement.base_hours_u * policy.factor_u / 10000) : null
+        return Object.assign({}, basis, { measurement, policy, standard,
+          status: complete ? 'settled' : 'pending',
+          effective_hours_u: hoursU,
+          allowance_cents: complete ? Math.round(hoursU * standard.hourly_rate_cents / 10000) : null
+        })
+      }))
+      return success(items)
     }
     if (functionName === 'getStatistics') {
       return await handleGetStatistics(event, user, openid)
@@ -1182,8 +1225,16 @@ async function handleAddRecord(event, user, openid) {
     if (!canOperateRecord(user, openid, record)) {
       return fail('无权删除该记录')
     }
-    const res = await records.doc(event.recordId).remove()
-    return success({ removed: getRemovedCount(res) })
+    if (normalizeIdList(record.sourceHandoffIds).length) {
+      return fail('含自动归档依据的周记录不能删除，可核对后调整周汇总')
+    }
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.RECORDS, event.recordId)
+      if (!current || !canOperateRecord(user, openid, current)) throw new Error('记录已改变，请刷新后重试')
+      if (normalizeIdList(current.sourceHandoffIds).length) throw new Error('含自动归档依据的周记录不能删除')
+      await transaction.collection(COLLECTIONS.RECORDS).doc(event.recordId).remove()
+    })
+    return success({ removed: 1 })
   }
 
   if (action === 'updateRecord') {
@@ -1194,11 +1245,17 @@ async function handleAddRecord(event, user, openid) {
     if (!canEditRecord(user, openid, record)) {
       return fail('无权编辑该记录')
     }
+    if (!isValidWorkload(event.workload) || !trim(event.workContent)) return fail('工作内容不能为空，工时须为有效的非负数字')
 
     const updateData = buildRecordUpdateData(event, user, openid, record)
 
-    const res = await records.doc(event.recordId).update({ data: updateData })
-    return success({ updated: getUpdatedCount(res) })
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.RECORDS, event.recordId)
+      if (!current || !canEditRecord(user, openid, current)) throw new Error('记录已改变，请刷新后重试')
+      if (getTime(current.updateTime) !== getTime(record.updateTime)) throw new Error('记录已更新，请刷新后核对工时再提交')
+      await transaction.collection(COLLECTIONS.RECORDS).doc(event.recordId).update({ data: updateData })
+    })
+    return success({ updated: 1 })
   }
 
   const isMemberReport = user.role === 'member'
@@ -1215,6 +1272,7 @@ async function handleAddRecord(event, user, openid) {
   if (event.workload === undefined || event.workload === null || trim(event.workload) === '') {
     return fail('请填写工时')
   }
+  if (!isValidWorkload(event.workload)) return fail('工时须为有效的非负数字')
   if (user.role === 'minister' && department !== user.department) {
     return fail('只能上传本部门成员记录')
   }
@@ -1223,6 +1281,7 @@ async function handleAddRecord(event, user, openid) {
   }
 
   const member = await findMember(event.memberId, memberName, department)
+  if (!member) return fail('成员标识或所属部门不匹配，请刷新成员资料')
   const now = new Date()
   const workType = normalizeWorkType(event.workType, department)
   const baseData = {
@@ -1241,27 +1300,30 @@ async function handleAddRecord(event, user, openid) {
     updateTime: now
   }
 
-  const existRes = await records.where({ memberName, department, week }).limit(1).get()
-  const exist = first(existRes)
+  const exist = await findWeeklyRecord(member, memberName, department, week)
 
   const data = Object.assign({}, baseData, {
     submittedByRole: isMemberReport ? 'member' : user.role
   })
 
-  if (exist) {
-    if (!canEditRecord(user, openid, exist)) {
-      return fail('无权编辑该记录')
+  const recordId = exist ? exist._id : ledger.key('wr_', [member._id, department, week])
+  let updated = false
+  await db.runTransaction(async transaction => {
+    const current = await ledger.optionalDoc(transaction, COLLECTIONS.RECORDS, recordId)
+    if (exist && (!current || getTime(current.updateTime) !== getTime(exist.updateTime))) {
+      throw new Error('记录已更新，请刷新后核对工时再提交')
     }
-    if (isMemberReport) {
-      data.memberOpenid = exist.memberOpenid || (user.isTestAccount ? '' : openid)
+    if (!exist && current) throw new Error('该成员本周记录已生成，请刷新后核对')
+    if (current && !canEditRecord(user, openid, current)) throw new Error('无权编辑该记录')
+    if (current) {
+      if (isMemberReport) data.memberOpenid = current.memberOpenid || (user.isTestAccount ? '' : openid)
+      await transaction.collection(COLLECTIONS.RECORDS).doc(recordId).update({ data })
+      updated = true
+    } else {
+      await transaction.collection(COLLECTIONS.RECORDS).doc(recordId).set({ data: Object.assign({ createTime: now }, data) })
     }
-    await records.doc(exist._id).update({ data })
-    return success({ _id: exist._id, updated: true })
-  }
-
-  data.createTime = now
-  const addRes = await records.add({ data })
-  return success({ _id: addRes._id, updated: false })
+  })
+  return success({ _id: recordId, updated })
 }
 
 async function handleGetRecords(event, user, openid) {
@@ -1346,7 +1408,13 @@ async function handleGetStatistics(event, user, openid) {
   }
 
   if (type === 'weeklyTable') {
-    const rows = await getRecordsForStats(event, user, openid)
+    const centerReport = event.scope === 'center'
+    if (centerReport && !(user.role === 'admin' || (user.role === 'minister' && user.department === '办公部'))) {
+      return fail('中心周报由办公部部长或管理员生成')
+    }
+    const rows = centerReport
+      ? await getAll(COLLECTIONS.RECORDS, week ? { week } : {})
+      : await getRecordsForStats(event, user, openid)
     return success(buildWeeklyTable(rows, allowanceSettings))
   }
 
@@ -2183,6 +2251,7 @@ async function handleManageHandoffs(event, user, openid) {
         sourceDepartment: '采编部',
         targetDepartment: '办公部',
         submitterUserId: user._id,
+        submitterMemberId: await getMemberIdForUser(user),
         submitterName: user.name,
         submitterOpenid: openid,
         assigneeName: '',
@@ -2242,6 +2311,7 @@ async function handleManageHandoffs(event, user, openid) {
         sourceDepartment: user.department || '摄制部',
         targetDepartment: '摄制部',
         submitterUserId: user._id,
+        submitterMemberId: await getMemberIdForUser(user),
         submitterName: user.name,
         submitterOpenid: openid,
         assigneeName: '',
@@ -2299,6 +2369,7 @@ async function handleManageHandoffs(event, user, openid) {
     await handoffs.doc(event.handoffId).update({
       data: {
         assigneeName,
+        assigneeMemberId: assignee._id,
         assigneeOpenid: assignee ? (assignee.openid || '') : '',
         assignedBy: user.name,
         status: 'assigned',
@@ -2346,6 +2417,7 @@ async function handleManageHandoffs(event, user, openid) {
         await db.collection(COLLECTIONS.MEMBERS).doc(productionMember._id).update({
           data: {
             defaultArchiveMemberName: archiveMember.name,
+            defaultArchiveMemberId: archiveMember._id,
             defaultArchiveMemberOpenid: archiveMember.openid || '',
             updateTime: now
           }
@@ -2356,6 +2428,7 @@ async function handleManageHandoffs(event, user, openid) {
           syncResult,
           completedBy: user.name,
           archiveMemberName: selectedArchiveMember.name,
+          archiveMemberId: selectedArchiveMember._id,
           archiveMemberOpenid: selectedArchiveMember.openid || '',
           status: 'archive_assigned',
           statusLabel: HANDOFF_STATUS_LABELS.archive_assigned,
@@ -2422,24 +2495,30 @@ async function handleManageHandoffs(event, user, openid) {
       returnToOpenid = returnToMember.openid || ''
       returnToDepartment = returnToMember.department || returnToDepartment
     }
-    const settledRecords = approved
-      ? await settleHandoffWorkload(event.handoffId, handoff, now, user, openid)
-      : []
-    await handoffs.doc(event.handoffId).update({
-      data: {
-        status: approved ? 'archived' : 'rejected',
-        statusLabel: approved ? HANDOFF_STATUS_LABELS.archived : HANDOFF_STATUS_LABELS.rejected,
-        reviewComment: trim(event.reviewComment),
-        reviewerName: user.name,
-        reviewedTime: now,
-        archivedTime: approved ? now : null,
-        workloadSettled: approved,
-        settledRecords,
-        returnToName,
-        returnToOpenid,
-        returnedBy: approved ? '' : user.name,
-        updateTime: now
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.HANDOFFS, event.handoffId)
+      if (!current || current.status !== 'completed' || getTime(current.updateTime) !== getTime(handoff.updateTime)) {
+        throw new Error('协同状态已更新，请刷新后重试')
       }
+      const settledRecords = approved
+        ? await settleHandoffWorkload(event.handoffId, current, now, user, openid, transaction)
+        : []
+      await transaction.collection(COLLECTIONS.HANDOFFS).doc(event.handoffId).update({
+        data: {
+          status: approved ? 'archived' : 'rejected',
+          statusLabel: approved ? HANDOFF_STATUS_LABELS.archived : HANDOFF_STATUS_LABELS.rejected,
+          reviewComment: trim(event.reviewComment),
+          reviewerName: user.name,
+          reviewedTime: now,
+          archivedTime: approved ? now : null,
+          workloadSettled: approved,
+          settledRecords,
+          returnToName,
+          returnToOpenid,
+          returnedBy: approved ? '' : user.name,
+          updateTime: now
+        }
+      })
     })
     const recipients = approved
       ? []
@@ -2470,19 +2549,25 @@ async function handleManageHandoffs(event, user, openid) {
     }
     const archiveNote = trim(event.archiveNote)
     const now = new Date()
-    const settledRecords = await settleProductionWorkload(event.handoffId, handoff, now, user, openid, archiveNote)
-    await handoffs.doc(event.handoffId).update({
-      data: {
-        archiveNote,
-        status: 'archived',
-        statusLabel: HANDOFF_STATUS_LABELS.archived,
-        reviewerName: user.name,
-        reviewedTime: now,
-        archivedTime: now,
-        workloadSettled: true,
-        settledRecords,
-        updateTime: now
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.HANDOFFS, event.handoffId)
+      if (!current || current.status !== 'archive_assigned' || getTime(current.updateTime) !== getTime(handoff.updateTime)) {
+        throw new Error('摄制任务状态已更新，请刷新后重试')
       }
+      const settledRecords = await settleProductionWorkload(event.handoffId, current, now, user, openid, archiveNote, transaction)
+      await transaction.collection(COLLECTIONS.HANDOFFS).doc(event.handoffId).update({
+        data: {
+          archiveNote,
+          status: 'archived',
+          statusLabel: HANDOFF_STATUS_LABELS.archived,
+          reviewerName: user.name,
+          reviewedTime: now,
+          archivedTime: now,
+          workloadSettled: true,
+          settledRecords,
+          updateTime: now
+        }
+      })
     })
     await addWorkflowNotification({
       title: '摄制预约已归档',
@@ -2548,7 +2633,7 @@ async function checkDeadlinesInternal() {
   return success({ checked: allHandoffs.length, reminders: reminders.length, reminderIds: reminders })
 }
 
-async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewerOpenid) {
+async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewerOpenid, transaction) {
   const articleType = normalizeArticleType(handoff.articleType)
   const articleNames = trim(handoff.articleNames || handoff.title)
   const quantity = countWorkUnits(articleNames)
@@ -2559,6 +2644,8 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
     const creatorRule = findAllowanceRule(rules, 'editorial_news_creator', '采编部', '稿件写作')
     const creatorQuantity = getRuleQuantity(creatorRule, quantity)
     const editorialRecord = await upsertWorkflowWorkloadRecord({
+      memberId: handoff.submitterMemberId,
+      transaction, handoffId, sourceId: handoffId, typeId: 'editorial_news_creator', rule: creatorRule,
       sourceHandoffId: handoffId,
       memberName: trim(handoff.submitterName),
       memberOpenid: trim(handoff.submitterOpenid),
@@ -2588,6 +2675,8 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
     if (!alreadySettled) {
       const syncQuantity = getRuleQuantity(syncRule, quantity)
       const officeRecord = await upsertWorkflowWorkloadRecord({
+        memberId: handoff.assigneeMemberId,
+        transaction, handoffId, sourceId: syncSourceId, typeId: 'office_handoff_sync', rule: syncRule,
         sourceHandoffId: syncSourceId,
         memberName: trim(handoff.assigneeName),
         memberOpenid: trim(handoff.assigneeOpenid),
@@ -2612,6 +2701,7 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
     const member = await findMemberByName(reviewerNames[i])
     const department = member && member.department ? member.department : '采编部'
     const reviewRecord = await upsertWorkflowWorkloadRecord({
+      transaction, handoffId, sourceId: handoffId, typeId: 'office_regular_review', rule: reviewerRule,
       sourceHandoffId: handoffId + ':review:' + i,
       memberName: reviewerNames[i],
       memberOpenid: member ? (member.openid || '') : '',
@@ -2630,7 +2720,7 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
   return settled
 }
 
-async function settleProductionWorkload(handoffId, handoff, now, reviewer, reviewerOpenid, archiveNote) {
+async function settleProductionWorkload(handoffId, handoff, now, reviewer, reviewerOpenid, archiveNote, transaction) {
   const rules = await getAllowanceRules()
   const multiplier = toNumber(handoff.urgentMultiplier) || 1
   const productionRule = findAllowanceRule(rules, 'production_video_member', '摄制部', '视频制作')
@@ -2638,6 +2728,9 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
   const settled = []
   if (trim(handoff.assigneeName)) {
     settled.push(await upsertWorkflowWorkloadRecord({
+      memberId: handoff.assigneeMemberId,
+      transaction, handoffId, sourceId: handoffId, typeId: 'production_video_member', rule: productionRule,
+      baseHours: productionRule ? productionRule.hours : 4, factor: multiplier,
       sourceHandoffId: handoffId,
       memberName: handoff.assigneeName,
       memberOpenid: handoff.assigneeOpenid,
@@ -2653,6 +2746,9 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
   }
   if (trim(handoff.archiveMemberName)) {
     settled.push(await upsertWorkflowWorkloadRecord({
+      memberId: handoff.archiveMemberId,
+      transaction, handoffId, sourceId: handoffId, typeId: 'production_archive_review', rule: archiveRule,
+      baseHours: archiveRule ? archiveRule.hours : 2, factor: multiplier,
       sourceHandoffId: handoffId + ':archive',
       memberName: handoff.archiveMemberName,
       memberOpenid: handoff.archiveMemberOpenid,
@@ -2670,98 +2766,44 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
 }
 
 async function upsertWorkflowWorkloadRecord(options) {
-  const sourceHandoffId = trim(options.sourceHandoffId)
-  const memberName = trim(options.memberName)
   const department = trim(options.department)
+  const member = options.memberId
+    ? await getDoc(COLLECTIONS.MEMBERS, options.memberId)
+    : await findMember('', trim(options.memberName), department)
+  if (!member || member.department !== department) throw new Error('归档贡献成员缺失或部门不匹配，请先核对成员资料')
+  const memberName = member.name
   const workType = normalizeWorkType(options.workType)
   const week = getCurrentWeekLabel(options.now)
-  const workload = toNumber(options.workload)
-  const content = trim(options.content)
-  const member = await findMember('', memberName, department)
-  const memberOpenid = member ? (member.openid || '') : trim(options.memberOpenid)
-  const records = db.collection(COLLECTIONS.RECORDS)
-  const existRes = await records.where({ memberName, department, week }).limit(1).get()
-  const exist = first(existRes)
-
-  if (exist) {
-    const sourceIds = normalizeIdList(exist.sourceHandoffIds)
-    if (sourceIds.includes(sourceHandoffId)) {
-      return {
-        recordId: exist._id,
-        memberName,
-        department,
-        workType,
-        workload: 0,
-        skipped: true
-      }
-    }
-
-    const nextSourceIds = sourceIds.concat(sourceHandoffId)
-    const workTypes = mergeUnique(getWorkTypesFromRecord(exist), [workType])
-    await records.doc(exist._id).update({
-      data: {
-        memberId: exist.memberId || (member ? member._id : ''),
-        memberOpenid: exist.memberOpenid || memberOpenid,
-        workType: exist.workType || workType,
-        workTypes,
-        workContent: appendUniqueLine(exist.workContent, content),
-        workload: toNumber(exist.workload) + workload,
-        remark: appendUniqueLine(exist.remark, trim(options.remark)),
-        uploadedBy: exist.uploadedBy || (options.reviewer && options.reviewer.name ? options.reviewer.name : '协作归档'),
-        uploaderOpenid: exist.uploaderOpenid || options.reviewerOpenid || '',
-        submittedByRole: exist.submittedByRole || 'workflow',
-        autoGeneratedWorkload: true,
-        sourceType: exist.sourceType || 'handoff',
-        sourceHandoffIds: nextSourceIds,
-        updateTime: options.now
-      }
-    })
-    return {
-      recordId: exist._id,
-      memberName,
-      department,
-      workType,
-      workload,
-      skipped: false
-    }
+  const exist = await findWeeklyRecord(member, memberName, department, week)
+  // 旧历史没有规则快照，不能重建后冒充新的有效明细。
+  if (await hasWorkflowSource(memberName, department, options.sourceHandoffId)) {
+    return { recordId: exist ? exist._id : '', memberName, department, workType, workload: 0, skipped: true, legacy: true }
   }
-
-  const addRes = await records.add({
-    data: {
-      memberId: member ? member._id : '',
-      memberName,
-      memberOpenid,
-      department,
-      week,
-      workType,
-      workTypes: [workType],
-      workContent: content,
-      workload,
-      remark: trim(options.remark),
-      uploadedBy: options.reviewer && options.reviewer.name ? options.reviewer.name : '协作归档',
-      uploaderOpenid: options.reviewerOpenid || '',
-      submittedByRole: 'workflow',
-      autoGeneratedWorkload: true,
-      sourceType: 'handoff',
-      sourceHandoffIds: [sourceHandoffId],
-      createTime: options.now,
-      updateTime: options.now
-    }
+  const departments = await getAll(COLLECTIONS.DEPARTMENTS, { name: department })
+  if (departments.length !== 1) throw new Error('部门资料存在缺失或重名，请先核对')
+  const settings = await getAllowanceSettings()
+  const result = await ledger.settle(db, {
+    transaction: options.transaction, member, department, departmentId: departments[0]._id, week,
+    existingRecordId: exist && exist._id,
+    sourceId: options.sourceId, typeId: options.typeId,
+    handoffId: options.handoffId, legacySourceId: options.sourceHandoffId,
+    rule: options.rule,
+    baseHours: options.baseHours === undefined ? options.workload : options.baseHours,
+    factor: options.factor || 1,
+    hourlyRate: getHourlyRate(department, settings),
+    content: trim(options.content), remark: trim(options.remark), workType,
+    memberOpenid: options.memberOpenid, now: options.now,
+    reviewerId: options.reviewer && options.reviewer._id,
+    reviewerName: options.reviewer && options.reviewer.name,
+    reviewerOpenid: options.reviewerOpenid
   })
-
-  return {
-    recordId: addRes._id,
-    memberName,
-    department,
-    workType,
-    workload,
-    skipped: false
-  }
+  return Object.assign({ memberName, department, workType }, result)
 }
 
 async function handleGenericDataAction(event) {
   const collection = event.collection
   if (!Object.values(COLLECTIONS).includes(collection) || [
+    ...Object.values(ledger.LEDGER_COLLECTIONS),
     COLLECTIONS.NOTIFICATION_SETTINGS,
     COLLECTIONS.NOTIFICATION_SUBSCRIPTIONS
   ].includes(collection)) {
@@ -2777,6 +2819,9 @@ async function handleGenericDataAction(event) {
     return success(res.total || 0)
   }
   if (event.action === 'add') {
+    if ([COLLECTIONS.RECORDS, COLLECTIONS.MEMBERS, COLLECTIONS.DEPARTMENTS, COLLECTIONS.HANDOFFS].includes(collection)) {
+      return fail('业务集合请使用对应业务接口维护')
+    }
     const now = new Date()
     const res = await db.collection(collection).add({
       data: Object.assign({}, event.data || {}, { createTime: now, updateTime: now })
@@ -2784,12 +2829,18 @@ async function handleGenericDataAction(event) {
     return success({ _id: res._id })
   }
   if (event.action === 'update') {
+    if ([COLLECTIONS.RECORDS, COLLECTIONS.MEMBERS, COLLECTIONS.DEPARTMENTS, COLLECTIONS.HANDOFFS].includes(collection)) {
+      return fail('业务集合请使用对应业务接口维护')
+    }
     const res = await db.collection(collection).doc(event.id).update({
       data: Object.assign({}, event.data || {}, { updateTime: new Date() })
     })
     return success({ updated: getUpdatedCount(res) })
   }
   if (event.action === 'remove') {
+    if ([COLLECTIONS.RECORDS, COLLECTIONS.MEMBERS, COLLECTIONS.DEPARTMENTS, COLLECTIONS.HANDOFFS].includes(collection)) {
+      return fail('业务集合请使用对应业务接口维护')
+    }
     const res = await db.collection(collection).doc(event.id).remove()
     return success({ removed: getRemovedCount(res) })
   }
@@ -3105,19 +3156,42 @@ async function getDoc(collection, id) {
 }
 
 async function findMember(memberId, name, department) {
-  const byId = await getDoc(COLLECTIONS.MEMBERS, memberId)
-  if (byId) {
-    return byId
+  if (memberId) {
+    const byId = await getDoc(COLLECTIONS.MEMBERS, memberId)
+    return byId && byId.name === name && byId.department === department ? byId : null
   }
-  const res = await db.collection(COLLECTIONS.MEMBERS).where({ name, department }).limit(1).get()
-  return first(res)
+  const res = await db.collection(COLLECTIONS.MEMBERS).where({ name, department }).limit(2).get()
+  return res.data && res.data.length === 1 ? res.data[0] : null
+}
+
+async function findWeeklyRecord(member, memberName, department, week) {
+  const matches = member ? await getAll(COLLECTIONS.RECORDS, { memberId: member._id, department, week }) : []
+  const rows = await getAll(COLLECTIONS.RECORDS, { memberName, department, week })
+  const byId = new Map()
+  matches.concat(rows.filter(row => !row.memberId || (member && row.memberId === member._id)))
+    .forEach(row => byId.set(row._id, row))
+  if (byId.size > 1) throw new Error('该成员本周存在重复汇总，请先核对数据')
+  return Array.from(byId.values())[0] || null
+}
+
+function isValidWorkload(value) {
+  return value !== null && value !== undefined && trim(value) !== '' &&
+    Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100000
 }
 
 async function findMemberByName(name) {
   const cleanName = trim(name)
   if (!cleanName) return null
-  const res = await db.collection(COLLECTIONS.MEMBERS).where({ name: cleanName }).limit(1).get()
-  return first(res)
+  const res = await db.collection(COLLECTIONS.MEMBERS).where({ name: cleanName }).limit(2).get()
+  return res.data && res.data.length === 1 ? res.data[0] : null
+}
+
+async function getMemberIdForUser(user) {
+  if (!user.department) return ''
+  const rows = await getAll(COLLECTIONS.MEMBERS, { userId: user._id })
+  if (rows.length === 1 && rows[0].department === user.department) return rows[0]._id
+  const member = await findMember('', user.name, user.department)
+  return member ? member._id : ''
 }
 
 async function getAllowanceSettings() {
@@ -3288,12 +3362,21 @@ async function getAll(collection, where, options) {
   if (opts.field) {
     query = query.orderBy(opts.field, opts.direction || 'asc')
   }
+  if (opts.field !== '_id') query = query.orderBy('_id', 'asc')
   if (opts.skip) {
     query = query.skip(opts.skip)
   }
-  query = query.limit(opts.limit || 1000)
-  const res = await query.get()
-  return res.data || []
+  const limit = opts.limit || Infinity
+  const rows = []
+  // 服务端单次最多 1000 条；统计不能静默丢弃第 1001 条以后的数据。
+  while (rows.length < limit) {
+    const size = Math.min(1000, limit - rows.length)
+    const result = await query.skip((opts.skip || 0) + rows.length).limit(size).get()
+    const page = result.data || []
+    rows.push(...page)
+    if (page.length < size) break
+  }
+  return rows
 }
 
 function getHourlyRate(department, settings) {

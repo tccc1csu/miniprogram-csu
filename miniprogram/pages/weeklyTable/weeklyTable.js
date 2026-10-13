@@ -56,7 +56,9 @@ Page({
     showLoading('生成表格...')
 
     const params = { type: 'weeklyTable', week: selectedWeek }
-    if (role === 'minister') {
+    if (role === 'minister' && department === '办公部') {
+      params.scope = 'center'
+    } else if (role === 'minister') {
       params.department = department
     }
 
@@ -67,13 +69,15 @@ Page({
       let memberCount = 0
       let workload = 0
       const flatTable = []
+      const memberKeys = new Set()
       groups.forEach(g => {
         g.records.forEach(r => {
-          memberCount++
+          memberKeys.add(r.memberId || JSON.stringify([r.department, r.memberName]))
           workload += r.workload || 0
           flatTable.push(r)
         })
       })
+      memberCount = memberKeys.size
 
       this.setData({
         tableData: groups,

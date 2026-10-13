@@ -76,10 +76,14 @@ Page({
       hideLoading()
       // 构建表单数据
       const recordMap = {}
-      records.forEach(r => { recordMap[r.memberName] = r })
+      const legacyRecordMap = {}
+      records.forEach(r => {
+        if (r.memberId) recordMap[r.memberId] = r
+        else legacyRecordMap[r.memberName] = r
+      })
 
       const memberForms = (members || []).map(m => {
-        const rec = recordMap[m.name]
+        const rec = recordMap[m._id] || legacyRecordMap[m.name]
         const workContent = rec ? rec.workContent : ''
         const workload = rec ? String(rec.workload) : ''
         return {

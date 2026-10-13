@@ -10,7 +10,7 @@
         </view>
       </picker>
     </view>
-    <button class="btn-share" bindtap="showExportOptions">导出数据</button>
+    <button class="btn-share" bindtap="showExportOptions">{{role === 'minister' && department === '办公部' ? '导出中心周报' : '导出数据'}}</button>
   </view>
 
   <view class="week-range-text">{{weekRange}}</view>

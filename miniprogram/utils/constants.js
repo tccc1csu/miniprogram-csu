@@ -10,7 +10,7 @@ const ROLES = {
 const ROLE_LABELS = {
   admin: '管理员',
   minister: '部长',
-  member: '成员'
+  member: '普通成员'
 }
 
 // 青年传媒中心部门列表
@@ -56,7 +56,11 @@ const COLLECTIONS = {
   NOTIFICATIONS: 'notifications',
   HANDOFFS: 'handoffs',
   ALLOWANCE_RULES: 'allowance_rules',
-  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities'
+  WORKFLOW_RESPONSIBILITIES: 'workflow_responsibilities',
+  NOTIFICATION_SETTINGS: 'notification_settings',
+  NOTIFICATION_SUBSCRIPTIONS: 'notification_subscriptions',
+  PROJECT_TASKS: 'project_tasks',
+  FILES: 'files'
 }
 
 module.exports = {
