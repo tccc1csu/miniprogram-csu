@@ -1,0 +1,52 @@
+# 本轮改动的发布与回退
+
+## 当前检查点
+
+基线为 `25ae44b`，任务分支为 `refactor/course-runtime-alignment`。提交与验证结果见[验证记录](verification.txt)。GitHub 已 fetch 并比对；本轮没有推送或部署。
+
+实现／测试检查点为 `26815f6`（对齐课程贡献计量与中心周报口径）；文档说明另存后续提交，可单独评审。需撤销实现时在共享分支使用 `git revert 26815f6`，并同步恢复适用文档；数据库回退仍须按下方流程处理。
+
+Git 记录代码，不能备份云数据库。任何上线操作前需保存实际的 `users`／`members`／`departments`／`weekly_records`／`handoffs`／`allowance_rules`／`project_tasks` 等集合及索引、安全规则配置；私有备份放在工作区外，不提交原始记录。
+
+## 只读核验入口
+
+如果已有控制台导出的文件，在私有目录内按 `<集合名>.json`（文档数组或 `{ "data": [...] }`）或 `.jsonl`（每行文档）保存，运行：
+
+```powershell
+node docs/tools/audit_cloud_exports.cjs "D:\private-backups\qcmc" "D:\private-backups\schema-report.json"
+```
+
+工具只读文件，报告只包含字段名、类型分布和异常数量，不含原始姓名／联系方式／令牌。引用异常只检查已提供的集合，不提供目标集合不等于没有异常；导出应来自同一冻结备份时点。
+
+本轮还新增 `auditSchema` 管理员接口；它在补建集合与默认初始化之前分流，只执行鉴权查询、count 与一页最多 1000 条字段统计。部署后可通过开发者工具调用：
+
+```javascript
+const db = require('../../utils/db')
+db.callFunction('auditSchema', { collection: 'weekly_records', offset: 0 })
+```
+
+按返回的 `nextOffset` 继续；页统计不能直接当作整库去重报告。接口明确返回 `indexStatus: 'not-inspected'`，索引与安全规则须另从控制台核对。此接口已完成本地权限／无写入测试，尚未部署或对真实数据执行。
+
+## 灰度发布顺序
+
+1. 核对线上云函数版本、Node 运行时与 `wx-server-sdk` 实际安装版本，确认 CloudBase `runTransaction` 可用。现有 SDK 依赖链包含动态版本依赖，源码 API 检查不替代环境实测。
+2. 在测试云环境导入一份私有脱敏数据，核对部门名唯一、成员 ID 有效、同部门成员同名、重复周汇总、缺失成员及真实规则。异常先处理，不能靠一次迁移脚本猜测归属。
+3. 部署测试版 `api`，确认自动补齐 `contribution_basis`、`contribution_measurement`、`contribution_policy`、`allowance_standard` 四个新集合。设置仅云函数可读写，不开启客户端直接写入。原 16 个集合名称保持兼容。
+4. 核对索引：`weekly_records(memberId, department, week)`、`weekly_records(memberName, department, week)`、`members(userId)`、`members(name, department)`、`departments(name)`，以及明细按 `member_id/week`、`department_id/week` 查询的组合索引。新贡献与新汇总由确定 `_id` 保证唯一；为旧集合新增唯一索引之前必须先清理重复，不能直接创建。
+5. 用测试账号完成采编原创／转载、审核退回／通过、普通与加急摄制归档、同成员多任务、并发重复请求、成员手工上报、办公部长中心周报、其它部长权限等路径。故意让第二项计量失败，验证整笔归档不产生局部结果；真实事务失败应返回错误，禁止退回无事务写入。
+6. 再备份并暂停写入，在明确的发布窗口部署生产 `api` 与小程序前端；核对新增明细与周总量。生产窗口需明确安排，不能把本地完成当作已经上线。
+
+本轮没有批量 backfill：旧规则时点、作品拆分与人工调整依据不足，因此不能从当前规则反推历史计量。
+
+## 回退方式
+
+- 本地只审查不继续时，可切回 `main`；本轮在独立分支的提交完整保留。共享分支已合并时，对本轮提交按逆序 `git revert`，不重写远程历史。
+- 若已部署，暂停新写入，再部署基线版本的云函数／前端；新周记录仍保留旧 API 字段，所以旧代码可读取已形成汇总。
+- **保留四个新集合及其数据。** 旧代码不会写新明细；回退期间停止此类归档，或明确记录旧版处理区间，再启用本轮版本。若旧版继续处理且改过规则，不得补造缺失明细；按 legacy 来源保留待核对记录。
+- 不自动删除新集合，不批量恢复早期数据库覆盖发布期间业务；要撤销错误业务数据时，必须依据发布前备份和新增业务清单制定单独的数据恢复方案。
+
+已有“重置测试数据”功能会清空业务数据，不属于回退工具，本轮未调用。
+
+## 与 GitHub 后续功能合并
+
+本轮收尾发现 `origin/2.0` 新增 `d6286f4` 公众号排版功能，它仍调用旧版 `upsertWorkflowWorkloadRecord(options)`。后续合并须在排版及审核两类贡献调用中补齐 `handoffId`、`sourceId`、`typeId`、`rule` 和所属事务，并为新派发保存成员 ID；不能只解决文本冲突就宣布兼容。运营部部长审核排版是该分支的现行行为，不等于课程同版老师二审已经实现。合并后补普通／加急排版、报名、退回与重复归档测试，再重新查看远程状态。

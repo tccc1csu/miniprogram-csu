@@ -1,0 +1,23 @@
+Verification date: 2026-10-14 (Asia/Shanghai)
+Baseline: 25ae44b; branch: refactor/course-runtime-alignment
+Scope: local code and reference course artifacts only; no live database access/deployment.
+PASS node --check cloudfunctions/api/index.js
+PASS node --check cloudfunctions/api/workload-ledger.js
+PASS node --check cloudfunctions/api/schema-audit.js
+PASS node --check miniprogram/pages/weeklyTable/weeklyTable.js
+PASS node --check miniprogram/pages/upload/upload.js
+PASS node --check miniprogram/utils/constants.js
+PASS node --test cloudfunctions/api/tests/alignment.test.cjs
+ℹ tests 16
+ℹ pass 16
+ℹ fail 0
+PASS D:\anaconda\python.exe docs/tools/check_analysis_models.py
+Checked 20 use cases, 98 entity operation calls, 5 state machines, 34 diagrams.
+Analysis model consistency checks passed; application behavior not tested.
+PASS D:\anaconda\python.exe docs/tools/check_database_design.py
+PASS: 108 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
+Reference database only; no live/cloud database accessed.
+PASS D:\anaconda\python.exe docs/tools/build_course_assignment.py
+Checked 308 local links, 20 specifications, 20 diagram use cases.
+Course assignment assembled; consistency checks passed.
+PASS offline export audit CLI with synthetic JSON and JSONL fixtures; no personal data in report.

@@ -25,9 +25,9 @@ analysis = demote(read('analysis/05-analysis-models.md'))
 analysis = analysis.replace('../diagrams/', 'diagrams/')
 out += '\n' + analysis
 design = demote(read('design/01-database-design.md'))
-design = design.replace('../diagrams/', 'diagrams/').replace('../database/', 'database/')
+design = design.replace('../diagrams/', 'diagrams/').replace('../database/', 'database/').replace('../implementation/', 'implementation/')
 out += '\n' + design
-(ROOT / 'course-assignment.md').write_text(out, encoding='utf-8')
+(ROOT / 'course-assignment.md').write_text(out, encoding='utf-8', newline='\n')
 
 errors = []
 links = 0

@@ -4,6 +4,8 @@
 
 > 📘 **接手本项目？** 请先阅读 [HANDOVER.md](./HANDOVER.md)，其中说明了环境配置、恢复步骤和已知踩坑记录。
 
+2026-10-13 的课程／实现同步见[业务与数据库对照](docs/implementation/01-course-runtime-alignment.md)及[发布与回退](docs/implementation/02-rollout-and-rollback.md)。本地新增可追溯自动计量与办公部部长中心周报，尚未部署；线上实例与索引尚未核验。当前工作副本已有实际环境配置，旧交接文件中的“全量脱敏／恢复占位符”说明不应直接套用。
+
 - AppID：`wx4972972007bb6a4e`
 - 小程序前端：`miniprogram/`
 - 统一云函数：`cloudfunctions/api/`
@@ -49,6 +51,14 @@
 - `workflow_responsibilities`：协作流程关联部门。
 - `notification_settings`：微信任务提醒模板及字段配置。
 - `notification_subscriptions`：成员对一次性微信订阅消息的授权状态。
+- `project_tasks`：现有多阶段部门协作项目。
+- `files`：通用文件库。
+- `contribution_basis`：本轮新增自动贡献依据，按来源＋类型＋成员去重。
+- `contribution_measurement`：本轮新增基础工时计量，引用规则快照。
+- `contribution_policy`：本轮新增贡献规则与适用倍率内容快照。
+- `allowance_standard`：本轮新增部门时薪内容快照。
+
+四个新集合使用课程的 snake_case 字段；旧集合保留兼容字段。自动归档整体采用事务写入，手工周记录暂仍可以调整，当前周报尚未按贡献明细封存。索引与灰度流程以[发布说明](docs/implementation/02-rollout-and-rollback.md)为准。
 
 推荐在云开发控制台把集合权限设置为“仅云函数可读写”或等价安全规则。小程序端不直接操作数据库，所有权限判断都在 `api` 云函数中完成。
 
