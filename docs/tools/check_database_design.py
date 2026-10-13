@@ -232,6 +232,13 @@ for route in layout['routes']:
             if x==xx:assert not (l<x<r and max(min(y,yy),t)<min(max(y,yy),b)),(route['id'],n)
             else:assert not (t<y<b and max(min(x,xx),l)<min(max(x,xx),r)),(route['id'],n)
 ok('cards do not overlap and no relationship crosses a table interior',True)
+for route in layout['routes']:
+    for (x,y),(xx,yy) in zip(route['points'],route['points'][1:]):
+        for z in layout['zones']:
+            l=z['x']+21;r=z['x']+336;t=z['y']+8;b=z['y']+42
+            if x==xx:assert not (l<x<r and max(min(y,yy),t)<min(max(y,yy),b)),(route['id'],z['id'])
+            else:assert not (t<y<b and max(min(x,xx),l)<min(max(x,xx),r)),(route['id'],z['id'])
+ok('relationship routes avoid region headings',True)
 ok('every region reserves a small extension strip',all(z['reserve']>=24 and z['reserve']<z['h']*0.15 for z in layout['zones']))
 ok('compact canvas is under half the prior diagram area',layout['width']*layout['height']<math.prod(layout['old_dimensions'])*0.5)
 paths=[p for p in svg.iter() if p.tag.endswith('path')]

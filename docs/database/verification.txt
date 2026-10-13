@@ -1,4 +1,4 @@
-PASS: 107 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
+PASS: 108 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
 PASS canonical timestamps reject mixed T formatting
 PASS invalid timestamp is rejected
 PASS non-admin requires a department
@@ -103,6 +103,7 @@ PASS every FK field displays its referenced table name
 PASS main diagram omits R labels, type/null columns and constraint expressions
 PASS every base-table field and every primary-key icon is visible
 PASS cards do not overlap and no relationship crosses a table interior
+PASS relationship routes avoid region headings
 PASS every region reserves a small extension strip
 PASS compact canvas is under half the prior diagram area
 PASS rendered overview has only straight line segments and polylines (no curved Beziers)

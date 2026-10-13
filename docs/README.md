@@ -4,7 +4,7 @@
 
 ## 作业阅读入口
 
-[数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含七个分区、全部表、原分析实体名称及字段旁外键目标；表外仅绘制关键关系。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。20 个分析实体逐项对应 47 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。
+[数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含七个分区、全部表、原分析实体名称及字段旁外键目标；61 条表外线覆盖全部业务表之间的外键，两端标明关系基数。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。20 个分析实体逐项对应 47 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。
 
 [分析部分（图为主）](./analysis/05-analysis-models.md)已补充分析类图、20 个用例对应的分析序列图和核心对象状态机图，并同步至下方合并稿第 5 节。课程依据、假设与核对记录见[分析评审记录](./analysis/06-analysis-review.md)。
 
@@ -124,7 +124,7 @@
     python docs/tools/check_database_design.py
     python docs/tools/build_course_assignment.py
 
-总图已按两份 ERD 示范重排为三列分区：主键用黄色钥匙，外键用独立蓝色箭头，箭头后仅显示目标表名。主图去掉 Type、Null、R 编号及键组合表达式；表外保留 21 条关键关联，箭头指向被引用表。85 条完整外键及复合约束保存在模型、关系清单和数据字典。扩展空间集中在分区边缘。PlantUML 保留完整模型来源；最终 SVG／PNG 使用同一模型数据生成确定性紧凑版式，因此再生成时必须执行上面的总图布局与栅格化两步。栅格化依赖 `@resvg/resvg-js`，本机已安装在项目外的 `../tmp/database-layout-runtime/`；重装可执行 `npm install --prefix ../tmp/database-layout-runtime --no-audit --no-fund @resvg/resvg-js`。
+总图已按两份 ERD 示范重新排为横向两排分区，表宽随字段内容调整。主键用黄色钥匙，外键用独立蓝色箭头，箭头后仅显示目标表名；不显示 Type、Null、R 编号及键组合表达式。表外恢复 61 条完整业务及组织区内关系，以乌鸦脚标基数，包含中间表两端关联。其余 24 条跨区成员／部门公共引用只在字段旁标目标表；全部 85 条真实外键及复合约束保存在模型、关系清单和数据字典。扩展空间缩为分区边缘小幅留白。PlantUML 保留完整模型来源；最终 SVG／PNG 使用同一模型数据生成确定性紧凑版式，因此再生成时必须执行上面的总图布局与栅格化两步。栅格化依赖 `@resvg/resvg-js`，本机已安装在项目外的 `../tmp/database-layout-runtime/`；重装可执行 `npm install --prefix ../tmp/database-layout-runtime --no-audit --no-fund @resvg/resvg-js`。
 
 课件：D:/xwechat_files/wxid_5dtr00kf6nc822_1671/msg/file/2026-09/系统分析与设计-精简2026-9(1).pdf。
 重点核对第 33、86、87、89、108 页（PDF 物理页）；课程要求是本任务的写作依据，参考项目仅用于文档组织方法。

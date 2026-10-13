@@ -128,7 +128,7 @@ endlegend
 idx['overview']=dict(slug='db-overview',regions=[dict(label=l,tables=m) for l,c,m in regions],relations=relations,dependencies=dependencies)
 idx['class_mapping']=mapping
 (D/'model-index.json').write_text(json.dumps(idx,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-out='# 数据库外键关系清单\n\n本清单列出全部真实外键，R 编号对应完整 PlantUML 模型及模型索引。作业主图按示范只显示字段旁蓝色箭头与目标表名、表外关键关联；没有显示的表外线不表示删除外键。复合外键是一个整体关系，完整组成列及基数见下表。\n\n| 编号 | 子表（外键列） | 父表（被引用列） | 每条子记录对应父记录 | 一个父记录对应子记录 |\n| --- | --- | --- | --- | --- |\n'
+out='# 数据库外键关系清单\n\n本清单列出全部真实外键，R 编号对应完整 PlantUML 模型及模型索引。主图的61条线覆盖全部业务表之间的外键和组织区内公共引用；24条跨区成员／部门共享引用仅在字段旁显示蓝色箭头与目标表名。复合外键是一条整体关系，完整组成列及基数见下表。\n\n| 编号 | 子表（外键列） | 父表（被引用列） | 每条子记录对应父记录 | 一个父记录对应子记录 |\n| --- | --- | --- | --- | --- |\n'
 for r in relations:
     parentcols=r['target_columns']
     if any(c is None for c in parentcols):parentcols=[c['name'] for c in sorted(tables[r['parent']]['columns'],key=lambda c:c['pk']) if c['pk']]
