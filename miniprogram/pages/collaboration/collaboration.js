@@ -33,7 +33,8 @@ Page({
       this.refreshModules([
         { key: 'activitySuggestions', departments: DEFAULT_DEPARTMENTS.filter(department => department !== '兄弟部门') },
         { key: 'editorialOfficeHandoff', departments: ['采编部', '办公部'] },
-        { key: 'productionReservation', departments: ['摄制部', '办公部', '兄弟部门'] }
+        { key: 'productionReservation', departments: ['摄制部', '办公部', '兄弟部门'] },
+        { key: 'operationsLayout', departments: ['运营部', '兄弟部门'] }
       ])
     })
   },
@@ -50,7 +51,8 @@ Page({
         { key: 'activitySuggestions', title: '活动建议', meta: '活动', icon: '活', iconClass: 'activity-icon', action: 'suggestions', visible: canSee('activitySuggestions') },
         { key: 'editorialOfficeHandoff', title: '采编办公协同', meta: '采编部 × 办公部', icon: '协', iconClass: 'handoff-icon', action: 'handoffs', visible: canSee('editorialOfficeHandoff') },
         { key: 'productionReservation', title: '摄制预约协作', meta: '预约 · 摄制 · 归档', icon: '摄', iconClass: 'production-icon', action: 'production', visible: canSee('productionReservation') },
-        { key: 'projectTasks', title: '项目任务', meta: '跨部门协同 · 阶段推进', icon: '项', iconClass: 'project-icon', action: 'projectTasks', visible: canSee('projectTasks') }
+        { key: 'projectTasks', title: '项目任务', meta: '跨部门协同 · 阶段推进', icon: '项', iconClass: 'project-icon', action: 'projectTasks', visible: canSee('projectTasks') },
+        { key: 'operationsLayout', title: '公众号排版', meta: '运营部排班 · 提前2天报名', icon: '排', iconClass: 'operations-icon', action: 'operationsLayout', visible: canSee('operationsLayout') && (userInfo.role === 'admin' || userInfo.department === '运营部' || userInfo.department === '兄弟部门') }
       ]
     this.setData({ modules, hasVisibleModule: modules.some(item => item.visible) })
   },
@@ -67,6 +69,7 @@ Page({
     if (action === 'handoffs') return this.goHandoffs()
     if (action === 'production') return this.goProduction()
     if (action === 'projectTasks') return this.goProjectTasks()
+    if (action === 'operationsLayout') return this.goOperationsLayout()
   },
 
   goSuggestions: function () {
@@ -83,5 +86,9 @@ Page({
 
   goProjectTasks: function () {
     wx.navigateTo({ url: '/pages/projectTasks/projectTasks' })
+  },
+
+  goOperationsLayout: function () {
+    wx.navigateTo({ url: '/pages/operationsLayout/operationsLayout' })
   }
 })

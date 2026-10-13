@@ -125,6 +125,7 @@ const DEFAULT_ALLOWANCE_RULES = [
 const DEFAULT_WORKFLOW_RESPONSIBILITIES = [
   { key: 'editorialOfficeHandoff', name: '采编办公协同', description: '采编部报备，办公部派发与同步', departments: ['采编部', '办公部'] },
   { key: 'productionReservation', name: '摄制预约协作', description: '预约人发起，摄制部完成，办公部归档', departments: ['摄制部', '办公部', BROTHER_DEPARTMENT] },
+  { key: 'operationsLayout', name: '运营部公众号排版', description: '部长排班创建，干事排版，固定部长审核归档', departments: ['运营部', BROTHER_DEPARTMENT] },
   { key: 'activitySuggestions', name: '活动建议', description: '活动建议、投票和通知', departments: DEFAULT_DEPARTMENTS.filter(name => name !== BROTHER_DEPARTMENT) }
 ]
 
@@ -2501,7 +2502,9 @@ async function handleManageHandoffs(event, user, openid) {
         throw new Error('协同状态已更新，请刷新后重试')
       }
       const settledRecords = approved
-        ? await settleHandoffWorkload(event.handoffId, current, now, user, openid, transaction)
+        ? await (handoff.workflowType === 'operationsLayout'
+          ? settleOperationsLayoutWorkload(event.handoffId, current, now, user, openid, transaction)
+          : settleHandoffWorkload(event.handoffId, current, now, user, openid, transaction))
         : []
       await transaction.collection(COLLECTIONS.HANDOFFS).doc(event.handoffId).update({
         data: {
@@ -2521,7 +2524,9 @@ async function handleManageHandoffs(event, user, openid) {
       })
     })
     const recipients = approved
-      ? []
+      ? (handoff.workflowType === 'operationsLayout'
+        ? [{ name: handoff.assigneeName, department: '运营部' }]
+        : [])
       : (returnToName
         ? [{ name: returnToName, department: returnToDepartment }]
         : [{ role: 'minister', department: '办公部' }])
@@ -2532,7 +2537,7 @@ async function handleManageHandoffs(event, user, openid) {
         : (returnToName
           ? handoff.title + ' 未通过审核，已退回给 ' + returnToName + ' 修改后重新处理。'
           : handoff.title + ' 未通过审核，请办公部修改后重新提交。'),
-      targetDept: approved ? '采编部' : returnToDepartment,
+      targetDept: approved ? (handoff.workflowType === 'operationsLayout' ? '运营部' : '采编部') : returnToDepartment,
       page: getHandoffNotificationPage(handoff.workflowType, handoff._id),
       // 审核退回后，下一个需要处理任务的是指定接收人或办公部部长。
       recipientSpecs: recipients
@@ -2575,6 +2580,88 @@ async function handleManageHandoffs(event, user, openid) {
       targetDept: ''
     })
     return success({ updated: 1, archived: true })
+  }
+
+  if (action === 'createOperationsLayout') {
+    if (user.role !== 'admin' && !(user.role === 'minister' && user.department === '运营部')) {
+      return fail('仅运营部部长或管理员可创建排版任务')
+    }
+    const title = trim(event.title)
+    const layoutType = ['basic', 'photo', 'reprint'].includes(event.layoutType) ? event.layoutType : 'basic'
+    const deadline = trim(event.deadline)
+    const assigneeName = trim(event.assigneeName)
+    if (!title) return fail('请填写文章标题')
+    if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(deadline)) return fail('请选择截止日期')
+    if (!assigneeName) return fail('请选择排版干事')
+    const assignee = await findMember('', assigneeName, '运营部')
+    if (!assignee) return fail('请选择有效的运营部干事')
+    const now = new Date()
+    const addRes = await handoffs.add({
+      data: {
+        title,
+        layoutType,
+        deadline,
+        note: trim(event.note),
+        reminderLeadHours: normalizeReminderLeadHours(event.reminderLeadHours),
+        workflowType: 'operationsLayout',
+        sourceDepartment: '运营部',
+        targetDepartment: '运营部',
+        submitterUserId: user._id,
+        submitterName: user.name,
+        submitterOpenid: openid,
+        assigneeName,
+        assigneeOpenid: assignee.openid || '',
+        assignedBy: user.name,
+        assignedTime: now,
+        status: 'assigned',
+        statusLabel: HANDOFF_STATUS_LABELS.assigned,
+        joinList: [],
+        urgent: false,
+        syncResult: '',
+        reviewComment: '',
+        createTime: now,
+        updateTime: now
+      }
+    })
+    await addWorkflowNotification({
+      title: '新的公众号排版任务',
+      content: title + ' 已分配给你，截止 ' + deadline + '，请尽快排版。',
+      targetDept: '运营部',
+      page: getHandoffNotificationPage('operationsLayout', addRes._id),
+      recipientSpecs: [{ name: assigneeName, department: '运营部' }]
+    })
+    return success({ _id: addRes._id })
+  }
+
+  if (action === 'joinOperationsLayout') {
+    const handoff = await getDoc(COLLECTIONS.HANDOFFS, event.handoffId)
+    if (!handoff || handoff.workflowType !== 'operationsLayout') return fail('排班任务不存在')
+    if (user.department !== BROTHER_DEPARTMENT) return fail('仅兄弟部门成员可报名')
+    if (!['submitted', 'assigned', 'rejected'].includes(handoff.status)) return fail('当前状态不能报名')
+    const joinList = Array.isArray(handoff.joinList) ? handoff.joinList : []
+    if (joinList.some(item => item.name === user.name)) return fail('你已报名该任务')
+    const now = new Date()
+    // 提前 2 天规则：距截止不足 2 天报名标记为加急，并提醒运营部干事
+    const dueDate = getHandoffDueDate(handoff)
+    const urgent = isNaN(dueDate.getTime()) || dueDate.getTime() - now.getTime() < 2 * 24 * 60 * 60 * 1000
+    joinList.push({ name: user.name, openid, joinTime: now, urgent })
+    await handoffs.doc(handoff._id).update({
+      data: {
+        joinList,
+        urgent: urgent || !!handoff.urgent,
+        updateTime: now
+      }
+    })
+    if (urgent && trim(handoff.assigneeName)) {
+      await addWorkflowNotification({
+        title: '加急排版任务提醒',
+        content: '加急任务：' + handoff.title + ' 需尽快处理（' + user.name + ' 加急报名）',
+        targetDept: '运营部',
+        page: getHandoffNotificationPage('operationsLayout', handoff._id),
+        recipientSpecs: [{ name: handoff.assigneeName, department: '运营部' }]
+      })
+    }
+    return success({ urgent })
   }
 
   if (action === 'checkDeadlines') {
@@ -2765,6 +2852,62 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
   return settled
 }
 
+function getLayoutTypeLabel(value) {
+  const labels = {
+    basic: '基础排版',
+    photo: '影像志排版',
+    reprint: '内容转载排版'
+  }
+  return labels[value] || '基础排版'
+}
+
+// 公众号排版归档自动计费：干事按排版类型规则、审核人按排版审核规则写入工时
+async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer, reviewerOpenid, transaction) {
+  const rules = await getAllowanceRules()
+  const layoutRuleKeys = {
+    basic: 'operations_basic_layout',
+    photo: 'operations_photo_layout',
+    reprint: 'operations_reprint_layout'
+  }
+  const layoutRule = findAllowanceRule(rules, layoutRuleKeys[handoff.layoutType] || 'operations_basic_layout', '运营部', '日常办公')
+  const reviewRule = findAllowanceRule(rules, 'operations_layout_review', '运营部', '日常办公')
+  const layoutLabel = getLayoutTypeLabel(handoff.layoutType)
+  const settled = []
+  if (trim(handoff.assigneeName)) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId,
+      transaction,
+      memberName: handoff.assigneeName,
+      memberOpenid: handoff.assigneeOpenid,
+      department: '运营部',
+      workType: layoutRule ? layoutRule.workType : '日常办公',
+      workload: layoutRule ? layoutRule.hours : 4,
+      content: '公众号' + layoutLabel + '：' + handoff.title,
+      remark: (handoff.urgent ? '加急任务，' : '') + '公众号排版归档自动核算，可由部长调整',
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
+  if (reviewer && trim(reviewer.name)) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId + ':review',
+      transaction,
+      memberName: reviewer.name,
+      memberOpenid: reviewerOpenid,
+      department: reviewer.department || '运营部',
+      workType: reviewRule ? reviewRule.workType : '日常办公',
+      workload: reviewRule ? reviewRule.hours : 1.5,
+      content: '排版审核：' + handoff.title,
+      remark: '公众号排版审核自动核算，可由部长调整',
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
+  return settled
+}
+
 async function upsertWorkflowWorkloadRecord(options) {
   const department = trim(options.department)
   const member = options.memberId
@@ -2871,6 +3014,9 @@ async function getVisibleHandoffs(user, openid, scope, departmentFilter, workflo
     }
     // 兄弟部门是外部协作方，只能查看自己发起的摄制预约及其后续流转。
     if (user.department === BROTHER_DEPARTMENT) {
+      if (workflowKey === 'operationsLayout') {
+        return true
+      }
       return workflowKey === 'productionReservation' && (
         item.submitterUserId === user._id ||
         item.submitterOpenid === openid ||
@@ -2919,7 +3065,7 @@ function getHandoffDueDate(handoff) {
 function getCurrentHandoffRecipient(handoff) {
   const workflowType = handoff.workflowType || 'editorialOfficeHandoff'
   if (handoff.status === 'submitted') {
-    const department = workflowType === 'productionReservation' ? '摄制部' : '办公部'
+    const department = getHandoffTargetDepartmentName(workflowType)
     return { department, specs: [{ role: 'minister', department }] }
   }
   if (handoff.status === 'archive_assigned') {
@@ -2929,10 +3075,19 @@ function getCurrentHandoffRecipient(handoff) {
     }
   }
   if (handoff.status === 'completed') {
+    if (workflowType === 'operationsLayout') {
+      return { department: '运营部', specs: [{ role: 'minister', department: '运营部' }] }
+    }
     return { department: '', specs: [{ role: 'admin' }] }
   }
-  const department = workflowType === 'productionReservation' ? '摄制部' : '办公部'
+  const department = getHandoffTargetDepartmentName(workflowType)
   return { department, specs: [{ name: handoff.assigneeName, department }] }
+}
+
+function getHandoffTargetDepartmentName(workflowType) {
+  if (workflowType === 'productionReservation') return '摄制部'
+  if (workflowType === 'operationsLayout') return '运营部'
+  return '办公部'
 }
 
 function canAssignHandoff(user, handoff) {
@@ -3075,7 +3230,9 @@ function clipSubscribeText(value, length) {
 function getHandoffNotificationPage(workflowType, handoffId) {
   const page = workflowType === 'productionReservation'
     ? 'pages/production/production'
-    : 'pages/handoffs/handoffs'
+    : workflowType === 'operationsLayout'
+      ? 'pages/operationsLayout/operationsLayout'
+      : 'pages/handoffs/handoffs'
   return page + '?tab=mine&handoffId=' + encodeURIComponent(String(handoffId || ''))
 }
 
@@ -3709,12 +3866,26 @@ function formatResponsibility(item) {
 function formatHandoff(handoff, user, openid) {
   const status = handoff.status || 'submitted'
   const workflowType = handoff.workflowType || 'editorialOfficeHandoff'
+  const isOperationsLayout = workflowType === 'operationsLayout'
   const statusLabel = workflowType === 'productionReservation' && status === 'submitted'
     ? '待摄制部部长派发'
-    : HANDOFF_STATUS_LABELS[status] || handoff.statusLabel || ''
+    : isOperationsLayout && status === 'assigned'
+      ? '待干事排版'
+      : isOperationsLayout && status === 'completed'
+        ? '待部长审核'
+        : HANDOFF_STATUS_LABELS[status] || handoff.statusLabel || ''
+  const joinList = isOperationsLayout && Array.isArray(handoff.joinList)
+    ? handoff.joinList.map(item => ({
+      name: item.name || '',
+      urgent: !!item.urgent,
+      joinTime: formatDateTime(item.joinTime)
+    }))
+    : []
   return {
     _id: handoff._id,
     title: handoff.title || '',
+    layoutType: isOperationsLayout ? (handoff.layoutType || 'basic') : '',
+    layoutTypeLabel: isOperationsLayout ? getLayoutTypeLabel(handoff.layoutType) : '',
     articleNames: handoff.articleNames || '',
     targetSites: handoff.targetSites || '',
     workflowType,
@@ -3727,6 +3898,8 @@ function formatHandoff(handoff, user, openid) {
       ? '提前 ' + normalizeReminderLeadHours(handoff.reminderLeadHours) + ' 小时'
       : '已关闭',
     isUrgent: !!handoff.isUrgent,
+    urgent: isOperationsLayout ? !!handoff.urgent : !!handoff.isUrgent,
+    joinList,
     urgentMultiplier: toNumber(handoff.urgentMultiplier) || 1,
     archiveMemberName: handoff.archiveMemberName || '',
     archiveNote: handoff.archiveNote || '',
@@ -3754,6 +3927,9 @@ function formatHandoff(handoff, user, openid) {
       (user.role === 'admin' || (user.department === '办公部' &&
         (handoff.archiveMemberName === user.name || handoff.archiveMemberOpenid === openid))),
     canReview: status === 'completed' && canReviewHandoff(user, handoff),
+    canJoin: isOperationsLayout && user && user.department === BROTHER_DEPARTMENT &&
+      ['submitted', 'assigned', 'rejected'].includes(status) &&
+      !joinList.some(item => item.name === user.name),
     createTime: formatDateTime(handoff.createTime),
     updateTime: formatDateTime(handoff.updateTime),
     assignedTime: formatDateTime(handoff.assignedTime),
@@ -3885,7 +4061,7 @@ function normalizeWorkType(value, department) {
 
 function normalizeWorkflowType(value) {
   const workflowType = trim(value)
-  return ['editorialOfficeHandoff', 'productionReservation'].includes(workflowType) ? workflowType : ''
+  return ['editorialOfficeHandoff', 'productionReservation', 'operationsLayout'].includes(workflowType) ? workflowType : ''
 }
 
 function normalizeReminderLeadHours(value) {
