@@ -4,7 +4,7 @@
 
 > 📘 **接手本项目？** 请先阅读 [HANDOVER.md](./HANDOVER.md)，其中说明了环境配置、恢复步骤和已知踩坑记录。
 
-- AppID：`YOUR_WECHAT_APPID`（请替换为你自己的小程序 AppID）
+- AppID：`wx4972972007bb6a4e`
 - 小程序前端：`miniprogram/`
 - 统一云函数：`cloudfunctions/api/`
 
@@ -87,13 +87,13 @@
 
 1. 用微信开发者工具导入本项目目录（克隆后的本地路径）。
 
-2. 确认 `miniprogram/app.js` 中的云环境 ID 已替换为你自己的：
+2. 确认 `miniprogram/app.js` 中的云环境 ID：
 
 ```js
-const CLOUD_ENV_ID = 'YOUR_CLOUD_ENV_ID' // 替换为你的云开发环境 ID
+const CLOUD_ENV_ID = 'cloud1-d2gd4994t925d1435'
 ```
 
-> 云开发环境 ID 可在微信开发者工具「云开发」控制台查看。没有云环境时请先开通云开发并新建环境。
+> 云开发环境 ID 可在微信开发者工具「云开发」控制台查看。
 
 3. 在微信开发者工具左侧找到 `cloudfunctions/api`，右键选择：
 

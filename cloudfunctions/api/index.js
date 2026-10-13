@@ -36,9 +36,7 @@ const DEFAULT_DEPARTMENTS = [
   '兄弟部门'
 ]
 const BROTHER_DEPARTMENT = '兄弟部门'
-// 管理员注册邀请码。请替换为你自己的邀请码，不要沿用示例值。
-// 更安全的做法是通过云函数环境变量注入，详见 HANDOVER.md 的「可选加固建议」。
-const ADMIN_INVITE_CODE = 'YOUR_ADMIN_INVITE_CODE' // 管理员注册邀请码
+const ADMIN_INVITE_CODE = 'QCMC-ADMIN-2024' // 管理员注册邀请码
 
 const ROLE_ORDER = {
   admin: 0,

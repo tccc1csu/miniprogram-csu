@@ -1,7 +1,6 @@
 // app.js
-// 微信云开发环境 ID。请替换为你自己的云环境 ID（云开发控制台可查看）。
-// 详见项目根目录 HANDOVER.md 的「恢复顺序」章节。
-const CLOUD_ENV_ID = 'YOUR_CLOUD_ENV_ID'
+// 微信云开发环境 ID
+const CLOUD_ENV_ID = 'cloud1-d2gd4994t925d1435'
 
 App({
   globalData: {
