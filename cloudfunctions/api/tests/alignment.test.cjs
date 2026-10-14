@@ -70,6 +70,95 @@ function loadAPI(db) {
   return exports
 }
 
+function layoutFixture({ layoutType = 'basic', urgent = false, legacy = false, sameMember = false } = {}) {
+  const db = new MemoryDB(), api = loadAPI(db).testing
+  const reviewer = { _id: 'u2', role: 'minister', name: '排版部长', department: '运营部' }
+  db.seed('departments', 'ops', { name: '运营部' })
+  for (const [key, hours, name] of [
+    ['operations_basic_layout', 4, '基础排版'], ['operations_photo_layout', 2, '影像志排版'],
+    ['operations_reprint_layout', 1, '内容转载排版'], ['operations_layout_review', 1.5, '排版审核']
+  ]) db.seed('allowance_rules', key, { key, hours, name, recordType: 'rule', department: '运营部', workType: '日常办公', unit: '篇' })
+  db.seed('members', 'm1', { name: sameMember ? reviewer.name : '排版干事', department: '运营部', userId: sameMember ? reviewer._id : 'u1' })
+  if (!sameMember) db.seed('members', 'm2', { name: reviewer.name, department: '运营部', userId: reviewer._id })
+  db.seed('handoffs', 'layout1', { title: '测试公众号文章', workflowType: 'operationsLayout', status: 'completed',
+    sourceDepartment: '运营部', targetDepartment: '运营部',
+    layoutType, urgent, assigneeName: sameMember ? reviewer.name : '排版干事', ...(legacy ? {} : { assigneeMemberId: 'm1' }) })
+  const event = { action: 'reviewHandoff', handoffId: 'layout1', approved: true, reviewComment: '通过' }
+  return { db, api, reviewer, event }
+}
+
+test('公众号三种排版及加急提醒均可审核归档，保存两类贡献与规则快照', async () => {
+  const expected = { basic: 4, photo: 2, reprint: 1 }
+  for (const [layoutType, hours] of Object.entries(expected)) {
+    const { db, api, reviewer, event } = layoutFixture({ layoutType, urgent: true, legacy: layoutType === 'basic' })
+    const result = await api.handleManageHandoffs(event, reviewer, '')
+    assert.equal(result.code, 0)
+    assert.equal(db.rows.get('handoffs/layout1').status, 'archived')
+    assert.deepEqual(db.list('weekly_records').map(r => r.workload).sort((a, b) => a - b), [hours, 1.5].sort((a, b) => a - b))
+    assert.equal(db.list('contribution_basis').length, 2)
+    for (const basis of db.list('contribution_basis')) {
+      assert.equal(basis.source_id, 'layout1')
+      assert.equal(basis.handoff_id, 'layout1')
+      assert.equal(basis.department_id, 'ops')
+      assert(['m1', 'm2'].includes(basis.member_id))
+    }
+    assert.deepEqual(db.list('contribution_policy').map(p => p.rule_key).sort(), ['operations_' + layoutType + '_layout', 'operations_layout_review'].sort())
+    assert(db.list('contribution_policy').every(p => p.unit === '篇'))
+    assert(db.list('contribution_policy').every(p => p.factor_u === 10000))
+    const again = await api.handleManageHandoffs(event, reviewer, '')
+    assert.notEqual(again.code, 0)
+    assert.equal(db.list('contribution_measurement').length, 2)
+  }
+})
+
+test('同成员排版及审核分开计量，共用一条周汇总；并发归档不重复', async () => {
+  const { db, api, reviewer, event } = layoutFixture({ sameMember: true })
+  const results = await Promise.allSettled([api.handleManageHandoffs(event, reviewer, ''), api.handleManageHandoffs(event, reviewer, '')])
+  assert.equal(results.filter(r => r.status === 'fulfilled' && r.value.code === 0).length, 1)
+  assert.equal(db.list('contribution_basis').length, 2)
+  assert.equal(db.list('weekly_records').length, 1)
+  assert.equal(db.list('weekly_records')[0].workload, 5.5)
+  assert.equal(db.rows.get('handoffs/layout1').settledRecords.length, 2)
+})
+
+test('排版审核人关联失败时整笔回滚，补齐资料后原任务可重试', async () => {
+  const { db, api, reviewer, event } = layoutFixture()
+  db.rows.delete('members/m2')
+  await assert.rejects(api.handleManageHandoffs(event, reviewer, ''), /成员缺失/)
+  assert.equal(db.rows.get('handoffs/layout1').status, 'completed')
+  for (const collection of Object.values(ledger.LEDGER_COLLECTIONS).concat('weekly_records')) assert.equal(db.list(collection).length, 0)
+  db.seed('members', 'm2', { name: reviewer.name, department: '运营部', userId: reviewer._id })
+  const result = await api.handleManageHandoffs(event, reviewer, '')
+  assert.equal(result.code, 0)
+  assert.equal(db.list('contribution_basis').length, 2)
+})
+
+test('排版退回修改无需计量，保持贡献与周汇总为空', async () => {
+  const { db, api, reviewer, event } = layoutFixture()
+  const result = await api.handleManageHandoffs({ ...event, approved: false, reviewComment: '需修改', returnToName: '排版干事' }, reviewer, '')
+  assert.equal(result.code, 0)
+  assert.equal(db.rows.get('handoffs/layout1').status, 'rejected')
+  assert.equal(db.list('contribution_basis').length, 0)
+  assert.equal(db.list('weekly_records').length, 0)
+})
+
+test('新排版任务保存稳定成员引用，成员改名后仍归属本人', async () => {
+  const { db, api, reviewer } = layoutFixture()
+  const created = await api.handleManageHandoffs({ action: 'createOperationsLayout', title: '新排班', layoutType: 'photo',
+    deadline: '2026-12-31', assigneeName: '排版干事' }, reviewer, '')
+  assert.equal(created.code, 0)
+  const task = db.rows.get('handoffs/' + created.data._id)
+  assert.equal(task.assigneeMemberId, 'm1')
+  assert.equal(task.submitterMemberId, 'm2')
+  db.seed('members', 'm1', { name: '改名后的干事', department: '运营部', userId: 'u1' })
+  db.seed('handoffs', created.data._id, { ...task, status: 'completed' })
+  const result = await api.handleManageHandoffs({ action: 'reviewHandoff', handoffId: created.data._id, approved: true }, reviewer, '')
+  assert.equal(result.code, 0)
+  const row = db.list('weekly_records').find(r => r.memberId === 'm1')
+  assert.equal(row.memberName, '改名后的干事')
+  assert.equal(row.workload, 2)
+})
+
 test('同一任务并发归档只计一次，倍率只应用一次', async () => {
   const db = new MemoryDB()
   const results = await Promise.all([ledger.settle(db, input()), ledger.settle(db, input())])

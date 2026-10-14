@@ -21,3 +21,11 @@ PASS D:\anaconda\python.exe docs/tools/build_course_assignment.py
 Checked 308 local links, 20 specifications, 20 diagram use cases.
 Course assignment assembled; consistency checks passed.
 PASS offline export audit CLI with synthetic JSON and JSONL fixtures; no personal data in report.
+
+2026-10-14 operationsLayout regression fix (parent 43f6163)
+PASS git fetch origin; local and remote refactor/course-runtime-alignment at 43f6163 before fix.
+REPRODUCED pre-fix approval error: 工作贡献缺少来源或类型.
+PASS node --check cloudfunctions/api/index.js
+PASS node --test cloudfunctions/api/tests/alignment.test.cjs: 21 tests, 21 pass, 0 fail.
+Added regression coverage: all layout types, urgent reminders, legacy tasks, two contributions for one member, concurrent approval deduplication, second-contribution failure rollback/retry, rejection, stable member references after rename.
+No cloud deployment, database writes/reset, or remote push performed.

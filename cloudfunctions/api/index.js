@@ -2607,9 +2607,11 @@ async function handleManageHandoffs(event, user, openid) {
         sourceDepartment: '运营部',
         targetDepartment: '运营部',
         submitterUserId: user._id,
+        submitterMemberId: await getMemberIdForUser(user),
         submitterName: user.name,
         submitterOpenid: openid,
         assigneeName,
+        assigneeMemberId: assignee._id,
         assigneeOpenid: assignee.openid || '',
         assignedBy: user.name,
         assignedTime: now,
@@ -2869,12 +2871,15 @@ async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer,
     photo: 'operations_photo_layout',
     reprint: 'operations_reprint_layout'
   }
-  const layoutRule = findAllowanceRule(rules, layoutRuleKeys[handoff.layoutType] || 'operations_basic_layout', '运营部', '日常办公')
+  const layoutTypeId = layoutRuleKeys[handoff.layoutType] || 'operations_basic_layout'
+  const layoutRule = findAllowanceRule(rules, layoutTypeId, '运营部', '日常办公')
   const reviewRule = findAllowanceRule(rules, 'operations_layout_review', '运营部', '日常办公')
   const layoutLabel = getLayoutTypeLabel(handoff.layoutType)
   const settled = []
   if (trim(handoff.assigneeName)) {
     settled.push(await upsertWorkflowWorkloadRecord({
+      memberId: handoff.assigneeMemberId,
+      handoffId, sourceId: handoffId, typeId: layoutTypeId, rule: layoutRule,
       sourceHandoffId: handoffId,
       transaction,
       memberName: handoff.assigneeName,
@@ -2891,6 +2896,8 @@ async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer,
   }
   if (reviewer && trim(reviewer.name)) {
     settled.push(await upsertWorkflowWorkloadRecord({
+      memberId: await getMemberIdForUser(reviewer),
+      handoffId, sourceId: handoffId, typeId: 'operations_layout_review', rule: reviewRule,
       sourceHandoffId: handoffId + ':review',
       transaction,
       memberName: reviewer.name,
