@@ -53,7 +53,7 @@
         </view>
       </view>
       <view class="record-content" data-item="{{item}}" bindtap="onTapRecord">{{item.workContent}}</view>
-      <view class="record-footer">
+      <document-attachments value="{{item.attachments}}" label="周报依据" readonly="{{true}}" /><view class="record-footer">
         <view class="record-meta">
           <text class="meta-item">类型：{{item.workTypeLabel || item.workType}}</text>
           <text class="meta-item">工时：{{item.workload}}h</text>

@@ -2,7 +2,7 @@
 <view class="container">
   <view class="layout-summary">
     <view class="summary-title">公众号排版排班表</view>
-    <view class="summary-path">部长排班创建 → 干事排版 → 固定部长审核归档（自动核算工时）</view>
+    <view class="summary-path">部长布置并指定一审、二审 → 干事排版 → 部长一键审核归档</view>
     <view class="summary-tips" wx:if="{{isBrother}}">兄弟部门报名需提前 2 天，不足 2 天将标记「加急」并提醒干事</view>
   </view>
 
@@ -53,7 +53,7 @@
   <!-- 新增排版任务弹窗 -->
   <view class="modal-mask" wx:if="{{showCreateModal}}" bindtap="closeCreateModal">
     <view class="modal-content" catchtap="stopTap">
-      <view class="modal-title">新增排版任务</view>
+      <view class="modal-title">新增排版任务</view><document-attachments value="{{createForm.attachments}}" label="任务材料" data-path="createForm.attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
       <view class="form-group">
         <text class="form-label">文章标题</text>
         <input class="form-input" placeholder="例如：本周推送《校园活动》图文排版" value="{{createForm.title}}" bindinput="onCreateTitleInput" />
@@ -77,7 +77,7 @@
         </picker>
       </view>
       <view class="form-group">
-        <text class="form-label">备注</text>
+        <text class="form-label">一审人员</text><picker mode="selector" range="{{operationsMembers}}" range-key="name" value="{{createForm.firstReviewerIndex}}" bindchange="onFirstReviewerChange"><view class="form-picker">{{createForm.firstReviewerIndex >= 0 ? operationsMembers[createForm.firstReviewerIndex].name : '请选择一审人员'}}</view></picker><text class="form-label">二审人员</text><picker mode="selector" range="{{operationsMembers}}" range-key="name" value="{{createForm.secondReviewerIndex}}" bindchange="onSecondReviewerChange"><view class="form-picker">{{createForm.secondReviewerIndex >= 0 ? operationsMembers[createForm.secondReviewerIndex].name : '请选择二审人员'}}</view></picker><text class="form-label">备注</text>
         <input class="form-input" placeholder="可选，如素材来源、风格要求" value="{{createForm.note}}" bindinput="onCreateNoteInput" />
       </view>
       <view class="modal-actions">
@@ -90,8 +90,8 @@
   <!-- 任务详情弹窗 -->
   <view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
     <view class="modal-content" catchtap="stopTap" wx:if="{{detailTarget}}">
-      <view class="modal-title detail-title">{{detailTarget.title}}</view>
-      <view class="detail-row"><text class="detail-label">排版类型</text><text class="detail-value">{{detailTarget.layoutTypeLabel}}</text></view>
+      <view class="modal-title detail-title">{{detailTarget.title}}</view><document-attachments value="{{detailTarget.attachments}}" label="任务材料" readonly="{{true}}" /><document-attachments value="{{detailTarget.resultAttachments}}" label="完成成果" readonly="{{true}}" />
+      <view class="detail-row"><text>一审：{{detailTarget.firstReviewerName || '旧任务未指定'}}；二审：{{detailTarget.secondReviewerName || '旧任务未指定'}}</text></view><view class="detail-row"><text class="detail-label">排版类型</text><text class="detail-value">{{detailTarget.layoutTypeLabel}}</text></view>
       <view class="detail-row"><text class="detail-label">截止日期</text><text class="detail-value">{{detailTarget.deadline || '未设置'}}</text></view>
       <view class="detail-row"><text class="detail-label">排版干事</text><text class="detail-value">{{detailTarget.assigneeName || '未分配'}}</text></view>
       <view class="detail-row" wx:if="{{detailTarget.note}}"><text class="detail-label">备注</text><text class="detail-value">{{detailTarget.note}}</text></view>
@@ -104,14 +104,15 @@
         <view class="join-item" wx:for="{{detailTarget.joinList}}" wx:for-item="join" wx:key="name">
           <text class="join-item-name">{{join.name}}</text>
           <text class="join-urgent-tag" wx:if="{{join.urgent}}">加急</text>
-          <text class="join-time">{{join.joinTime}}</text>
+          <text class="join-time">{{join.joinTime}}</text><document-attachments value="{{join.attachments}}" readonly="{{true}}" label="报名素材" />
         </view>
       </view>
 
-      <view class="modal-actions" wx:if="{{detailTarget.canJoin || detailTarget.canComplete || detailTarget.canReview}}">
+      <document-attachments wx:if="{{detailTarget.canJoin}}" value="{{joinAttachments}}" label="报名素材" data-path="joinAttachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" /><view class="modal-actions" wx:if="{{detailTarget.canJoin || detailTarget.canComplete || detailTarget.canReview}}">
         <button class="mini-btn join-btn" wx:if="{{detailTarget.canJoin}}" bindtap="joinTask">报名加入</button>
         <button class="mini-btn" wx:if="{{detailTarget.canComplete}}" bindtap="openCompleteModal">提交排版结果</button>
-        <button class="mini-btn primary" wx:if="{{detailTarget.canReview}}" bindtap="openReviewModal">审核</button>
+        <button class="mini-btn primary" wx:if="{{detailTarget.canReview}}" bindtap="approveDirect">审核</button>
+        <button class="mini-btn" wx:if="{{detailTarget.canReview}}" bindtap="openReviewModal">退回修改</button>
       </view>
       <view class="join-hint" wx:if="{{detailTarget.canJoin}}">距截止不足 2 天报名将标记为「加急」并通知干事</view>
     </view>
@@ -120,7 +121,7 @@
   <!-- 提交排版结果弹窗 -->
   <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal">
     <view class="modal-content" catchtap="stopTap">
-      <view class="modal-title">提交排版结果</view>
+      <view class="modal-title">提交排版结果</view><document-attachments value="{{resultAttachments}}" label="完成成果" data-path="resultAttachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
       <textarea class="form-textarea" placeholder="填写成品链接、预览图说明或处理反馈" value="{{syncResult}}" bindinput="onSyncResultInput" />
       <view class="modal-actions">
         <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
@@ -132,7 +133,7 @@
   <!-- 审核弹窗（固定部长 / 管理员） -->
   <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
     <view class="modal-content" catchtap="stopTap">
-      <view class="modal-title">审核排版任务</view>
+      <view class="modal-title">退回排版任务</view>
       <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
       <view class="form-group" wx:if="{{returnTargets.length > 0}}">
         <text class="form-label">退回修改时指定接收人</text>
@@ -142,7 +143,6 @@
       </view>
       <view class="modal-actions">
         <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
-        <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>
       </view>
       <view class="review-tip">归档后将按排版类型规则自动为干事和审核人核算工时</view>
     </view>

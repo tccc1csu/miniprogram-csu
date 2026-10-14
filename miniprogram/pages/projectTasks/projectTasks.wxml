@@ -64,7 +64,7 @@
         </view>
         <view class="form-group">
           <text class="form-label">项目描述</text>
-          <textarea class="form-textarea" placeholder="简要描述项目目标和背景" value="{{createForm.description}}" bindinput="onCreateDescInput"></textarea>
+          <textarea class="form-textarea" placeholder="简要描述项目目标和背景" value="{{createForm.description}}" bindinput="onCreateDescInput"></textarea><document-attachments value="{{createForm.attachments}}" label="项目材料" data-path="createForm.attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
         </view>
         <view class="form-group">
           <text class="form-label">截止日期</text>
@@ -180,7 +180,7 @@
             </view>
             <view class="dept-task-content">{{dt.taskContent}}</view>
             <view class="dept-task-time" wx:if="{{dt.completeTime}}">完成时间：{{dt.completeTime}}</view>
-            <view class="dept-task-actions" wx:if="{{dt.canComplete}}">
+            <view class="dept-task-actions" wx:if="{{dt.canComplete}}"><document-attachments value="{{dt.resultAttachments}}" label="阶段成果" data-path="detailProject.deptTasks[{{dtIdx}}].resultAttachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
               <button class="mini-btn primary" bindtap="markDeptComplete" data-id="{{detailProject._id}}" data-dept="{{dt.department}}">标记完成</button>
             </view>
           </view>
@@ -191,8 +191,9 @@
           <button class="mini-btn" bindtap="forceAdvancePhase" data-id="{{detailProject._id}}">强制推进阶段</button>
           <button class="mini-btn danger" bindtap="endProject" data-id="{{detailProject._id}}">结束项目</button>
         </view>
+      <document-attachments value="{{detailProject.attachments}}" label="项目材料" readonly="{{true}}" /><view wx:for="{{detailProject.phaseResults}}" wx:key="index"><text>{{item.department}} · 阶段 {{item.phase_index + 1}}</text><document-attachments value="{{item.attachments}}" label="阶段成果" readonly="{{true}}" /></view>
       </scroll-view>
-      <view class="modal-actions">
+<view class="modal-actions">
         <button class="btn-secondary" bindtap="closeDetailModal">关闭</button>
       </view>
     </view>

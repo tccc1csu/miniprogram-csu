@@ -363,3 +363,5 @@
 .modal-actions .modal-confirm {
   flex: 1;
 }
+
+.modal-content { max-height: 82vh; overflow-y: auto; box-sizing: border-box; }

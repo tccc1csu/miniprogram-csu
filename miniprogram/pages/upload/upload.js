@@ -6,6 +6,7 @@ const { getCurrentWeek, getRecentWeeks, showToast, showLoading, hideLoading } = 
 
 Page({
   data: {
+    attachmentUploading: false,
     role: '',
     isMember: false,
     department: '',
@@ -29,6 +30,16 @@ Page({
     totalWorkload: 0,
     submitting: false,
     submitProgress: ''
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onLoad: function (options) {
@@ -94,6 +105,7 @@ Page({
           workContent: workContent,
           workload: workload,
           remark: rec ? (rec.remark || '') : '',
+          attachments: rec ? (rec.attachments || []) : [],
           hasRecord: !!rec,
           recordId: rec ? rec._id : '',
           status: rec ? '已上传' : '待填写'
@@ -125,6 +137,7 @@ Page({
           workContent: record ? (record.workContent || '') : '',
           workload: record ? String(record.workload || '') : '',
           remark: record ? (record.remark || '') : '',
+          attachments: record ? (record.attachments || []) : [],
           hasRecord: !!record
         },
         uploadedCount: record ? 1 : 0,
@@ -216,6 +229,7 @@ Page({
   },
 
   handleSelfSubmit: function () {
+    if (this.data.submitting || this.data.attachmentUploading) { showToast('请等待上传完成'); return }
     const { selfForm, selectedWeek } = this.data
     if (!selfForm.workContent.trim()) {
       showToast('请填写工作内容')
@@ -233,7 +247,7 @@ Page({
       workType: selfForm.workType || getDefaultWorkType(app.globalData.department),
       workContent: selfForm.workContent.trim(),
       workload: parseFloat(selfForm.workload) || 0,
-      remark: selfForm.remark.trim()
+      remark: selfForm.remark.trim(), attachments: selfForm.attachments || []
     }).then(() => {
       hideLoading()
       showToast('上报成功', 'success')
@@ -248,6 +262,7 @@ Page({
 
   // 批量提交
   handleBatchSubmit: function () {
+    if (this.data.submitting || this.data.attachmentUploading) { showToast('请等待上传完成'); return }
     const { memberForms, selectedWeek, department } = this.data
     const validForms = memberForms.filter(f => f.workContent.trim() && f.workload !== '')
 
@@ -284,7 +299,7 @@ Page({
         workType: f.workType || getDefaultWorkType(department),
         workContent: f.workContent.trim(),
         workload: parseFloat(f.workload) || 0,
-        remark: f.remark.trim(),
+        remark: f.remark.trim(), attachments: f.attachments || [],
         uploadedBy: app.globalData.userInfo.name
       }).then(() => {
         completed++

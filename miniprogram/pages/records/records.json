@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "工作记录",
   "enablePullDownRefresh": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "document-attachments": "/components/documentAttachments/index"
+  }
 }

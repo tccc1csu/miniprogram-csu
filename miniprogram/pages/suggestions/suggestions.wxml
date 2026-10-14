@@ -39,9 +39,9 @@
           <text>提交人：{{item.submitterName}}</text>
           <text>{{item.createTime}}</text>
         </view>
-        <!-- 管理员操作 -->
+        <document-attachments value="{{item.attachments}}" label="文档附件" readonly="{{true}}" /><button wx:if="{{role === 'admin' && item.status === 'approved' && !item.voteId}}" class="btn-primary small" data-id="{{item._id}}" bindtap="showApprove">发起时间投票</button><!-- 管理员操作 -->
         <view class="admin-actions" wx:if="{{role === 'admin' && item.status === 'pending'}}">
-          <button class="btn-primary small" bindtap="showApprove" data-id="{{item._id}}">审核通过</button>
+          <button class="btn-primary small" bindtap="approveDirect" data-id="{{item._id}}">审核</button>
           <button class="btn-secondary small" bindtap="rejectSuggestion" data-id="{{item._id}}">驳回</button>
         </view>
       </view>
@@ -90,7 +90,7 @@
       <view class="empty-state" wx:if="{{votes.length === 0}}">
         <view class="empty-icon">🗳️</view>
         <view class="empty-text">暂无进行中的投票</view>
-        <view class="empty-hint">管理员审核通过活动建议后会创建投票</view>
+        <view class="empty-hint">活动建议通过后，管理员可发起时间投票</view>
       </view>
     </view>
   </view>
@@ -123,7 +123,7 @@
       <text class="form-label">活动描述</text>
       <textarea class="form-textarea" placeholder="请描述活动的具体内容和想法..." value="{{submitForm.description}}" data-field="description" bindinput="onSubmitInput"></textarea>
     </view>
-    <view class="modal-btns">
+    <document-attachments value="{{submitForm.attachments}}" label="建议材料" data-path="submitForm.attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" /><view class="modal-btns">
       <button class="btn-secondary" bindtap="hideSubmitModal">取消</button>
       <button class="btn-primary" bindtap="submitSuggestion">提交</button>
     </view>
@@ -132,7 +132,7 @@
   <!-- 审核弹窗 -->
   <view class="modal-mask" wx:if="{{showApproveModal}}" bindtap="hideApproveModal"></view>
   <view class="modal-panel" wx:if="{{showApproveModal}}">
-    <view class="modal-title">审核通过并创建投票</view>
+    <view class="modal-title">创建时间投票</view>
     <view class="form-row vertical">
       <text class="form-label">投票标题</text>
       <input class="form-input" value="{{approveForm.voteTitle}}" data-field="voteTitle" bindinput="onApproveInput" />
@@ -147,7 +147,7 @@
     </view>
     <view class="modal-btns">
       <button class="btn-secondary" bindtap="hideApproveModal">取消</button>
-      <button class="btn-primary" bindtap="approveSuggestion">确认通过</button>
+      <button class="btn-primary" bindtap="approveSuggestion">创建投票</button>
     </view>
   </view>
 </view>

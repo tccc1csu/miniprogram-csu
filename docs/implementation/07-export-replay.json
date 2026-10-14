@@ -1,0 +1,21 @@
+{
+  "scope": "isolated-memory-only",
+  "liveCloudAccess": false,
+  "taskCounts": {
+    "editorialOfficeHandoff:assigned": 2,
+    "editorialOfficeHandoff:archived": 2,
+    "productionReservation:archived": 2,
+    "productionReservation:assigned": 1,
+    "editorialOfficeHandoff:completed": 2,
+    "editorialOfficeHandoff:submitted": 3,
+    "operationsLayout:assigned": 1,
+    "operationsLayout:completed": 1,
+    "editorialOfficeHandoff:rejected": 1
+  },
+  "eligible": 3,
+  "passed": 3,
+  "failed": 0,
+  "failureCategories": {},
+  "archivedRetryChecks": 4,
+  "archivedRetryWrites": 0
+}

@@ -1,0 +1,1478 @@
+{
+  "source": "local-export",
+  "collections": {
+    "allowance_rules": {
+      "inspected": 21,
+      "fields": {
+        "_id": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "key": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "name": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "department": {
+          "present": 20,
+          "types": {
+            "string": 20
+          }
+        },
+        "role": {
+          "present": 20,
+          "types": {
+            "string": 20
+          }
+        },
+        "workType": {
+          "present": 20,
+          "types": {
+            "string": 20
+          }
+        },
+        "unit": {
+          "present": 20,
+          "types": {
+            "string": 20
+          }
+        },
+        "hours": {
+          "present": 20,
+          "types": {
+            "number": 20
+          }
+        },
+        "allowance": {
+          "present": 20,
+          "types": {
+            "number": 20
+          }
+        },
+        "recordType": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "createTime": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "updateTime": {
+          "present": 21,
+          "types": {
+            "string": 21
+          }
+        },
+        "urgentThresholdDays": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "urgentMultiplier": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "productionHourlyRate": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "standardHourlyRate": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        }
+      }
+    },
+    "allowance_standard": {
+      "inspected": 2,
+      "fields": {
+        "_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "standard_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "department_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "hourly_rate_cents": {
+          "present": 2,
+          "types": {
+            "number": 2
+          }
+        },
+        "captured_at": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        }
+      }
+    },
+    "contacts": {
+      "inspected": 2,
+      "fields": {
+        "_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "name": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "department": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "phone": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "email": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "wechatId": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "qq": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "createdBy": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "createTime": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "updateTime": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "cohort": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "dormitory": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "rank": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "contribution_basis": {
+      "inspected": 2,
+      "fields": {
+        "_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "basis_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "source_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "type_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "member_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "department_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "occurred_at": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "evidence": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "handoff_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "legacy_source_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "summary_record_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "week": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "schema_version": {
+          "present": 2,
+          "types": {
+            "number": 2
+          }
+        }
+      }
+    },
+    "contribution_measurement": {
+      "inspected": 2,
+      "fields": {
+        "_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "basis_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "policy_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "base_hours_u": {
+          "present": 2,
+          "types": {
+            "number": 2
+          }
+        },
+        "assessed_at": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "assessed_by": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        }
+      }
+    },
+    "contribution_policy": {
+      "inspected": 2,
+      "fields": {
+        "_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "policy_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "captured_at": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "standard_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "type_id": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "basis_rule": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "rule_key": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "unit": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "hours_u": {
+          "present": 2,
+          "types": {
+            "number": 2
+          }
+        },
+        "factor_u": {
+          "present": 2,
+          "types": {
+            "number": 2
+          }
+        }
+      }
+    },
+    "departments": {
+      "inspected": 7,
+      "fields": {
+        "_id": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        },
+        "name": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        },
+        "createTime": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        },
+        "updateTime": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        }
+      }
+    },
+    "files": {
+      "inspected": 1,
+      "fields": {
+        "_id": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "name": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "size": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "fileID": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "cloudPath": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "department": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "uploaderOpenid": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "uploaderName": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "downloadCount": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "description": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "createTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "updateTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "handoffs": {
+      "inspected": 15,
+      "fields": {
+        "_id": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "workflowType": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "reminderLeadHours": {
+          "present": 15,
+          "types": {
+            "number": 15
+          }
+        },
+        "demoKey": {
+          "present": 8,
+          "types": {
+            "string": 8
+          }
+        },
+        "title": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "articleNames": {
+          "present": 10,
+          "types": {
+            "string": 10
+          }
+        },
+        "targetSites": {
+          "present": 10,
+          "types": {
+            "string": 10
+          }
+        },
+        "articleType": {
+          "present": 10,
+          "types": {
+            "string": 10
+          }
+        },
+        "note": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "sourceDepartment": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "targetDepartment": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "submitterName": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "submitterOpenid": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "assigneeName": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "assigneeOpenid": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "assignedBy": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "status": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "statusLabel": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "syncResult": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "reviewComment": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "seedTag": {
+          "present": 8,
+          "types": {
+            "string": 8
+          }
+        },
+        "createTime": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "updateTime": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "assignedTime": {
+          "present": 12,
+          "types": {
+            "string": 12
+          }
+        },
+        "reviewerName": {
+          "present": 6,
+          "types": {
+            "string": 6
+          }
+        },
+        "completedTime": {
+          "present": 8,
+          "types": {
+            "string": 8
+          }
+        },
+        "archivedTime": {
+          "present": 6,
+          "types": {
+            "string": 4,
+            "null": 2
+          }
+        },
+        "taskName": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "scheduledAt": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "location": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "submitterContact": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "archiveMemberName": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "archiveMemberOpenid": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "isUrgent": {
+          "present": 3,
+          "types": {
+            "boolean": 3
+          }
+        },
+        "urgentMultiplier": {
+          "present": 3,
+          "types": {
+            "number": 3
+          }
+        },
+        "completedBy": {
+          "present": 4,
+          "types": {
+            "string": 4
+          }
+        },
+        "archiveNote": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "reviewedTime": {
+          "present": 5,
+          "types": {
+            "string": 5
+          }
+        },
+        "settledRecords": {
+          "present": 5,
+          "types": {
+            "array": 5
+          }
+        },
+        "workloadSettled": {
+          "present": 5,
+          "types": {
+            "boolean": 5
+          }
+        },
+        "reviewerNames": {
+          "present": 5,
+          "types": {
+            "array": 5
+          }
+        },
+        "deadline": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        },
+        "submitterUserId": {
+          "present": 6,
+          "types": {
+            "string": 6
+          }
+        },
+        "layoutType": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "joinList": {
+          "present": 2,
+          "types": {
+            "array": 2
+          }
+        },
+        "urgent": {
+          "present": 2,
+          "types": {
+            "boolean": 2
+          }
+        },
+        "returnToName": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "returnToOpenid": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "returnedBy": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "submitterMemberId": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "assigneeMemberId": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "members": {
+      "inspected": 26,
+      "fields": {
+        "_id": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "name": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "department": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "role": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "userId": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "updateTime": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "createTime": {
+          "present": 26,
+          "types": {
+            "string": 26
+          }
+        },
+        "openid": {
+          "present": 15,
+          "types": {
+            "string": 15
+          }
+        },
+        "defaultArchiveMemberName": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "defaultArchiveMemberOpenid": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "notifications": {
+      "inspected": 23,
+      "fields": {
+        "_id": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "title": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "content": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "type": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "targetDept": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "page": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        },
+        "recipientIds": {
+          "present": 23,
+          "types": {
+            "array": 23
+          }
+        },
+        "createTime": {
+          "present": 23,
+          "types": {
+            "string": 23
+          }
+        }
+      }
+    },
+    "notification_settings": {
+      "inspected": 3,
+      "fields": {
+        "_id": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "key": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "recordType": {
+          "present": 2,
+          "types": {
+            "string": 2
+          }
+        },
+        "createTime": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "updateTime": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "enabled": {
+          "present": 1,
+          "types": {
+            "boolean": 1
+          }
+        },
+        "templateId": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "page": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "titleField": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "contentField": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "timeField": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "notification_subscriptions": {
+      "inspected": 1,
+      "fields": {
+        "_id": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "createTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "userId": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "userOpenid": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "templateId": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "status": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "subscribedAt": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "updateTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "consumedAt": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "project_tasks": {
+      "inspected": 1,
+      "fields": {
+        "_id": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "name": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "description": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "deadline": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "phases": {
+          "present": 1,
+          "types": {
+            "array": 1
+          }
+        },
+        "currentPhaseIndex": {
+          "present": 1,
+          "types": {
+            "number": 1
+          }
+        },
+        "deptTasks": {
+          "present": 1,
+          "types": {
+            "array": 1
+          }
+        },
+        "status": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "creatorOpenid": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "creatorName": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "createTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "updateTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        },
+        "completeTime": {
+          "present": 1,
+          "types": {
+            "string": 1
+          }
+        }
+      }
+    },
+    "suggestions": {
+      "inspected": 0,
+      "fields": {}
+    },
+    "users": {
+      "inspected": 27,
+      "fields": {
+        "_id": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "openid": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "sessionOpenid": {
+          "present": 18,
+          "types": {
+            "string": 18
+          }
+        },
+        "name": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "passwordHash": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "password": {
+          "present": 27,
+          "types": {
+            "null": 27
+          }
+        },
+        "role": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "department": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "token": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "tokenExpireAt": {
+          "present": 27,
+          "types": {
+            "null": 9,
+            "string": 18
+          }
+        },
+        "wechatBound": {
+          "present": 27,
+          "types": {
+            "boolean": 27
+          }
+        },
+        "wxProfile": {
+          "present": 27,
+          "types": {
+            "null": 12,
+            "object": 15
+          }
+        },
+        "isTestAccount": {
+          "present": 27,
+          "types": {
+            "boolean": 27
+          }
+        },
+        "createTime": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "updateTime": {
+          "present": 27,
+          "types": {
+            "string": 27
+          }
+        },
+        "lastLoginTime": {
+          "present": 18,
+          "types": {
+            "string": 18
+          }
+        }
+      }
+    },
+    "votes": {
+      "inspected": 0,
+      "fields": {}
+    },
+    "vote_records": {
+      "inspected": 0,
+      "fields": {}
+    },
+    "weekly_records": {
+      "inspected": 11,
+      "fields": {
+        "_id": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "memberName": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "department": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "week": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "workType": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "workContent": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "workload": {
+          "present": 11,
+          "types": {
+            "number": 11
+          }
+        },
+        "allowance": {
+          "present": 8,
+          "types": {
+            "number": 8
+          }
+        },
+        "allowanceStatus": {
+          "present": 8,
+          "types": {
+            "string": 8
+          }
+        },
+        "uploadedBy": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "memberId": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "memberOpenid": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "workTypes": {
+          "present": 11,
+          "types": {
+            "array": 11
+          }
+        },
+        "uploaderOpenid": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "remark": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "seedTag": {
+          "present": 5,
+          "types": {
+            "string": 5
+          }
+        },
+        "createTime": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "updateTime": {
+          "present": 11,
+          "types": {
+            "string": 11
+          }
+        },
+        "autoGeneratedWorkload": {
+          "present": 7,
+          "types": {
+            "boolean": 7
+          }
+        },
+        "sourceHandoffIds": {
+          "present": 7,
+          "types": {
+            "array": 7
+          }
+        },
+        "sourceType": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        },
+        "submittedByRole": {
+          "present": 7,
+          "types": {
+            "string": 7
+          }
+        }
+      }
+    },
+    "workflow_responsibilities": {
+      "inspected": 3,
+      "fields": {
+        "_id": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "key": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "name": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "description": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "departments": {
+          "present": 3,
+          "types": {
+            "array": 3
+          }
+        },
+        "createTime": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        },
+        "updateTime": {
+          "present": 3,
+          "types": {
+            "string": 3
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "duplicate_department_names": 0,
+    "ambiguous_member_names": 0,
+    "duplicate_weekly_summaries": 0,
+    "weekly_missing_member_id": 2,
+    "invalid_workload": 0,
+    "weekly_dangling_member_id": 0,
+    "contribution_dangling_member_id": 0,
+    "contribution_dangling_department_id": 0,
+    "measurement_dangling_basis_id": 0,
+    "measurement_dangling_policy_id": 0,
+    "policy_dangling_standard_id": 0,
+    "duplicate_contributions": 0,
+    "invalid_measurement_hours": 0,
+    "legacy_auto_records_without_itemized_history": 5
+  },
+  "scope": "supplied-collections-only"
+}

@@ -1,0 +1,9 @@
+<view class="attachments" wx:if="{{!readonly || value.length}}">
+  <view class="label">{{label}}</view>
+  <view class="file" wx:for="{{value}}" wx:key="_id">
+    <text class="name" data-index="{{index}}" catchtap="open">📄 {{item.name}}</text>
+    <text class="remove" wx:if="{{!readonly}}" data-index="{{index}}" catchtap="remove">移除</text>
+  </view>
+  <button wx:if="{{!readonly}}" size="mini" loading="{{uploading}}" disabled="{{uploading}}" bindtap="choose">{{uploading ? '上传中…' : '上传文档／素材'}}</button>
+  <view class="hint" wx:if="{{!readonly}}">每个附件不超过 50 MB，最多 10 个；从微信聊天文件中选择。</view>
+</view>

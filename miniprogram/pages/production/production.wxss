@@ -58,3 +58,5 @@
 .picker-value { display: flex; justify-content: space-between; align-items: center; background: #F5F6FA; border: 2rpx solid #D9DEE7; border-radius: 8rpx; padding: 22rpx 24rpx; font-size: 30rpx; }
 .modal-actions { display: flex; gap: 20rpx; margin-top: 30rpx; }
 .modal-actions .btn-secondary, .modal-actions .modal-confirm { flex: 1; }
+
+.modal-content { max-height: 82vh; overflow-y: auto; box-sizing: border-box; }

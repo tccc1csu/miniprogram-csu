@@ -4,6 +4,8 @@
 
 ## 作业阅读入口
 
+2026-10-14 新确认与实现见[一键审核、业务附件与计量口径](./implementation/06-one-click-review-and-documents.md)：公众号布置时记录两岗人员，部长一次确认归档；审核合计 2 小时按成员平分。该文件明确课程目标模型与当前排班功能的区别，并附私有导出的聚合检查结果。
+
 课程目标与真实代码的同步记录见[课程设计与小程序实现对照](./implementation/01-course-runtime-alignment.md)。已逐项映射 20 个分析实体，标明实现、本轮改进和待开发差距；[发布与回退](./implementation/02-rollout-and-rollback.md)说明线上核验、数据备份与分批部署。数据库总图仍是规范目标；本轮代码在独立分支修改，尚未部署。
 
 [数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含七个分区、全部表、原分析实体名称及字段旁外键目标；61 条表外线覆盖全部业务表之间的外键，两端标明关系基数。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。20 个分析实体逐项对应 47 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。

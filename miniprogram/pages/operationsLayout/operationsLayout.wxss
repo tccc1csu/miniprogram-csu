@@ -419,3 +419,5 @@
   color: #B7791F;
   border-color: #B7791F;
 }
+
+.modal-content { max-height: 82vh; overflow-y: auto; box-sizing: border-box; }

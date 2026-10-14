@@ -5,6 +5,7 @@ const { showToast, showLoading, hideLoading } = require('../../utils/util')
 
 Page({
   data: {
+    attachmentUploading: false,
     role: '',
     activeTab: 'suggestions',
     suggestions: [],
@@ -16,8 +17,18 @@ Page({
     showSubmitModal: false,
     showApproveModal: false,
     approvingId: null,
-    submitForm: { title: '', description: '' },
+    submitForm: { title: '', description: '', attachments: [] },
     approveForm: { voteTitle: '', voteOptions: '', deadline: '' }
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onShow: function () {
@@ -76,11 +87,11 @@ Page({
   showSubmit: function () {
     this.setData({
       showSubmitModal: true,
-      submitForm: { title: '', description: '' }
+      submitForm: { title: '', description: '', attachments: [] }
     })
   },
 
-  hideSubmitModal: function () {
+  hideSubmitModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     this.setData({ showSubmitModal: false })
   },
 
@@ -90,6 +101,7 @@ Page({
   },
 
   submitSuggestion: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const { title, description } = this.data.submitForm
     if (!title.trim()) {
       showToast('活动标题不能为空')
@@ -99,7 +111,7 @@ Page({
     callFunction('manageSuggestions', {
       action: 'addSuggestion',
       title: title.trim(),
-      description: description.trim()
+      description: description.trim(), attachments: this.data.submitForm.attachments || []
     }).then(() => {
       hideLoading()
       showToast('提交成功，等待管理员审核', 'success')
@@ -111,6 +123,13 @@ Page({
     })
   },
 
+  approveDirect: function (e) {
+    if (this._approving) return
+    this._approving = true; showLoading('审核中...')
+    return callFunction('manageSuggestions', { action: 'approveSuggestion', suggestionId: e.currentTarget.dataset.id }).then(() => {
+      hideLoading(); showToast('审核通过', 'success'); this.loadSuggestions()
+    }).catch(err => { hideLoading(); showToast(err.message || '审核失败') }).then(() => { this._approving = false })
+  },
   showApprove: function (e) {
     const id = e.currentTarget.dataset.id
     const item = this.data.suggestions.find(s => s._id === id)
@@ -119,7 +138,7 @@ Page({
       approvingId: id,
       approveForm: {
         voteTitle: (item ? item.title : '') + ' - 时间投票',
-        voteOptions: '周五晚上\n周六下午\n周日上午',
+        voteOptions: '',
         deadline: ''
       }
     })
@@ -147,14 +166,14 @@ Page({
     }
     showLoading('审核中...')
     callFunction('manageSuggestions', {
-      action: 'approveSuggestion',
+      action: 'createSuggestionVote',
       suggestionId: approvingId,
       voteTitle: approveForm.voteTitle.trim(),
       voteOptions: opts,
       deadline: approveForm.deadline
     }).then(() => {
       hideLoading()
-      showToast('审核通过，投票已创建', 'success')
+      showToast('投票已创建', 'success')
       this.setData({ showApproveModal: false })
       this.loadSuggestions()
       this.loadVotes()

@@ -11,6 +11,7 @@ function getToday() {
 
 Page({
   data: {
+    attachmentUploading: false,
     isAdmin: false,
     activeTab: 'active',
     tabs: [
@@ -39,6 +40,16 @@ Page({
     // 详情
     showDetailModal: false,
     detailProject: null
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onLoad: function (options) {
@@ -128,7 +139,7 @@ Page({
     })
   },
 
-  closeCreateModal: function () {
+  closeCreateModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     this.setData({ showCreateModal: false })
   },
 
@@ -187,6 +198,7 @@ Page({
   },
 
   submitCreate: function () {
+    if (this.data.creating || this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const form = this.data.createForm
     if (!form.name.trim()) { showToast('请输入项目名称'); return }
     if (form.deptTasks.length === 0) { showToast('请至少选择一个参与部门'); return }
@@ -200,7 +212,7 @@ Page({
     callFunction('manageProjectTasks', {
       action: 'createProject',
       name: form.name.trim(),
-      description: form.description.trim(),
+      description: form.description.trim(), attachments: form.attachments || [],
       deadline: form.deadline,
       deptTasks: form.deptTasks.map(d => ({
         department: d.department,
@@ -232,6 +244,7 @@ Page({
     const userRole = app.globalData.role
     const deptTasks = project.deptTasks.map(dt => ({
       ...dt,
+      resultAttachments: [],
       canComplete: project.status === 'active' &&
         dt.status !== 'completed' &&
         dt.department === userDept &&
@@ -245,14 +258,16 @@ Page({
     })
   },
 
-  closeDetailModal: function () {
+  closeDetailModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     this.setData({ showDetailModal: false, detailProject: null })
   },
 
   // ===== 标记部门任务完成 =====
   markDeptComplete: function (e) {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const projectId = e.currentTarget.dataset.id
     const dept = e.currentTarget.dataset.dept
+    const task = this.data.detailProject.deptTasks.find(item => item.department === dept)
     wx.showModal({
       title: '确认完成',
       content: '确定标记「' + dept + '」任务已完成吗？',
@@ -262,7 +277,9 @@ Page({
         callFunction('manageProjectTasks', {
           action: 'completeDeptTask',
           projectId,
-          department: dept
+          department: dept,
+          phaseIndex: this.data.detailProject.currentPhaseIndex,
+          resultAttachments: task.resultAttachments || []
         }).then(result => {
           hideLoading()
           if (result && result.advanced) {

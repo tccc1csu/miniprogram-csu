@@ -20,6 +20,7 @@ function getCurrentTime() {
 
 Page({
   data: {
+    attachmentUploading: false,
     role: '',
     department: '',
     departmentFilter: 'all',
@@ -52,6 +53,7 @@ Page({
     showCompleteModal: false,
     completeTarget: null,
     syncResult: '',
+    resultAttachments: [],
     archiveMemberIndex: 0,
     showArchiveModal: false,
     archiveTarget: null,
@@ -65,6 +67,16 @@ Page({
     createDefaultsLoading: false,
     createDefaultsOwner: '',
     loading: false
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onLoad: function (options) {
@@ -221,6 +233,7 @@ Page({
   onNoteInput: function (e) { this.setData({ 'createForm.note': e.detail.value }) },
 
   submitCreate: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const form = this.data.createForm
     if (!form.taskName.trim() || !form.date || !form.time || !form.location.trim() || !form.submitterContact.trim()) {
       showToast('请填写任务名称、预约时间、地点和联系方式')
@@ -234,11 +247,12 @@ Page({
       location: form.location.trim(),
       submitterContact: form.submitterContact.trim(),
       reminderLeadHours: form.reminderLeadHours,
+      attachments: form.attachments || [],
       note: form.note.trim()
     }).then(result => {
       hideLoading()
       showToast(result && result.isUrgent ? '已提交，系统标记为加急' : '已提交给摄制部', 'success')
-      if (result && result.defaults) this.setData({ createForm: result.defaults })
+      if (result && result.defaults) this.setData({ createForm: { ...result.defaults, attachments: [] } })
       this.loadHandoffs()
     }).catch(err => {
       hideLoading()
@@ -315,6 +329,7 @@ Page({
     this.setData({
       showCompleteModal: true,
       completeTarget: item,
+      resultAttachments: item.resultAttachments || [],
       syncResult: item.syncResult || '',
       archiveMemberIndex: index
     })
@@ -322,11 +337,12 @@ Page({
 
   onSyncResultInput: function (e) { this.setData({ syncResult: e.detail.value }) },
   onArchiveMemberChange: function (e) { this.setData({ archiveMemberIndex: Number(e.detail.value) }) },
-  closeCompleteModal: function () { this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' }) },
+  closeCompleteModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return } this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' }) },
 
   confirmComplete: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const member = this.data.officeMembers[this.data.archiveMemberIndex]
-    if (!this.data.syncResult.trim()) {
+    if (!this.data.syncResult.trim() && !this.data.resultAttachments.length) {
       showToast('请填写完成结果')
       return
     }
@@ -338,6 +354,7 @@ Page({
     callFunction('manageHandoffs', {
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
+      resultAttachments: this.data.resultAttachments,
       syncResult: this.data.syncResult.trim(),
       archiveMemberName: member.name
     }).then(() => {
@@ -352,29 +369,14 @@ Page({
     })
   },
 
-  openArchiveModal: function (e) {
-    this.setData({ showArchiveModal: true, archiveTarget: e.currentTarget.dataset.item, archiveNote: '' })
-  },
-  onArchiveNoteInput: function (e) { this.setData({ archiveNote: e.detail.value }) },
-  closeArchiveModal: function () { this.setData({ showArchiveModal: false, archiveTarget: null, archiveNote: '' }) },
-
-  confirmArchive: function () {
-    if (!this.data.archiveTarget) return
-    showLoading('归档并核算中...')
-    callFunction('manageHandoffs', {
-      action: 'archiveProductionTask',
-      handoffId: this.data.archiveTarget._id,
-      archiveNote: this.data.archiveNote.trim()
-    }).then(() => {
-      hideLoading()
-      showToast('已归档并写入工时记录', 'success')
-      this.closeArchiveModal()
-      this.loadHandoffs()
-      this.showNextReminderPrompt('当前预约已归档，开启下一条重要提醒。')
-    }).catch(err => {
-      hideLoading()
-      showToast(err.message || '归档失败')
-    })
+  approveArchive: function (e) {
+    const target = e.currentTarget.dataset.item
+    if (!target || !target.canArchive || this._approving) return
+    this._approving = true
+    showLoading('审核归档中...')
+    return callFunction('manageHandoffs', { action: 'archiveProductionTask', handoffId: target._id }).then(() => {
+      hideLoading(); showToast('已归档，工时已自动核算', 'success'); this.loadHandoffs()
+    }).catch(err => { hideLoading(); showToast(err.message || '归档失败') }).then(() => { this._approving = false })
   },
 
   onPullDownRefresh: function () {

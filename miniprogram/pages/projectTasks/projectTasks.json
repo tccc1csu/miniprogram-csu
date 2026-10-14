@@ -3,5 +3,8 @@
   "navigationBarBackgroundColor": "#4A90D9",
   "navigationBarTextStyle": "white",
   "enablePullDownRefresh": true,
-  "backgroundTextStyle": "light"
+  "backgroundTextStyle": "light",
+  "usingComponents": {
+    "document-attachments": "/components/documentAttachments/index"
+  }
 }

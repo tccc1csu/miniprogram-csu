@@ -29,7 +29,7 @@
         </view>
       </view>
       <view class="history-content">{{item.workContent}}</view>
-      <view class="history-dept">{{item.department}} · {{item.workTypeLabel || item.workType}} · 上传人：{{item.uploadedBy}}</view>
+      <document-attachments value="{{item.attachments}}" label="周报依据" readonly="{{true}}" /><view class="history-dept">{{item.department}} · {{item.workTypeLabel || item.workType}} · 上传人：{{item.uploadedBy}}</view>
       <view class="history-remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
     </view>
   </view>

@@ -60,7 +60,8 @@ async function settle(db, input) {
     basis_rule: rule.name || input.content,
     rule_key: rule.key || typeId, unit: rule.unit || '次',
     hours_u: Math.round(Number(rule.hours === undefined ? baseHours : rule.hours) * 10000),
-    factor_u: factorU
+    factor_u: factorU,
+    ...(input.reviewPool || {})
   }
   const policyId = key('cp_', policyFacts)
   let outcome
@@ -74,7 +75,7 @@ async function settle(db, input) {
     if (input.existingRecordId && !record) throw new Error('周记录已改变，请刷新后重试')
     const sources = record && Array.isArray(record.sourceHandoffIds) ? record.sourceHandoffIds : []
     // 已计入旧记录的工作不反推明细，不再次累加工时。
-    if (sources.includes(legacySourceId)) {
+    if ([legacySourceId].concat(input.legacySourceAliases || []).some(id => sources.includes(id))) {
       outcome = { recordId, workload: 0, skipped: true, legacy: true }
       return
     }
@@ -93,7 +94,8 @@ async function settle(db, input) {
       occurred_at: now, evidence: input.content,
       handoff_id: input.handoffId, legacy_source_id: legacySourceId,
       summary_record_id: recordId, week,
-      schema_version: 1
+      schema_version: 1,
+      evidence_attachments: input.evidenceAttachments || []
     } })
     // 零工时规则只能产生待核对依据，不能冒充已核实计量。
     if (baseHoursU > 0) await transaction.collection(LEDGER_COLLECTIONS.MEASUREMENTS).doc(basisId).set({ data: {

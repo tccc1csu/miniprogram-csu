@@ -6,6 +6,7 @@ const { requestNextTaskNotification } = require('../../utils/taskSubscription')
 
 Page({
   data: {
+    attachmentUploading: false,
     role: '',
     department: '',
     departmentFilter: 'all',
@@ -38,6 +39,7 @@ Page({
     showCompleteModal: false,
     completeTarget: null,
     syncResult: '',
+    resultAttachments: [],
     showReviewModal: false,
     reviewTarget: null,
     reviewComment: '',
@@ -53,6 +55,16 @@ Page({
     createDefaultsLoading: false,
     createDefaultsOwner: '',
     loading: false
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onLoad: function (options) {
@@ -246,6 +258,7 @@ Page({
   },
 
   submitCreate: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const form = this.data.createForm
     if (!form.title.trim()) { showToast('请填写需求标题'); return }
     if (!form.articleNames.trim()) { showToast('请填写稿件名称'); return }
@@ -254,7 +267,7 @@ Page({
     callFunction('manageHandoffs', Object.assign({ action: 'createHandoff' }, form)).then(result => {
       hideLoading()
       showToast('已提交给办公部', 'success')
-      if (result && result.defaults) this.setData({ createForm: result.defaults })
+      if (result && result.defaults) this.setData({ createForm: { ...result.defaults, attachments: [] } })
       this.loadHandoffs()
     }).catch(err => {
       hideLoading()
@@ -318,6 +331,7 @@ Page({
     this.setData({
       showCompleteModal: true,
       completeTarget: item,
+      resultAttachments: item.resultAttachments || [],
       syncResult: item.syncResult || ''
     })
   },
@@ -326,12 +340,13 @@ Page({
     this.setData({ syncResult: e.detail.value })
   },
 
-  closeCompleteModal: function () {
+  closeCompleteModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' })
   },
 
   confirmComplete: function () {
-    if (!this.data.syncResult.trim()) {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
+    if (!this.data.syncResult.trim() && !this.data.resultAttachments.length) {
       showToast('请填写同步结果')
       return
     }
@@ -339,10 +354,11 @@ Page({
     callFunction('manageHandoffs', {
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
+      resultAttachments: this.data.resultAttachments,
       syncResult: this.data.syncResult.trim()
     }).then(() => {
       hideLoading()
-      showToast('已发送给管理员审核', 'success')
+      showToast('已发送审核', 'success')
       this.closeCompleteModal()
       this.loadHandoffs()
       this.showNextReminderPrompt('任务已提交，开启下一条重要提醒。')
@@ -353,6 +369,18 @@ Page({
   },
 
 
+
+
+  approveDirect: function (e) {
+    const target = e.currentTarget.dataset.item
+    if (!target || !target.canReview || this._approving) return
+    this._approving = true
+    showLoading('审核归档中...')
+    return callFunction('manageHandoffs', { action: 'reviewHandoff', handoffId: target._id, approved: true }).then(() => {
+      hideLoading(); showToast('已归档，工时已自动核算', 'success')
+      this.setData({ showDetailModal: false }); this.loadHandoffs()
+    }).catch(err => { hideLoading(); showToast(err.message || '审核失败') }).then(() => { this._approving = false })
+  },
 
   openReviewModal: function (e) {
     const item = e.currentTarget.dataset.item

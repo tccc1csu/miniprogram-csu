@@ -29,3 +29,20 @@ PASS node --check cloudfunctions/api/index.js
 PASS node --test cloudfunctions/api/tests/alignment.test.cjs: 21 tests, 21 pass, 0 fail.
 Added regression coverage: all layout types, urgent reminders, legacy tasks, two contributions for one member, concurrent approval deduplication, second-contribution failure rollback/retry, rejection, stable member references after rename.
 No cloud deployment, database writes/reset, or remote push performed.
+
+2026-10-14 one-click review, business documents and shared review measurement (parent 19c55e0)
+PASS git fetch origin; remote checked again before finalizing this change.
+PASS node --test cloudfunctions/api/tests/*.test.cjs: 38 tests, 38 pass, 0 fail.
+PASS node --check for all 15 changed/new JavaScript and CommonJS files (API, component, pages, tests, replay CLI).
+PASS parsing 12 changed/new JSON files and resolving registered local component files.
+PASS native WeChat wcc.exe: all 9 changed/new WXML files compiled.
+PASS native WeChat wcsc.exe: all 4 changed/new WXSS files compiled.
+Compiler location: D:/微信web开发者工具/resources/app.asar.unpacked/node_modules/wcc-exec/
+Compiler output written to a temporary directory, then removed; no IDE preview upload or cloud deployment.
+PASS read-only audit of user-provided local export; aggregate-only report 05-export-audit.json.
+Findings: 2 weekly summaries have empty member IDs; 5 legacy automatic summaries lack itemized history.
+PASS isolated in-memory replay: 3 eligible approvals succeeded; 4 archived retries produced 0 writes.
+Production archive has no eligible example in this export; covered by synthetic regression, not live replay.
+PASS python -X utf8 docs/tools/build_course_assignment.py: 310 local links, 20 specifications, 20 diagram use cases.
+NOT RUN device/manual UI checks, real CloudBase transactions, cloud storage permissions or real uploads.
+No raw export records copied into repository; no cloud database mutation, deployment or GitHub push.

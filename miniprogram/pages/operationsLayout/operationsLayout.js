@@ -11,6 +11,7 @@ const LAYOUT_TYPES = [
 
 Page({
   data: {
+    attachmentUploading: false,
     role: '',
     department: '',
     canCreate: false,
@@ -25,17 +26,29 @@ Page({
     layoutTypes: LAYOUT_TYPES,
     operationsMembers: [],
     showCreateModal: false,
-    createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, note: '' },
+    createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, firstReviewerIndex: -1, secondReviewerIndex: -1, attachments: [], note: '' },
     showDetailModal: false,
     detailTarget: null,
+    joinAttachments: [],
     showCompleteModal: false,
     completeTarget: null,
     syncResult: '',
+    resultAttachments: [],
     showReviewModal: false,
     reviewTarget: null,
     reviewComment: '',
     returnTargets: [],
     returnToIndex: 0
+  },
+
+
+  onAttachmentsChange: function (e) { this.setData({ [e.currentTarget.dataset.path]: e.detail.value }) },
+  onAttachmentBusy: function (e) {
+    this._busyUploads = this._busyUploads || new Set()
+    const path = e.currentTarget.dataset.path
+    if (e.detail.uploading) this._busyUploads.add(path)
+    else this._busyUploads.delete(path)
+    this.setData({ attachmentUploading: this._busyUploads.size > 0 })
   },
 
   onShow: function () {
@@ -135,30 +148,38 @@ Page({
   },
 
   openCreateModal: function () {
-    this.setData({ showCreateModal: true, createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, note: '' } })
+    this.setData({ showCreateModal: true, createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, firstReviewerIndex: -1, secondReviewerIndex: -1, attachments: [], note: '' } })
   },
 
-  closeCreateModal: function () { this.setData({ showCreateModal: false }) },
+  closeCreateModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return } this.setData({ showCreateModal: false }) },
 
   onCreateTitleInput: function (e) { this.setData({ 'createForm.title': e.detail.value }) },
   onLayoutTypeChange: function (e) { this.setData({ 'createForm.layoutTypeIndex': Number(e.detail.value) || 0 }) },
   onDeadlineChange: function (e) { this.setData({ 'createForm.deadline': e.detail.value }) },
   onAssigneeChange: function (e) { this.setData({ 'createForm.assigneeIndex': Number(e.detail.value) || 0 }) },
+  onFirstReviewerChange: function (e) { this.setData({ 'createForm.firstReviewerIndex': Number(e.detail.value) }) },
+  onSecondReviewerChange: function (e) { this.setData({ 'createForm.secondReviewerIndex': Number(e.detail.value) }) },
   onCreateNoteInput: function (e) { this.setData({ 'createForm.note': e.detail.value }) },
 
   submitCreate: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const form = this.data.createForm
     const member = this.data.operationsMembers[form.assigneeIndex]
     if (!form.title.trim()) { showToast('请填写文章标题'); return }
     if (!form.deadline) { showToast('请选择截止日期'); return }
     if (!member) { showToast('请选择排版干事'); return }
+    const first = this.data.operationsMembers[form.firstReviewerIndex], second = this.data.operationsMembers[form.secondReviewerIndex]
+    if (!first || !second) { showToast('请指定一审和二审人员'); return }
     showLoading('提交中...')
     callFunction('manageHandoffs', {
       action: 'createOperationsLayout',
       title: form.title.trim(),
       layoutType: LAYOUT_TYPES[form.layoutTypeIndex].key,
       deadline: form.deadline,
-      assigneeName: member.name,
+      assigneeName: member.name, assigneeMemberId: member._id,
+      firstReviewerName: first.name, firstReviewerMemberId: first._id,
+      secondReviewerName: second.name, secondReviewerMemberId: second._id,
+      attachments: form.attachments || [],
       note: form.note.trim()
     }).then(() => {
       hideLoading()
@@ -172,18 +193,19 @@ Page({
   },
 
   openDetail: function (e) {
-    this.setData({ showDetailModal: true, detailTarget: e.currentTarget.dataset.item })
+    this.setData({ showDetailModal: true, joinAttachments: [], detailTarget: e.currentTarget.dataset.item })
   },
 
-  closeDetail: function () { this.setData({ showDetailModal: false, detailTarget: null }) },
+  closeDetail: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return } this.setData({ showDetailModal: false, detailTarget: null }) },
 
   // 兄弟部门成员报名；距截止不足 2 天时后端标记加急并通知干事
   joinTask: function () {
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const target = this.data.detailTarget
     if (!target || !target.canJoin) return
     showLoading('报名中...')
     callFunction('manageHandoffs', {
-      action: 'joinOperationsLayout',
+      action: 'joinOperationsLayout', attachments: this.data.joinAttachments,
       handoffId: target._id
     }).then(result => {
       hideLoading()
@@ -203,19 +225,21 @@ Page({
   openCompleteModal: function () {
     const target = this.data.detailTarget
     if (!target) return
-    this.setData({ showCompleteModal: true, completeTarget: target, syncResult: '' })
+    this.setData({ showCompleteModal: true, completeTarget: target, resultAttachments: target.resultAttachments || [], syncResult: target.syncResult || '' })
   },
 
-  closeCompleteModal: function () { this.setData({ showCompleteModal: false }) },
+  closeCompleteModal: function () { if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return } this.setData({ showCompleteModal: false }) },
 
   onSyncResultInput: function (e) { this.setData({ syncResult: e.detail.value }) },
 
   confirmComplete: function () {
-    if (!this.data.syncResult.trim()) { showToast('请填写排版说明或链接'); return }
+    if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
+    if (!this.data.syncResult.trim() && !this.data.resultAttachments.length) { showToast('请填写排版说明或链接'); return }
     showLoading('提交中...')
     callFunction('manageHandoffs', {
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
+      resultAttachments: this.data.resultAttachments,
       syncResult: this.data.syncResult.trim()
     }).then(() => {
       hideLoading()
@@ -226,6 +250,18 @@ Page({
       hideLoading()
       showToast(err.message || '提交失败')
     })
+  },
+
+
+  approveDirect: function (e) {
+    const target = this.data.detailTarget
+    if (!target || !target.canReview || this._approving) return
+    this._approving = true
+    showLoading('审核归档中...')
+    return callFunction('manageHandoffs', { action: 'reviewHandoff', handoffId: target._id, approved: true }).then(() => {
+      hideLoading(); showToast('已归档，工时已自动核算', 'success')
+      this.setData({ showDetailModal: false }); this.loadTasks()
+    }).catch(err => { hideLoading(); showToast(err.message || '审核失败') }).then(() => { this._approving = false })
   },
 
   openReviewModal: function () {

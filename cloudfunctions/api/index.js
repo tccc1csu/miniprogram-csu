@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 const crypto = require('crypto')
 const ledger = require('./workload-ledger')
 const schemaAudit = require('./schema-audit')
+const documents = require('./business-documents')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
@@ -85,7 +86,7 @@ const TEST_ACCOUNTS = [
 const HANDOFF_STATUS_LABELS = {
   submitted: '待办公部派发',
   assigned: '待干事同步',
-  completed: '待管理员审核',
+  completed: '待部长或管理员审核',
   archive_assigned: '待办公部归档',
   rejected: '审核退回',
   archived: '已归档'
@@ -97,29 +98,29 @@ const COLLECTION_STRUCTURE_KEY = '__collection_structure_20260909__'
 // 自动归档规则只定义工时；工资在导出时按部门时薪即时计算。
 const DEFAULT_ALLOWANCE_RULES = [
   { key: 'editorial_news_creator', name: '新闻稿创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 5 },
-  { key: 'editorial_news_reviewer', name: '新闻稿审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 2 },
+  { key: 'editorial_news_reviewer', name: '新闻稿审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '任务（合计平分）', hours: 2 },
   { key: 'editorial_book_creator', name: '书推创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 4 },
-  { key: 'editorial_book_reviewer', name: '书推审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 3 },
-  { key: 'editorial_interview_reviewer', name: '人物专访审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 2.5 },
+  { key: 'editorial_book_reviewer', name: '书推审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '任务（合计平分）', hours: 2 },
+  { key: 'editorial_interview_reviewer', name: '人物专访审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '任务（合计平分）', hours: 2 },
   { key: 'editorial_video_creator', name: '视频制作', department: '采编部', role: '创作者', workType: '视频制作', unit: '篇', hours: 4 },
   { key: 'editorial_record_creator', name: '纪录时刻创作', department: '采编部', role: '创作者', workType: '稿件写作', unit: '篇', hours: 4 },
-  { key: 'editorial_record_reviewer', name: '纪录时刻审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '篇', hours: 3 },
+  { key: 'editorial_record_reviewer', name: '纪录时刻审核', department: '采编部', role: '审核', workType: '稿件写作', unit: '任务（合计平分）', hours: 2 },
   { key: 'design_basic', name: '美编基础设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 3 },
   { key: 'design_complex', name: '美编复杂设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 6 },
   { key: 'design_large', name: '美编大型设计', department: '美编部', role: '创作者', workType: '美编设计', unit: '篇', hours: 9 },
-  { key: 'design_basic_reviewer', name: '美编基础审核', department: '美编部', role: '审核', workType: '美编设计', unit: '篇', hours: 1 },
-  { key: 'design_large_reviewer', name: '美编大型审核', department: '美编部', role: '审核', workType: '美编设计', unit: '篇', hours: 2 },
+  { key: 'design_basic_reviewer', name: '美编基础审核', department: '美编部', role: '审核', workType: '美编设计', unit: '任务（合计平分）', hours: 2 },
+  { key: 'design_large_reviewer', name: '美编大型审核', department: '美编部', role: '审核', workType: '美编设计', unit: '任务（合计平分）', hours: 2 },
   { key: 'office_activity_planner', name: '大型活动策划', department: '办公部', role: '策划负责人', workType: '日常办公', unit: '次', hours: 4 },
   { key: 'office_activity_organizer', name: '大型活动组织', department: '办公部', role: '组织者', workType: '日常办公', unit: '次', hours: 3.5 },
-  { key: 'office_regular_review', name: '常规审核或归档', department: '办公部', role: '审核人员', workType: '日常办公', unit: '人次', hours: 2 },
+  { key: 'office_regular_review', name: '常规审核或归档', department: '办公部', role: '审核人员', workType: '日常办公', unit: '任务（合计平分）', hours: 2 },
   { key: 'office_handoff_sync', name: '采编办公对接', department: '办公部', role: '对接干事', workType: '日常办公', unit: '学期', hours: 4 },
   { key: 'production_video_member', name: '摄制任务完成', department: '摄制部', role: '摄制干事', workType: '视频制作', unit: '次', hours: 4 },
-  { key: 'production_archive_review', name: '摄制任务归档', department: '办公部', role: '归档人员', workType: '日常办公', unit: '人次', hours: 2 },
-  { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '次', hours: 2 },
+  { key: 'production_archive_review', name: '摄制任务归档', department: '办公部', role: '归档人员', workType: '日常办公', unit: '任务（合计平分）', hours: 2 },
+  { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '任务（合计平分）', hours: 2 },
   { key: 'operations_basic_layout', name: '基础排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 4 },
   { key: 'operations_photo_layout', name: '影像志排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 2 },
   { key: 'operations_reprint_layout', name: '内容转载排版', department: '运营部', role: '排版干事', workType: '日常办公', unit: '篇', hours: 1 },
-  { key: 'operations_layout_review', name: '排版审核', department: '运营部', role: '审核', workType: '日常办公', unit: '篇', hours: 1.5 }
+  { key: 'operations_layout_review', name: '排版审核', department: '运营部', role: '审核', workType: '日常办公', unit: '任务（合计平分）', hours: 2 }
 ]
 
 const DEFAULT_WORKFLOW_RESPONSIBILITIES = [
@@ -1249,6 +1250,7 @@ async function handleAddRecord(event, user, openid) {
     if (!isValidWorkload(event.workload) || !trim(event.workContent)) return fail('工作内容不能为空，工时须为有效的非负数字')
 
     const updateData = buildRecordUpdateData(event, user, openid, record)
+    updateData.attachments = await documents.resolve(db, user, event.attachments, record.attachments || [])
 
     await db.runTransaction(async transaction => {
       const current = await ledger.optionalDoc(transaction, COLLECTIONS.RECORDS, event.recordId)
@@ -1307,6 +1309,7 @@ async function handleAddRecord(event, user, openid) {
     submittedByRole: isMemberReport ? 'member' : user.role
   })
 
+  data.attachments = await documents.resolve(db, user, event.attachments, exist && exist.attachments || [])
   const recordId = exist ? exist._id : ledger.key('wr_', [member._id, department, week])
   let updated = false
   await db.runTransaction(async transaction => {
@@ -1642,6 +1645,7 @@ async function handleManageAllowanceRules(event, user) {
     const rule = await getDoc(COLLECTIONS.ALLOWANCE_RULES, event.ruleId)
     if (!rule || rule.recordType !== 'rule') return fail('工时规则不存在')
     const department = trim(event.department) || rule.department
+    if (isSharedReviewRule(rule) && (Number(event.hours) !== 2 || trim(event.unit) !== '任务（合计平分）')) return fail('审核规则固定为每项任务共2小时，由审核者平分')
     const hoursText = trim(event.hours)
     const hours = Number(hoursText)
     if (!hoursText || !Number.isFinite(hours) || hours < 0) return fail('工时必须是大于等于0的数字')
@@ -1968,6 +1972,7 @@ async function handleManageSuggestions(event, user) {
       data: {
         title,
         description: trim(event.description),
+        attachments: await documents.resolve(db, user, event.attachments),
         submitterName: user.name,
         submitterOpenid: user.openid || '',
         status: 'pending',
@@ -1979,63 +1984,40 @@ async function handleManageSuggestions(event, user) {
     return success({ _id: res._id })
   }
 
-  if (action === 'approveSuggestion') {
+  if (['approveSuggestion', 'rejectSuggestion'].includes(action)) {
     requireAdmin(user)
-    const suggestion = await getDoc(COLLECTIONS.SUGGESTIONS, event.suggestionId)
-    if (!suggestion) {
-      return fail('活动建议不存在')
-    }
-
-    const options = Array.isArray(event.voteOptions)
-      ? event.voteOptions.map(item => trim(item)).filter(Boolean)
-      : String(event.voteOptions || '').split('\n').map(item => trim(item)).filter(Boolean)
-    if (options.length < 2) {
-      return fail('至少需要两个投票选项')
-    }
-
-    const now = new Date()
-    const voteRes = await db.collection(COLLECTIONS.VOTES).add({
-      data: {
-        suggestionId: event.suggestionId,
-        title: trim(event.voteTitle) || '活动时间投票',
-        options,
-        deadline: trim(event.deadline),
-        status: 'active',
-        createTime: now,
-        updateTime: now
-      }
+    const now = new Date(), approved = action === 'approveSuggestion'
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.SUGGESTIONS, event.suggestionId)
+      if (!current || current.status !== 'pending') throw new Error('建议不存在或已经审核，请刷新')
+      await transaction.collection(COLLECTIONS.SUGGESTIONS).doc(event.suggestionId).update({ data: {
+        status: approved ? 'approved' : 'rejected',
+        ...await buildApprovalFields(current, user, approved, now), updateTime: now
+      } })
     })
-
-    await suggestions.doc(event.suggestionId).update({
-      data: {
-        status: 'approved',
-        voteId: voteRes._id,
-        updateTime: now
-      }
-    })
-
-    await db.collection(COLLECTIONS.NOTIFICATIONS).add({
-      data: {
-        title: '新活动：' + suggestion.title,
-        content: (suggestion.description || '') + ' 管理员已审核通过，请参与时间投票。',
-        type: 'activity',
-        targetDept: '',
-        createTime: now
-      }
-    })
-
-    return success({ approved: 1, voteId: voteRes._id })
+    return success({ approved: action === 'approveSuggestion', rejected: action === 'rejectSuggestion' })
   }
 
-  if (action === 'rejectSuggestion') {
+  if (action === 'createSuggestionVote') {
     requireAdmin(user)
-    await suggestions.doc(event.suggestionId).update({
-      data: {
-        status: 'rejected',
-        updateTime: new Date()
-      }
+    const options = normalizeNameList(Array.isArray(event.voteOptions) ? event.voteOptions : String(event.voteOptions || '').split('\n'))
+    if (options.length < 2 || options.length > 20) return fail('请提供2至20个不同的投票选项')
+    const deadline = trim(event.deadline)
+    if (deadline && (isNaN(new Date(deadline).getTime()) || new Date(deadline).getTime() <= Date.now())) return fail('投票截止时间须晚于当前时间')
+    const now = new Date(), voteId = ledger.key('sv_', [event.suggestionId])
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.SUGGESTIONS, event.suggestionId)
+      if (!current || current.status !== 'approved' || current.voteId) throw new Error('建议未通过或投票已经创建')
+      await transaction.collection(COLLECTIONS.VOTES).doc(voteId).set({ data: {
+        suggestionId: event.suggestionId, title: trim(event.voteTitle) || current.title + ' - 时间投票',
+        options, deadline, status: 'active', createTime: now, updateTime: now
+      } })
+      await transaction.collection(COLLECTIONS.SUGGESTIONS).doc(event.suggestionId).update({ data: { voteId, updateTime: now } })
     })
-    return success({ rejected: 1 })
+    await db.collection(COLLECTIONS.NOTIFICATIONS).add({ data: {
+      title: '新的活动投票', content: '已审核活动发布了时间投票，请参与。', type: 'activity', targetDept: '', createTime: now
+    } })
+    return success({ voteId })
   }
 
   return fail('未知操作：' + action)
@@ -2232,20 +2214,24 @@ async function handleManageHandoffs(event, user, openid) {
     const targetSites = trim(event.targetSites) || '院网、升华网、学工网'
     const articleType = normalizeArticleType(event.articleType)
     const reviewerNames = normalizeNameList(event.reviewerNames)
+    const reviewAssignments = await resolveReviewAssignments(reviewerNames)
     const reminderLeadHours = normalizeReminderLeadHours(event.reminderLeadHours)
     if (!title || !articleNames) {
       return fail('请填写标题和稿件名称')
     }
 
+    const attachments = await documents.resolve(db, user, event.attachments)
     const now = new Date()
     const addRes = await handoffs.add({
       data: {
+        attachments,
         title,
         articleNames,
         targetSites,
         articleType,
         workflowType: 'editorialOfficeHandoff',
         reviewerNames,
+        reviewAssignments,
         note: trim(event.note),
         deadline: trim(event.deadline) || '',
         reminderLeadHours,
@@ -2295,12 +2281,14 @@ async function handleManageHandoffs(event, user, openid) {
     if (!taskName || !scheduledAt || !location || !submitterContact) return fail('请填写任务名称、预约时间、地点和联系方式')
     const scheduledDate = parseProductionDateTime(scheduledAt)
     if (isNaN(scheduledDate.getTime())) return fail('预约时间格式无效')
+    const attachments = await documents.resolve(db, user, event.attachments)
     const now = new Date()
     if (scheduledDate.getTime() <= now.getTime()) return fail('预约时间必须晚于当前时间')
     const settings = await getAllowanceSettings()
     const urgent = scheduledDate.getTime() - now.getTime() < settings.urgentThresholdDays * 24 * 60 * 60 * 1000
     const addRes = await handoffs.add({
       data: {
+        attachments,
         title: taskName,
         taskName,
         scheduledAt,
@@ -2401,8 +2389,9 @@ async function handleManageHandoffs(event, user, openid) {
       return fail('当前状态不能提交完成')
     }
 
+    const resultAttachments = await documents.resolve(db, user, event.resultAttachments, handoff.resultAttachments || [])
     const syncResult = trim(event.syncResult)
-    if (!syncResult) {
+    if (!syncResult && !resultAttachments.length) {
       return fail('请填写同步结果或反馈说明')
     }
     const now = new Date()
@@ -2424,9 +2413,8 @@ async function handleManageHandoffs(event, user, openid) {
           }
         })
       }
-      await handoffs.doc(event.handoffId).update({
-        data: {
-          syncResult,
+      await saveHandoffCompletion(event.handoffId, handoff, {
+          syncResult, resultAttachments,
           completedBy: user.name,
           archiveMemberName: selectedArchiveMember.name,
           archiveMemberId: selectedArchiveMember._id,
@@ -2435,8 +2423,7 @@ async function handleManageHandoffs(event, user, openid) {
           statusLabel: HANDOFF_STATUS_LABELS.archive_assigned,
           completedTime: now,
           updateTime: now
-        }
-      })
+      }, resultAttachments, user, now)
       await addWorkflowNotification({
         title: '摄制任务待归档',
         content: handoff.title + ' 已完成，请 ' + selectedArchiveMember.name + ' 负责归档。',
@@ -2446,16 +2433,14 @@ async function handleManageHandoffs(event, user, openid) {
       })
       return success({ updated: 1, archiveMemberName: selectedArchiveMember.name })
     }
-    await handoffs.doc(event.handoffId).update({
-      data: {
-        syncResult,
+    await saveHandoffCompletion(event.handoffId, handoff, {
+        syncResult, resultAttachments,
         completedBy: user.name,
         status: 'completed',
         statusLabel: HANDOFF_STATUS_LABELS.completed,
         completedTime: now,
         updateTime: now
-      }
-    })
+    }, resultAttachments, user, now)
     await addWorkflowNotification({
       title: '协同需求待审核',
       content: handoff.title + ' 已完成同步，等待部长或管理员审核。',
@@ -2482,7 +2467,8 @@ async function handleManageHandoffs(event, user, openid) {
       return fail('只有待审核需求可以审核')
     }
 
-    const approved = !!event.approved
+    if (typeof event.approved !== 'boolean') return fail('审核结论无效')
+    const approved = event.approved
     const now = new Date()
     // 退回修改时可指定接收人；未指定时退回办公部部长。
     const returnToName = approved ? '' : trim(event.returnToName)
@@ -2510,7 +2496,7 @@ async function handleManageHandoffs(event, user, openid) {
         data: {
           status: approved ? 'archived' : 'rejected',
           statusLabel: approved ? HANDOFF_STATUS_LABELS.archived : HANDOFF_STATUS_LABELS.rejected,
-          reviewComment: trim(event.reviewComment),
+          ...await buildApprovalFields(current, user, approved, now, event.reviewComment),
           reviewerName: user.name,
           reviewedTime: now,
           archivedTime: approved ? now : null,
@@ -2562,7 +2548,8 @@ async function handleManageHandoffs(event, user, openid) {
       const settledRecords = await settleProductionWorkload(event.handoffId, current, now, user, openid, archiveNote, transaction)
       await transaction.collection(COLLECTIONS.HANDOFFS).doc(event.handoffId).update({
         data: {
-          archiveNote,
+          archiveNote: archiveNote || '审核通过，已归档',
+          ...await buildApprovalFields(current, user, true, now, archiveNote),
           status: 'archived',
           statusLabel: HANDOFF_STATUS_LABELS.archived,
           reviewerName: user.name,
@@ -2593,12 +2580,24 @@ async function handleManageHandoffs(event, user, openid) {
     if (!title) return fail('请填写文章标题')
     if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(deadline)) return fail('请选择截止日期')
     if (!assigneeName) return fail('请选择排版干事')
-    const assignee = await findMember('', assigneeName, '运营部')
+    const assignee = await findMember(event.assigneeMemberId, assigneeName, '运营部')
     if (!assignee) return fail('请选择有效的运营部干事')
+    const firstReviewer = await findMember(event.firstReviewerMemberId, trim(event.firstReviewerName), '运营部')
+    const secondReviewer = await findMember(event.secondReviewerMemberId, trim(event.secondReviewerName), '运营部')
+    if (!firstReviewer || !secondReviewer) return fail('请指定有效的一审和二审人员')
+    const reviewAssignments = [firstReviewer, secondReviewer].map((member, index) => ({
+      stage: index + 1, member_id: member._id, name: member.name, department: member.department
+    }))
+    const attachments = await documents.resolve(db, user, event.attachments)
     const now = new Date()
     const addRes = await handoffs.add({
       data: {
+        attachments,
         title,
+        reviewAssignments,
+        firstReviewerMemberId: firstReviewer._id, firstReviewerName: firstReviewer.name,
+        secondReviewerMemberId: secondReviewer._id, secondReviewerName: secondReviewer.name,
+        reviewerNames: unique([firstReviewer.name, secondReviewer.name]),
         layoutType,
         deadline,
         note: trim(event.note),
@@ -2640,19 +2639,20 @@ async function handleManageHandoffs(event, user, openid) {
     if (!handoff || handoff.workflowType !== 'operationsLayout') return fail('排班任务不存在')
     if (user.department !== BROTHER_DEPARTMENT) return fail('仅兄弟部门成员可报名')
     if (!['submitted', 'assigned', 'rejected'].includes(handoff.status)) return fail('当前状态不能报名')
-    const joinList = Array.isArray(handoff.joinList) ? handoff.joinList : []
-    if (joinList.some(item => item.name === user.name)) return fail('你已报名该任务')
     const now = new Date()
     // 提前 2 天规则：距截止不足 2 天报名标记为加急，并提醒运营部干事
     const dueDate = getHandoffDueDate(handoff)
     const urgent = isNaN(dueDate.getTime()) || dueDate.getTime() - now.getTime() < 2 * 24 * 60 * 60 * 1000
-    joinList.push({ name: user.name, openid, joinTime: now, urgent })
-    await handoffs.doc(handoff._id).update({
-      data: {
-        joinList,
-        urgent: urgent || !!handoff.urgent,
-        updateTime: now
-      }
+    const attachments = await documents.resolve(db, user, event.attachments)
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.HANDOFFS, handoff._id)
+      if (!current || !['submitted', 'assigned', 'rejected'].includes(current.status)) throw new Error('任务状态已更新，无法报名')
+      const joinList = Array.isArray(current.joinList) ? current.joinList : []
+      if (joinList.some(item => item.userId ? item.userId === user._id : item.name === user.name)) throw new Error('你已报名该任务')
+      await transaction.collection(COLLECTIONS.HANDOFFS).doc(handoff._id).update({ data: {
+        joinList: joinList.concat([{ userId: user._id, name: user.name, openid, joinTime: now, urgent, attachments }]),
+        urgent: urgent || !!current.urgent, updateTime: now
+      } })
     })
     if (urgent && trim(handoff.assigneeName)) {
       await addWorkflowNotification({
@@ -2734,6 +2734,7 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
     const creatorQuantity = getRuleQuantity(creatorRule, quantity)
     const editorialRecord = await upsertWorkflowWorkloadRecord({
       memberId: handoff.submitterMemberId,
+      evidenceAttachments: handoff.resultAttachments || [],
       transaction, handoffId, sourceId: handoffId, typeId: 'editorial_news_creator', rule: creatorRule,
       sourceHandoffId: handoffId,
       memberName: trim(handoff.submitterName),
@@ -2765,6 +2766,7 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
       const syncQuantity = getRuleQuantity(syncRule, quantity)
       const officeRecord = await upsertWorkflowWorkloadRecord({
         memberId: handoff.assigneeMemberId,
+        evidenceAttachments: handoff.resultAttachments || [],
         transaction, handoffId, sourceId: syncSourceId, typeId: 'office_handoff_sync', rule: syncRule,
         sourceHandoffId: syncSourceId,
         memberName: trim(handoff.assigneeName),
@@ -2784,27 +2786,11 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
     }
   }
 
-  const reviewerNames = normalizeNameList(handoff.reviewerNames)
-  const reviewerRule = findAllowanceRule(rules, 'office_regular_review', '办公部', '日常办公')
-  for (let i = 0; i < reviewerNames.length; i++) {
-    const member = await findMemberByName(reviewerNames[i])
-    const department = member && member.department ? member.department : '采编部'
-    const reviewRecord = await upsertWorkflowWorkloadRecord({
-      transaction, handoffId, sourceId: handoffId, typeId: 'office_regular_review', rule: reviewerRule,
-      sourceHandoffId: handoffId + ':review:' + i,
-      memberName: reviewerNames[i],
-      memberOpenid: member ? (member.openid || '') : '',
-      department,
-      workType: reviewerRule ? reviewerRule.workType : '日常办公',
-      workload: reviewerRule ? reviewerRule.hours : 2,
-      content: '稿件审核：' + articleNames,
-      remark: '采编办公协同归档自动核算，可由部长调整',
-      now,
-      reviewer,
-      reviewerOpenid
-    })
-    settled.push(reviewRecord)
-  }
+  const assigned = Array.isArray(handoff.reviewAssignments) && handoff.reviewAssignments.length
+    ? handoff.reviewAssignments : await resolveReviewAssignments(normalizeNameList(handoff.reviewerNames))
+  const reviewMembers = await getReviewMembers(assigned, reviewer)
+  settled.push(...await settleSharedReview(handoffId, handoff, now, reviewer, reviewerOpenid, transaction,
+    reviewMembers, 'office_regular_review', '稿件审核：' + articleNames, rules))
 
   return settled
 }
@@ -2813,11 +2799,11 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
   const rules = await getAllowanceRules()
   const multiplier = toNumber(handoff.urgentMultiplier) || 1
   const productionRule = findAllowanceRule(rules, 'production_video_member', '摄制部', '视频制作')
-  const archiveRule = findAllowanceRule(rules, 'production_archive_review', '办公部', '日常办公')
   const settled = []
   if (trim(handoff.assigneeName)) {
     settled.push(await upsertWorkflowWorkloadRecord({
       memberId: handoff.assigneeMemberId,
+      evidenceAttachments: handoff.resultAttachments || [],
       transaction, handoffId, sourceId: handoffId, typeId: 'production_video_member', rule: productionRule,
       baseHours: productionRule ? productionRule.hours : 4, factor: multiplier,
       sourceHandoffId: handoffId,
@@ -2833,24 +2819,12 @@ async function settleProductionWorkload(handoffId, handoff, now, reviewer, revie
       reviewerOpenid
     }))
   }
-  if (trim(handoff.archiveMemberName)) {
-    settled.push(await upsertWorkflowWorkloadRecord({
-      memberId: handoff.archiveMemberId,
-      transaction, handoffId, sourceId: handoffId, typeId: 'production_archive_review', rule: archiveRule,
-      baseHours: archiveRule ? archiveRule.hours : 2, factor: multiplier,
-      sourceHandoffId: handoffId + ':archive',
-      memberName: handoff.archiveMemberName,
-      memberOpenid: handoff.archiveMemberOpenid,
-      department: '办公部',
-      workType: archiveRule ? archiveRule.workType : '日常办公',
-      workload: (archiveRule ? archiveRule.hours : 2) * multiplier,
-      content: '摄制任务归档：' + (handoff.taskName || handoff.title),
-      remark: (handoff.isUrgent ? '加急任务，工时按 ' + multiplier + ' 倍计算；' : '') + '预约任务归档自动核算，可由部长调整',
-      now,
-      reviewer,
-      reviewerOpenid
-    }))
-  }
+  const archiveAssignments = [{ member_id: handoff.archiveMemberId ||
+    (await findMember('', handoff.archiveMemberName, '办公部') || {})._id, department: '办公部' }]
+  const reviewMembers = await getReviewMembers(archiveAssignments, reviewer)
+  settled.push(...await settleSharedReview(handoffId, handoff, now, reviewer, reviewerOpenid, transaction,
+    reviewMembers, 'production_archive_review', '摄制任务归档：' + (handoff.taskName || handoff.title), rules))
+
   return settled
 }
 
@@ -2873,12 +2847,12 @@ async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer,
   }
   const layoutTypeId = layoutRuleKeys[handoff.layoutType] || 'operations_basic_layout'
   const layoutRule = findAllowanceRule(rules, layoutTypeId, '运营部', '日常办公')
-  const reviewRule = findAllowanceRule(rules, 'operations_layout_review', '运营部', '日常办公')
   const layoutLabel = getLayoutTypeLabel(handoff.layoutType)
   const settled = []
   if (trim(handoff.assigneeName)) {
     settled.push(await upsertWorkflowWorkloadRecord({
       memberId: handoff.assigneeMemberId,
+      evidenceAttachments: handoff.resultAttachments || [],
       handoffId, sourceId: handoffId, typeId: layoutTypeId, rule: layoutRule,
       sourceHandoffId: handoffId,
       transaction,
@@ -2894,24 +2868,10 @@ async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer,
       reviewerOpenid
     }))
   }
-  if (reviewer && trim(reviewer.name)) {
-    settled.push(await upsertWorkflowWorkloadRecord({
-      memberId: await getMemberIdForUser(reviewer),
-      handoffId, sourceId: handoffId, typeId: 'operations_layout_review', rule: reviewRule,
-      sourceHandoffId: handoffId + ':review',
-      transaction,
-      memberName: reviewer.name,
-      memberOpenid: reviewerOpenid,
-      department: reviewer.department || '运营部',
-      workType: reviewRule ? reviewRule.workType : '日常办公',
-      workload: reviewRule ? reviewRule.hours : 1.5,
-      content: '排版审核：' + handoff.title,
-      remark: '公众号排版审核自动核算，可由部长调整',
-      now,
-      reviewer,
-      reviewerOpenid
-    }))
-  }
+  const reviewMembers = await getReviewMembers(handoff.reviewAssignments || [], reviewer)
+  settled.push(...await settleSharedReview(handoffId, handoff, now, reviewer, reviewerOpenid, transaction,
+    reviewMembers, 'operations_layout_review', '排版审核：' + handoff.title, rules))
+
   return settled
 }
 
@@ -2926,7 +2886,7 @@ async function upsertWorkflowWorkloadRecord(options) {
   const week = getCurrentWeekLabel(options.now)
   const exist = await findWeeklyRecord(member, memberName, department, week)
   // 旧历史没有规则快照，不能重建后冒充新的有效明细。
-  if (await hasWorkflowSource(memberName, department, options.sourceHandoffId)) {
+  if (await hasWorkflowSource(memberName, department, [options.sourceHandoffId].concat(options.legacySourceAliases || []), member._id)) {
     return { recordId: exist ? exist._id : '', memberName, department, workType, workload: 0, skipped: true, legacy: true }
   }
   const departments = await getAll(COLLECTIONS.DEPARTMENTS, { name: department })
@@ -2937,12 +2897,14 @@ async function upsertWorkflowWorkloadRecord(options) {
     existingRecordId: exist && exist._id,
     sourceId: options.sourceId, typeId: options.typeId,
     handoffId: options.handoffId, legacySourceId: options.sourceHandoffId,
+    legacySourceAliases: options.legacySourceAliases,
     rule: options.rule,
     baseHours: options.baseHours === undefined ? options.workload : options.baseHours,
     factor: options.factor || 1,
     hourlyRate: getHourlyRate(department, settings),
     content: trim(options.content), remark: trim(options.remark), workType,
     memberOpenid: options.memberOpenid, now: options.now,
+    reviewPool: options.reviewPool, evidenceAttachments: options.evidenceAttachments,
     reviewerId: options.reviewer && options.reviewer._id,
     reviewerName: options.reviewer && options.reviewer.name,
     reviewerOpenid: options.reviewerOpenid
@@ -3036,7 +2998,7 @@ async function getVisibleHandoffs(user, openid, scope, departmentFilter, workflo
       const needsArchive = item.status === 'archive_assigned' && item.workflowType === 'productionReservation' &&
         (user.role === 'admin' || (user.department === '办公部' &&
           (item.archiveMemberName === user.name || item.archiveMemberOpenid === openid)))
-      const needsReview = item.status === 'completed' && user.role === 'admin'
+      const needsReview = item.status === 'completed' && canReviewHandoff(user, item)
       return needsAssignment || needsCompletion || needsArchive || needsReview ||
         item.submitterOpenid === openid ||
         item.assigneeOpenid === openid ||
@@ -3416,12 +3378,11 @@ function formatChinaTime(date) {
 
 async function getAllowanceRules() {
   const rows = await getAll(COLLECTIONS.ALLOWANCE_RULES, {})
-  return rows.filter(item => item.recordType === 'rule')
+  return rows.filter(item => item.recordType === 'rule').map(effectiveAllowanceRule)
 }
 
 function findAllowanceRule(rules, key, department, workType) {
-  return rules.find(item => item.key === key) ||
-    rules.find(item => item.department === department && item.workType === workType)
+  return rules.find(item => item.key === key) || DEFAULT_ALLOWANCE_RULES.find(item => item.key === key)
 }
 
 function getRuleQuantity(rule, fallbackQuantity) {
@@ -3449,9 +3410,11 @@ function parseProductionDateTime(value) {
   return new Date(Date.UTC(year, month - 1, day, hour - 8, minute, 0, 0))
 }
 
-async function hasWorkflowSource(memberName, department, sourceId) {
-  const rows = await getAll(COLLECTIONS.RECORDS, { memberName, department })
-  return rows.some(item => normalizeIdList(item.sourceHandoffIds).includes(sourceId))
+async function hasWorkflowSource(memberName, department, sourceId, memberId) {
+  const rows = await getAll(COLLECTIONS.RECORDS, { department })
+  const sources = Array.isArray(sourceId) ? sourceId : [sourceId]
+  return rows.some(item => (memberId && item.memberId ? item.memberId === memberId : item.memberName === memberName) &&
+    normalizeIdList(item.sourceHandoffIds).some(id => sources.includes(id)))
 }
 
 function normalizeNameList(value) {
@@ -3758,6 +3721,7 @@ function formatRecord(record, settings) {
   const hourlyRate = getHourlyRate(record.department, settings)
   return {
     _id: record._id,
+    attachments: record.attachments || [],
     memberId: record.memberId || '',
     memberName: record.memberName || '',
     memberOpenid: record.memberOpenid || '',
@@ -3825,6 +3789,8 @@ function formatSuggestion(suggestion) {
     _id: suggestion._id,
     title: suggestion.title || '',
     description: suggestion.description || '',
+    attachments: suggestion.attachments || [],
+    approval_records: suggestion.approval_records || [],
     submitterName: suggestion.submitterName || '',
     submitterOpenid: suggestion.submitterOpenid || '',
     status: suggestion.status || 'pending',
@@ -3848,6 +3814,7 @@ function formatVote(vote) {
 }
 
 function formatAllowanceRule(item) {
+  item = effectiveAllowanceRule(item)
   return {
     _id: item._id,
     key: item.key || '',
@@ -3885,12 +3852,19 @@ function formatHandoff(handoff, user, openid) {
     ? handoff.joinList.map(item => ({
       name: item.name || '',
       urgent: !!item.urgent,
-      joinTime: formatDateTime(item.joinTime)
+      joinTime: formatDateTime(item.joinTime), attachments: item.attachments || []
     }))
     : []
   return {
     _id: handoff._id,
     title: handoff.title || '',
+    attachments: handoff.attachments || [],
+    resultAttachments: handoff.resultAttachments || [],
+    reviewAssignments: handoff.reviewAssignments || [],
+    firstReviewerName: handoff.firstReviewerName || '',
+    secondReviewerName: handoff.secondReviewerName || '',
+    approval_records: handoff.approval_records || [],
+    outcome_submissions: handoff.outcome_submissions || [],
     layoutType: isOperationsLayout ? (handoff.layoutType || 'basic') : '',
     layoutTypeLabel: isOperationsLayout ? getLayoutTypeLabel(handoff.layoutType) : '',
     articleNames: handoff.articleNames || '',
@@ -4245,6 +4219,8 @@ async function handleManageProjectTasks(event, user, openid) {
       data: {
         name,
         description,
+        attachments: await documents.resolve(db, user, event.attachments),
+        phaseResults: [],
         deadline,
         phases,
         currentPhaseIndex: 0,
@@ -4262,66 +4238,41 @@ async function handleManageProjectTasks(event, user, openid) {
 
   // 标记部门任务完成
   if (action === 'completeDeptTask') {
-    const projectId = event.projectId
-    const department = trim(event.department || '')
+    const projectId = event.projectId, department = trim(event.department)
     if (!projectId || !department) return fail('参数错误')
-
-    const doc = await getDoc(COLLECTIONS.PROJECT_TASKS, projectId)
-    if (!doc) return fail('项目不存在')
-    if (doc.status !== 'active') return fail('项目已结束')
-
-    // 校验：必须是该部门成员或部长
     if (!isAdmin && userDept !== department) return fail('无权限操作其他部门任务')
-
-    const deptTasks = doc.deptTasks || []
-    const task = deptTasks.find(dt => dt.department === department)
-    if (!task) return fail('该部门未参与此项目')
-    if (task.phaseIndex !== doc.currentPhaseIndex) return fail('当前阶段不匹配')
-    if (task.status === 'completed') return fail('任务已完成')
-
-    // 标记完成
-    task.status = 'completed'
-    task.completeTime = formatDateTime(new Date())
-
-    // 检查当前阶段的所有部门任务是否都完成了
-    const currentPhaseTasks = deptTasks.filter(dt => dt.phaseIndex === doc.currentPhaseIndex)
-    const allCompleted = currentPhaseTasks.length > 0 && currentPhaseTasks.every(dt => dt.status === 'completed')
-
-    let advanced = false
-    let completed = false
-
-    if (allCompleted) {
-      const nextPhaseIndex = doc.currentPhaseIndex + 1
-      const totalPhases = (doc.phases || []).length
-      if (nextPhaseIndex >= totalPhases) {
-        // 所有阶段完成，项目结束
-        doc.status = 'completed'
-        doc.completeTime = formatDateTime(new Date())
-        completed = true
-      } else {
-        // 推进到下一阶段
-        doc.currentPhaseIndex = nextPhaseIndex
-        // 所有部门的任务状态重置为进行中（下一阶段）
-        deptTasks.forEach(dt => {
-          dt.phaseIndex = nextPhaseIndex
-          dt.status = 'in_progress'
-          dt.completeTime = ''
-        })
-        advanced = true
+    const original = await getDoc(COLLECTIONS.PROJECT_TASKS, projectId)
+    if (!original) return fail('项目不存在')
+    const phaseIndex = event.phaseIndex === undefined ? original.currentPhaseIndex : Number(event.phaseIndex)
+    const resultAttachments = await documents.resolve(db, user, event.resultAttachments)
+    let outcome
+    await db.runTransaction(async transaction => {
+      const current = await ledger.optionalDoc(transaction, COLLECTIONS.PROJECT_TASKS, projectId)
+      if (!current || current.status !== 'active' || current.currentPhaseIndex !== phaseIndex) throw new Error('项目阶段已更新，请刷新后重试')
+      const deptTasks = (current.deptTasks || []).map(item => ({ ...item }))
+      const task = deptTasks.find(item => item.department === department)
+      if (!task || task.phaseIndex !== phaseIndex || task.status === 'completed') throw new Error('部门任务不存在或已经完成')
+      const now = new Date(), phaseResults = (current.phaseResults || []).concat([{
+        department, phase_index: phaseIndex, attachments: resultAttachments,
+        completed_by: user._id, completed_at: now, result: trim(event.result)
+      }])
+      task.status = 'completed'; task.completeTime = formatDateTime(now)
+      const allCompleted = deptTasks.every(item => item.phaseIndex === phaseIndex && item.status === 'completed')
+      let nextPhase = phaseIndex, completed = false, advanced = false
+      if (allCompleted) {
+        if (phaseIndex + 1 >= current.phases.length) completed = true
+        else {
+          nextPhase++; advanced = true
+          deptTasks.forEach(item => { item.phaseIndex = nextPhase; item.status = 'in_progress'; item.completeTime = '' })
+        }
       }
-    }
-
-    await collection.doc(projectId).update({
-      data: {
-        deptTasks,
-        currentPhaseIndex: doc.currentPhaseIndex,
-        status: doc.status,
-        completeTime: doc.completeTime || '',
-        updateTime: formatDateTime(new Date())
-      }
+      await transaction.collection(COLLECTIONS.PROJECT_TASKS).doc(projectId).update({ data: {
+        deptTasks, phaseResults, currentPhaseIndex: nextPhase, status: completed ? 'completed' : 'active',
+        completeTime: completed ? formatDateTime(now) : '', updateTime: formatDateTime(now)
+      } })
+      outcome = { advanced, completed }
     })
-
-    return success({ advanced, completed })
+    return success(outcome)
   }
 
   // 管理员强制推进阶段
@@ -4391,12 +4342,15 @@ async function handleManageFiles(event, user, openid) {
   const isAdmin = user.role === 'admin'
   const userDept = user.department || ''
 
+  if (action === 'prepareBusinessDocument') return success(await documents.prepare(db, user, openid, event))
+  if (action === 'registerBusinessDocument') return success(await documents.register(db, cloud, user, event))
+
   // 获取文件列表
   if (action === 'getFiles') {
     const allFiles = await getAll(COLLECTIONS.FILES, {})
     // 按时间倒序
     allFiles.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
-    return success(allFiles)
+    return success(allFiles.filter(file => !file.businessDocument))
   }
 
   // 获取上传路径（预生成 cloudPath）
@@ -4471,6 +4425,7 @@ async function handleManageFiles(event, user, openid) {
     const doc = await getDoc(COLLECTIONS.FILES, fileId)
     if (!doc) return fail('文件不存在')
 
+    if (doc.businessDocument) return fail('业务附件不能从公共文档库删除')
     // 权限校验：管理员或上传者本人
     if (!isAdmin && doc.uploaderOpenid !== openid) {
       return fail('无权限删除')
@@ -4493,4 +4448,86 @@ async function handleManageFiles(event, user, openid) {
   }
 
   return fail('未知操作：' + action)
+}
+
+function isSharedReviewRule(rule) {
+  return /(?:_reviewer|_review)$/.test(rule.key || '')
+}
+function effectiveAllowanceRule(rule) {
+  return isSharedReviewRule(rule) ? { ...rule, hours: 2, unit: '任务（合计平分）' } : rule
+}
+async function buildApprovalFields(current, user, approved, now, comment) {
+  const opinion = trim(comment) || (approved ? '审核通过' : '退回修改')
+  const record = { reviewer_id: await getMemberIdForUser(user) || null, reviewer_user_id: user._id,
+    decision: approved ? 'PASS' : 'RETURN', reviewed_at: now, opinion,
+    outcome_id: current.outcome_submissions && current.outcome_submissions.length
+      ? current.outcome_submissions[current.outcome_submissions.length - 1].outcome_id : null }
+  return { reviewComment: opinion, reviewerUserId: user._id, reviewDecision: record.decision,
+    approval_records: (current.approval_records || []).concat([record]) }
+}
+async function resolveReviewAssignments(names) {
+  const result = []
+  for (const name of names) {
+    const member = await findMemberByName(name)
+    if (!member) throw new Error('审核贡献成员缺失，请从成员资料中选择审核人员')
+    result.push({ member_id: member._id, name: member.name, department: member.department })
+  }
+  return result
+}
+async function getReviewMembers(assignments, reviewer) {
+  const members = []
+  if (assignments.length) {
+    for (const assignment of assignments) {
+      const member = await getDoc(COLLECTIONS.MEMBERS, assignment.member_id)
+      if (!member || member.department !== assignment.department) throw new Error('审核贡献成员缺失或部门不匹配')
+      if (!members.some(item => item._id === member._id)) members.push(member)
+    }
+  } else {
+    const id = await getMemberIdForUser(reviewer)
+    const member = id && await getDoc(COLLECTIONS.MEMBERS, id)
+    // 旧任务由不计津贴的维护管理员归档时，不凭空创造成员或工时。
+    if (!member && reviewer.role === 'admin') return []
+    if (!member) throw new Error('审核贡献成员缺失，请先关联成员资料或在任务中指定审核人员')
+    members.push(member)
+  }
+  return members
+}
+async function settleSharedReview(handoffId, handoff, now, reviewer, reviewerOpenid, transaction, members, typeId, content, rules) {
+  if (!members.length) return [{ typeId, pending: true, workload: 0, reason: '旧任务未指定审核贡献成员；归档操作人没有计量成员资料' }]
+  const base = rules.find(rule => rule.key === typeId) || DEFAULT_ALLOWANCE_RULES.find(rule => rule.key === typeId) || {}
+  const rule = { ...base, key: typeId, name: (base.name || '审核') + '（任务共2小时平分）', hours: 2, unit: '任务（合计平分）' }
+  const result = [], ordered = members.slice().sort((a, b) => a._id.localeCompare(b._id))
+  const units = Math.floor(20000 / ordered.length), remainder = 20000 % ordered.length
+  for (let index = 0; index < ordered.length; index++) {
+    const member = ordered[index], hours = (units + (index < remainder ? 1 : 0)) / 10000
+    // 旧审核来源使用岗位序号或单个归档后缀；只识别已计入的历史，不追补新快照。
+    const legacySourceAliases = typeId === 'operations_layout_review' ? [handoffId + ':review']
+      : typeId === 'production_archive_review' ? [handoffId + ':archive']
+      : members.map((_, position) => handoffId + ':review:' + position)
+    result.push(await upsertWorkflowWorkloadRecord({
+      memberId: member._id, memberName: member.name, memberOpenid: member.openid || '', department: member.department,
+      transaction, handoffId, sourceId: handoffId, typeId, rule, baseHours: hours, factor: 1, workload: hours,
+      sourceHandoffId: handoffId + ':review:' + member._id, workType: base.workType || '日常办公', content,
+      legacySourceAliases,
+      remark: '审核任务合计2小时，' + ordered.length + '位审核者平分；归档由实际操作人确认',
+      now, reviewer, reviewerOpenid, reviewPool: { total_hours_u: 20000, reviewer_count: ordered.length },
+      evidenceAttachments: handoff.resultAttachments || []
+    }))
+  }
+  return result
+}
+
+async function saveHandoffCompletion(id, observed, data, attachments, user, now) {
+  await db.runTransaction(async transaction => {
+    const current = await ledger.optionalDoc(transaction, COLLECTIONS.HANDOFFS, id)
+    if (!current || !['assigned', 'rejected'].includes(current.status) || getTime(current.updateTime) !== getTime(observed.updateTime)) throw new Error('任务状态已更新，请刷新后重新提交')
+    const submissions = (current.outcome_submissions || []).concat([{
+      outcome_id: ledger.key('os_', [id, (current.outcome_submissions || []).length + 1]),
+      submitted_by: await getMemberIdForUser(user) || null, submitted_by_user_id: user._id,
+      submitted_at: now, content: data.syncResult, attachments
+    }])
+    await transaction.collection(COLLECTIONS.HANDOFFS).doc(id).update({ data: {
+      ...data, outcome_submissions: submissions
+    } })
+  })
 }

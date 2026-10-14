@@ -1,5 +1,8 @@
 {
   "navigationBarTitleText": "活动建议",
   "enablePullDownRefresh": true,
-  "backgroundColor": "#F5F6FA"
+  "backgroundColor": "#F5F6FA",
+  "usingComponents": {
+    "document-attachments": "/components/documentAttachments/index"
+  }
 }

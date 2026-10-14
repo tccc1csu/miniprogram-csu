@@ -94,6 +94,7 @@
         <text class="form-label">备注</text>
         <input class="form-input" placeholder="可选" value="{{createForm.note}}" bindinput="onNoteInput" />
       </view>
+      <document-attachments value="{{createForm.attachments}}" label="任务材料" data-path="createForm.attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
       <button class="btn-primary" bindtap="submitCreate">提交给办公部</button>
     </view>
 
@@ -146,10 +147,12 @@
         <view class="section-label">退回给</view>
         <view class="section-text">{{item.returnToName}} · 退回人：{{item.returnedBy}}</view>
       </view>
+      <document-attachments value="{{item.attachments}}" label="任务材料" readonly="{{true}}" /><document-attachments value="{{item.resultAttachments}}" label="完成成果" readonly="{{true}}" />
       <view class="handoff-actions" wx:if="{{item.canAssign || item.canComplete || item.canReview}}">
         <button class="mini-btn" wx:if="{{item.canAssign}}" data-item="{{item}}" bindtap="openAssignModal">派发</button>
         <button class="mini-btn" wx:if="{{item.canComplete}}" data-item="{{item}}" bindtap="openCompleteModal">提交同步结果</button>
-        <button class="mini-btn primary" wx:if="{{item.canReview}}" data-item="{{item}}" bindtap="openReviewModal">审核</button>
+        <button class="mini-btn primary" wx:if="{{item.canReview}}" data-item="{{item}}" bindtap="approveDirect">审核</button>
+        <button class="mini-btn" wx:if="{{item.canReview}}" data-item="{{item}}" bindtap="openReviewModal">退回修改</button>
       </view>
     </view>
   </view>
@@ -172,7 +175,7 @@
 
   <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal">
     <view class="modal-content" catchtap="stopTap">
-      <view class="modal-title">提交同步结果</view>
+      <view class="modal-title">提交同步结果</view><document-attachments value="{{resultAttachments}}" label="完成成果" data-path="resultAttachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
       <textarea class="form-textarea" placeholder="填写挂网链接、投稿反馈或处理说明" value="{{syncResult}}" bindinput="onSyncResultInput" />
       <view class="modal-actions">
         <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
@@ -183,7 +186,7 @@
 
   <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
     <view class="modal-content" catchtap="stopTap">
-<view class="modal-title">审核（部长 / 管理员）</view>
+<view class="modal-title">退回修改（部长 / 管理员）</view>
       <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
       <view class="form-group" wx:if="{{returnTargets.length > 0}}">
         <text class="form-label">退回修改时指定接收人</text>
@@ -196,7 +199,6 @@
       </view>
       <view class="modal-actions">
         <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
-        <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>
       </view>
     </view>
   </view>

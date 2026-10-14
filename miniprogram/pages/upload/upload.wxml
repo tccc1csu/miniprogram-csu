@@ -40,7 +40,7 @@
       <textarea class="form-textarea" placeholder="填写本周完成的工作内容" value="{{selfForm.workContent}}" bindinput="onSelfContentInput" maxlength="300" />
     </view>
     <view class="form-group">
-      <text class="form-label">工时</text>
+      <document-attachments value="{{selfForm.attachments}}" label="周报依据" data-path="selfForm.attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" /><text class="form-label">工时</text>
       <input class="form-input" type="digit" placeholder="例如 2.5" value="{{selfForm.workload}}" bindinput="onSelfWorkloadInput" />
     </view>
     <view class="form-group">
@@ -74,7 +74,7 @@
           </view>
         </picker>
       </view>
-      <view class="td td-content">
+      <view class="td td-content"><document-attachments value="{{item.attachments}}" label="周报依据" data-path="memberForms[{{index}}].attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
         <textarea class="inline-textarea" placeholder="填写工作内容..." value="{{item.workContent}}" bindinput="onContentInput" data-index="{{index}}" maxlength="200" auto-height />
       </view>
       <view class="td td-workload">
