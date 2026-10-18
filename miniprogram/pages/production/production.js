@@ -52,6 +52,9 @@ Page({
     showCompleteModal: false,
     completeTarget: null,
     syncResult: '',
+    createAttachments: [],
+    completeAttachments: [],
+    completeAttachments: [],
     archiveMemberIndex: 0,
     showArchiveModal: false,
     archiveTarget: null,
@@ -234,10 +237,12 @@ Page({
       location: form.location.trim(),
       submitterContact: form.submitterContact.trim(),
       reminderLeadHours: form.reminderLeadHours,
-      note: form.note.trim()
+      note: form.note.trim(),
+      attachments: this.data.createAttachments
     }).then(result => {
       hideLoading()
       showToast(result && result.isUrgent ? '已提交，系统标记为加急' : '已提交给摄制部', 'success')
+      this.setData({ createAttachments: [] })
       if (result && result.defaults) this.setData({ createForm: result.defaults })
       this.loadHandoffs()
     }).catch(err => {
@@ -316,13 +321,14 @@ Page({
       showCompleteModal: true,
       completeTarget: item,
       syncResult: item.syncResult || '',
-      archiveMemberIndex: index
+      archiveMemberIndex: index,
+      completeAttachments: []
     })
   },
 
   onSyncResultInput: function (e) { this.setData({ syncResult: e.detail.value }) },
   onArchiveMemberChange: function (e) { this.setData({ archiveMemberIndex: Number(e.detail.value) }) },
-  closeCompleteModal: function () { this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' }) },
+  closeCompleteModal: function () { this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '', completeAttachments: [] }) },
 
   confirmComplete: function () {
     const member = this.data.officeMembers[this.data.archiveMemberIndex]
@@ -339,7 +345,8 @@ Page({
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
       syncResult: this.data.syncResult.trim(),
-      archiveMemberName: member.name
+      archiveMemberName: member.name,
+      attachments: this.data.completeAttachments
     }).then(() => {
       hideLoading()
       showToast('已发送给办公部归档', 'success')
@@ -352,8 +359,21 @@ Page({
     })
   },
 
+  // 一键归档：确认后直接归档并自动核算工时，无需填写说明
   openArchiveModal: function (e) {
-    this.setData({ showArchiveModal: true, archiveTarget: e.currentTarget.dataset.item, archiveNote: '' })
+    const item = e.currentTarget.dataset.item
+    const self = this
+    wx.showModal({
+      title: '归档入账',
+      content: '确认归档「' + (item.taskName || '') + '」并自动核算工时？',
+      confirmText: '确认归档',
+      success(res) {
+        if (res.confirm) {
+          self.setData({ archiveTarget: item, archiveNote: '' })
+          self.confirmArchive()
+        }
+      }
+    })
   },
   onArchiveNoteInput: function (e) { this.setData({ archiveNote: e.detail.value }) },
   closeArchiveModal: function () { this.setData({ showArchiveModal: false, archiveTarget: null, archiveNote: '' }) },
@@ -374,6 +394,122 @@ Page({
     }).catch(err => {
       hideLoading()
       showToast(err.message || '归档失败')
+    })
+  },
+
+
+  // 附件：从聊天选择文件上传到云存储，可点击打开
+  chooseCreateAttachment: function () { this.chooseAttachments('createAttachments') },
+  chooseCompleteAttachment: function () { this.chooseAttachments('completeAttachments') },
+
+  chooseAttachments: function (key) {
+    const current = this.data[key] || []
+    const remain = 9 - current.length
+    if (remain <= 0) { showToast('最多上传 9 个附件'); return }
+    const self = this
+    wx.chooseMessageFile({
+      count: remain,
+      type: 'file',
+      success(res) {
+        const files = res.tempFiles || []
+        if (!files.length) return
+        showLoading('上传附件中...')
+        const uploads = files.map(file => wx.cloud.uploadFile({
+          cloudPath: 'handoff-attachments/' + Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + file.name,
+          filePath: file.path
+        }).then(r => ({ fileID: r.fileID, name: file.name, size: file.size })))
+        Promise.all(uploads).then(list => {
+          hideLoading()
+          const data = {}
+          data[key] = current.concat(list)
+          self.setData(data)
+        }).catch(() => {
+          hideLoading()
+          showToast('附件上传失败')
+        })
+      }
+    })
+  },
+
+  removeAttachment: function (e) {
+    const key = e.currentTarget.dataset.key
+    const index = Number(e.currentTarget.dataset.index)
+    if (!key) return
+    const list = (this.data[key] || []).slice()
+    list.splice(index, 1)
+    const data = {}
+    data[key] = list
+    this.setData(data)
+  },
+
+  openAttachment: function (e) {
+    const file = e.currentTarget.dataset.file
+    if (!file || !file.fileID) return
+    showLoading('打开中...')
+    wx.cloud.downloadFile({ fileID: file.fileID }).then(res => {
+      hideLoading()
+      wx.openDocument({ filePath: res.tempFilePath, showMenu: true })
+    }).catch(() => {
+      hideLoading()
+      showToast('文件打开失败')
+    })
+  },
+
+
+  // 附件：从聊天选择文件上传到云存储，可点击打开
+  chooseCreateAttachment: function () { this.chooseAttachments('createAttachments') },
+  chooseCompleteAttachment: function () { this.chooseAttachments('completeAttachments') },
+
+  chooseAttachments: function (key) {
+    const current = this.data[key] || []
+    const remain = 9 - current.length
+    if (remain <= 0) { showToast('最多上传 9 个附件'); return }
+    const self = this
+    wx.chooseMessageFile({
+      count: remain,
+      type: 'file',
+      success(res) {
+        const files = res.tempFiles || []
+        if (!files.length) return
+        showLoading('上传附件中...')
+        const uploads = files.map(file => wx.cloud.uploadFile({
+          cloudPath: 'handoff-attachments/' + Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + file.name,
+          filePath: file.path
+        }).then(r => ({ fileID: r.fileID, name: file.name, size: file.size })))
+        Promise.all(uploads).then(list => {
+          hideLoading()
+          const data = {}
+          data[key] = current.concat(list)
+          self.setData(data)
+        }).catch(() => {
+          hideLoading()
+          showToast('附件上传失败')
+        })
+      }
+    })
+  },
+
+  removeAttachment: function (e) {
+    const key = e.currentTarget.dataset.key
+    const index = Number(e.currentTarget.dataset.index)
+    if (!key) return
+    const list = (this.data[key] || []).slice()
+    list.splice(index, 1)
+    const data = {}
+    data[key] = list
+    this.setData(data)
+  },
+
+  openAttachment: function (e) {
+    const file = e.currentTarget.dataset.file
+    if (!file || !file.fileID) return
+    showLoading('打开中...')
+    wx.cloud.downloadFile({ fileID: file.fileID }).then(res => {
+      hideLoading()
+      wx.openDocument({ filePath: res.tempFilePath, showMenu: true })
+    }).catch(() => {
+      hideLoading()
+      showToast('文件打开失败')
     })
   },
 

@@ -2,7 +2,7 @@
 <view class="container">
   <view class="flow-summary">
     <view class="summary-title">采编部稿件同步流程</view>
-<view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 部长/管理员审核 → 自动归档</view>
+<view class="summary-path">采编部报备 → 办公部派发 → 干事同步 → 部长/管理员一键审核 → 自动归档</view>
   </view>
 
   <view class="reminder-prompt card" wx:if="{{showReminderPrompt && notificationSettings && notificationSettings.enabled && (!subscription || subscription.status !== 'accept')}}">
@@ -44,7 +44,7 @@
       <view class="step-index">4</view>
       <view class="step-body">
 <view class="step-title">部长 / 管理员审核归档</view>
-<view class="step-text">部长或管理员审核，可选择退回修改并指定接收人；审核通过后自动归档，并按工时规则核算工作量。</view>
+<view class="step-text">部长或管理员一键审核通过；退回修改时可指定接收人。审核通过后自动归档，并按工时规则核算工作量。</view>
       </view>
     </view>
   </view>
@@ -94,6 +94,16 @@
         <text class="form-label">备注</text>
         <input class="form-input" placeholder="可选" value="{{createForm.note}}" bindinput="onNoteInput" />
       </view>
+      <view class="form-group">
+        <text class="form-label">附件（可选）</text>
+        <view class="attachment-list" wx:if="{{createAttachments.length > 0}}">
+          <view class="attachment-item" wx:for="{{createAttachments}}" wx:for-item="file" wx:key="fileID">
+            <text class="attachment-name">{{file.name}}</text>
+            <text class="attachment-remove" data-key="createAttachments" data-index="{{index}}" catchtap="removeAttachment">×</text>
+          </view>
+        </view>
+        <button class="mini-btn upload-btn" bindtap="chooseCreateAttachment">+ 上传文档</button>
+      </view>
       <button class="btn-primary" bindtap="submitCreate">提交给办公部</button>
     </view>
 
@@ -138,6 +148,24 @@
         <view class="section-label">反馈</view>
         <view class="section-text">{{item.syncResult}}</view>
       </view>
+      <view class="handoff-section" wx:if="{{item.attachments.length > 0}}">
+        <view class="section-label">附件</view>
+        <view class="attachment-list">
+          <view class="attachment-item" wx:for="{{item.attachments}}" wx:for-item="file" wx:key="fileID" data-file="{{file}}" bindtap="openAttachment">
+            <text class="attachment-icon">📎</text>
+            <text class="attachment-name">{{file.name}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="handoff-section" wx:if="{{item.attachments.length > 0}}">
+        <view class="section-label">附件</view>
+        <view class="attachment-list">
+          <view class="attachment-item" wx:for="{{item.attachments}}" wx:for-item="file" wx:key="fileID" data-file="{{file}}" bindtap="openAttachment">
+            <text class="attachment-icon">📎</text>
+            <text class="attachment-name">{{file.name}}</text>
+          </view>
+        </view>
+      </view>
       <view class="handoff-section" wx:if="{{item.reviewComment}}">
         <view class="section-label">审核</view>
         <view class="section-text">{{item.reviewComment}}</view>
@@ -174,6 +202,26 @@
     <view class="modal-content" catchtap="stopTap">
       <view class="modal-title">提交同步结果</view>
       <textarea class="form-textarea" placeholder="填写挂网链接、投稿反馈或处理说明" value="{{syncResult}}" bindinput="onSyncResultInput" />
+      <view class="form-group">
+        <text class="form-label">附件（可选）</text>
+        <view class="attachment-list" wx:if="{{completeAttachments.length > 0}}">
+          <view class="attachment-item" wx:for="{{completeAttachments}}" wx:for-item="file" wx:key="fileID">
+            <text class="attachment-name">{{file.name}}</text>
+            <text class="attachment-remove" data-key="completeAttachments" data-index="{{index}}" catchtap="removeAttachment">×</text>
+          </view>
+        </view>
+        <button class="mini-btn upload-btn" bindtap="chooseCompleteAttachment">+ 上传文档</button>
+      </view>
+      <view class="form-group">
+        <text class="form-label">附件（可选）</text>
+        <view class="attachment-list" wx:if="{{completeAttachments.length > 0}}">
+          <view class="attachment-item" wx:for="{{completeAttachments}}" wx:for-item="file" wx:key="fileID">
+            <text class="attachment-name">{{file.name}}</text>
+            <text class="attachment-remove" data-key="completeAttachments" data-index="{{index}}" catchtap="removeAttachment">×</text>
+          </view>
+        </view>
+        <button class="mini-btn upload-btn" bindtap="chooseCompleteAttachment">+ 上传文档</button>
+      </view>
       <view class="modal-actions">
         <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
         <button class="btn-primary modal-confirm" bindtap="confirmComplete">发送审核</button>
@@ -183,10 +231,9 @@
 
   <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
     <view class="modal-content" catchtap="stopTap">
-<view class="modal-title">审核（部长 / 管理员）</view>
-      <textarea class="form-textarea" placeholder="填写审核意见，可选" value="{{reviewComment}}" bindinput="onReviewCommentInput" />
+<view class="modal-title">退回修改</view>
       <view class="form-group" wx:if="{{returnTargets.length > 0}}">
-        <text class="form-label">退回修改时指定接收人</text>
+        <text class="form-label">指定退回接收人</text>
         <picker mode="selector" range="{{returnTargets}}" range-key="name" value="{{returnToIndex}}" bindchange="onReturnToChange">
           <view class="form-picker">
             <text>{{returnTargets[returnToIndex].name}}（{{returnTargets[returnToIndex].department}}）</text>
@@ -195,8 +242,8 @@
         </picker>
       </view>
       <view class="modal-actions">
-        <button class="btn-secondary" data-approved="false" bindtap="confirmReview">退回修改</button>
-        <button class="btn-primary modal-confirm" data-approved="true" bindtap="confirmReview">通过归档</button>
+        <button class="btn-secondary" bindtap="closeReviewModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmReview">确认退回</button>
       </view>
     </view>
   </view>

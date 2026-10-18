@@ -38,6 +38,10 @@ Page({
     showCompleteModal: false,
     completeTarget: null,
     syncResult: '',
+    createAttachments: [],
+    completeAttachments: [],
+    createAttachments: [],
+    completeAttachments: [],
     showReviewModal: false,
     reviewTarget: null,
     reviewComment: '',
@@ -251,9 +255,10 @@ Page({
     if (!form.articleNames.trim()) { showToast('请填写稿件名称'); return }
 
     showLoading('提交中...')
-    callFunction('manageHandoffs', Object.assign({ action: 'createHandoff' }, form)).then(result => {
+    callFunction('manageHandoffs', Object.assign({ action: 'createHandoff', attachments: this.data.createAttachments }, form)).then(result => {
       hideLoading()
       showToast('已提交给办公部', 'success')
+      this.setData({ createAttachments: [] })
       if (result && result.defaults) this.setData({ createForm: result.defaults })
       this.loadHandoffs()
     }).catch(err => {
@@ -318,7 +323,8 @@ Page({
     this.setData({
       showCompleteModal: true,
       completeTarget: item,
-      syncResult: item.syncResult || ''
+      syncResult: item.syncResult || '',
+      completeAttachments: []
     })
   },
 
@@ -327,7 +333,7 @@ Page({
   },
 
   closeCompleteModal: function () {
-    this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '' })
+    this.setData({ showCompleteModal: false, completeTarget: null, syncResult: '', completeAttachments: [] })
   },
 
   confirmComplete: function () {
@@ -339,7 +345,8 @@ Page({
     callFunction('manageHandoffs', {
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
-      syncResult: this.data.syncResult.trim()
+      syncResult: this.data.syncResult.trim(),
+      attachments: this.data.completeAttachments
     }).then(() => {
       hideLoading()
       showToast('已发送给管理员审核', 'success')
@@ -354,27 +361,38 @@ Page({
 
 
 
+  // 一键审核：通过归档无需填写任何内容；仅退回时打开弹窗选择接收人
   openReviewModal: function (e) {
     const item = e.currentTarget.dataset.item
-    this.setData({
-      showReviewModal: true,
-      reviewTarget: item,
-      reviewComment: '',
-      returnTargets: [],
-      returnToIndex: 0
-    })
-    callFunction('manageHandoffs', {
-      action: 'getHandoffReturnTargets',
-      handoffId: item._id
-    }).then(list => {
-      const targets = list || []
-      let index = 0
-      if (item.assigneeName) {
-        const found = targets.findIndex(t => t.name === item.assigneeName)
-        if (found >= 0) index = found
+    const self = this
+    wx.showActionSheet({
+      itemList: ['通过归档', '退回修改'],
+      success(res) {
+        if (res.tapIndex === 0) {
+          self.doReview(item, true, '')
+        } else if (res.tapIndex === 1) {
+          self.setData({
+            showReviewModal: true,
+            reviewTarget: item,
+            reviewComment: '',
+            returnTargets: [],
+            returnToIndex: 0
+          })
+          callFunction('manageHandoffs', {
+            action: 'getHandoffReturnTargets',
+            handoffId: item._id
+          }).then(list => {
+            const targets = list || []
+            let index = 0
+            if (item.assigneeName) {
+              const found = targets.findIndex(t => t.name === item.assigneeName)
+              if (found >= 0) index = found
+            }
+            self.setData({ returnTargets: targets, returnToIndex: index })
+          }).catch(() => {})
+        }
       }
-      this.setData({ returnTargets: targets, returnToIndex: index })
-    }).catch(() => {})
+    })
   },
 
   onReturnToChange: function (e) {
@@ -389,21 +407,13 @@ Page({
     this.setData({ showReviewModal: false, reviewTarget: null, reviewComment: '', returnTargets: [], returnToIndex: 0 })
   },
 
-  confirmReview: function (e) {
-    const approvedValue = e.currentTarget.dataset.approved
-    const approved = approvedValue === true || approvedValue === 'true'
-    const target = this.data.returnTargets[this.data.returnToIndex]
-    if (!approved && !target) {
-      showToast('请选择退回对象')
-      return
-    }
+  doReview: function (target, approved, returnToName) {
     showLoading('审核中...')
     callFunction('manageHandoffs', {
       action: 'reviewHandoff',
-      handoffId: this.data.reviewTarget._id,
+      handoffId: target._id,
       approved,
-      reviewComment: this.data.reviewComment.trim(),
-      returnToName: approved ? '' : (target ? target.name : '')
+      returnToName
     }).then(() => {
       hideLoading()
       showToast(approved ? '已归档' : '已退回', 'success')
@@ -415,6 +425,70 @@ Page({
       showToast(err.message || '审核失败')
     })
   },
+
+  // 退回路径：仅退回时需要选择接收人
+  confirmReview: function () {
+    const target = this.data.returnTargets[this.data.returnToIndex]
+    this.doReview(this.data.reviewTarget, false, target ? target.name : '')
+  },
+
+  // 附件：从聊天选择文件上传到云存储，可点击打开
+  chooseCreateAttachment: function () { this.chooseAttachments('createAttachments') },
+  chooseCompleteAttachment: function () { this.chooseAttachments('completeAttachments') },
+
+  chooseAttachments: function (key) {
+    const current = this.data[key] || []
+    const remain = 9 - current.length
+    if (remain <= 0) { showToast('最多上传 9 个附件'); return }
+    const self = this
+    wx.chooseMessageFile({
+      count: remain,
+      type: 'file',
+      success(res) {
+        const files = res.tempFiles || []
+        if (!files.length) return
+        showLoading('上传附件中...')
+        const uploads = files.map(file => wx.cloud.uploadFile({
+          cloudPath: 'handoff-attachments/' + Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + file.name,
+          filePath: file.path
+        }).then(r => ({ fileID: r.fileID, name: file.name, size: file.size })))
+        Promise.all(uploads).then(list => {
+          hideLoading()
+          const data = {}
+          data[key] = current.concat(list)
+          self.setData(data)
+        }).catch(() => {
+          hideLoading()
+          showToast('附件上传失败')
+        })
+      }
+    })
+  },
+
+  removeAttachment: function (e) {
+    const key = e.currentTarget.dataset.key
+    const index = Number(e.currentTarget.dataset.index)
+    if (!key) return
+    const list = (this.data[key] || []).slice()
+    list.splice(index, 1)
+    const data = {}
+    data[key] = list
+    this.setData(data)
+  },
+
+  openAttachment: function (e) {
+    const file = e.currentTarget.dataset.file
+    if (!file || !file.fileID) return
+    showLoading('打开中...')
+    wx.cloud.downloadFile({ fileID: file.fileID }).then(res => {
+      hideLoading()
+      wx.openDocument({ filePath: res.tempFilePath, showMenu: true })
+    }).catch(() => {
+      hideLoading()
+      showToast('文件打开失败')
+    })
+  },
+
 
   onPullDownRefresh: function () {
     this.loadHandoffs()

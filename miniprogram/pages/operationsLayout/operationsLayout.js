@@ -14,6 +14,7 @@ Page({
     role: '',
     department: '',
     canCreate: false,
+    canRequest: false,
     isBrother: false,
     activeTab: 'active',
     tabs: [
@@ -24,8 +25,11 @@ Page({
     loading: false,
     layoutTypes: LAYOUT_TYPES,
     operationsMembers: [],
+    operationsMinisters: [],
     showCreateModal: false,
-    createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, note: '' },
+    createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0, note: '' },
+    createAttachments: [],
+    completeAttachments: [],
     showDetailModal: false,
     detailTarget: null,
     showCompleteModal: false,
@@ -35,7 +39,10 @@ Page({
     reviewTarget: null,
     reviewComment: '',
     returnTargets: [],
-    returnToIndex: 0
+    returnToIndex: 0,
+    showAssignModal: false,
+    assignTarget: null,
+    assignForm: { assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0 }
   },
 
   onShow: function () {
@@ -46,6 +53,7 @@ Page({
       role,
       department,
       canCreate: role === 'admin' || (role === 'minister' && department === '运营部'),
+      canRequest: department === '兄弟部门',
       isBrother: department === '兄弟部门'
     })
     if (this.data.canCreate) this.loadMembers()
@@ -61,7 +69,8 @@ Page({
 
   loadMembers: function () {
     callFunction('manageData', { action: 'getMembers', department: '运营部' }).then(members => {
-      this.setData({ operationsMembers: (members || []).filter(m => m.department === '运营部') })
+      const list = (members || []).filter(m => m.department === '运营部')
+      this.setData({ operationsMembers: list, operationsMinisters: list.filter(m => m.role === 'minister') })
     }).catch(() => {})
   },
 
@@ -135,7 +144,11 @@ Page({
   },
 
   openCreateModal: function () {
-    this.setData({ showCreateModal: true, createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, note: '' } })
+    this.setData({
+      showCreateModal: true,
+      createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0, note: '' },
+      createAttachments: []
+    })
   },
 
   closeCreateModal: function () { this.setData({ showCreateModal: false }) },
@@ -144,14 +157,41 @@ Page({
   onLayoutTypeChange: function (e) { this.setData({ 'createForm.layoutTypeIndex': Number(e.detail.value) || 0 }) },
   onDeadlineChange: function (e) { this.setData({ 'createForm.deadline': e.detail.value }) },
   onAssigneeChange: function (e) { this.setData({ 'createForm.assigneeIndex': Number(e.detail.value) || 0 }) },
+  onFirstReviewerChange: function (e) { this.setData({ 'createForm.firstReviewerIndex': Number(e.detail.value) || 0 }) },
+  onSecondReviewerChange: function (e) { this.setData({ 'createForm.secondReviewerIndex': Number(e.detail.value) || 0 }) },
   onCreateNoteInput: function (e) { this.setData({ 'createForm.note': e.detail.value }) },
 
   submitCreate: function () {
     const form = this.data.createForm
-    const member = this.data.operationsMembers[form.assigneeIndex]
     if (!form.title.trim()) { showToast('请填写文章标题'); return }
     if (!form.deadline) { showToast('请选择截止日期'); return }
+    // 兄弟部门发布需求：不指定干事/审核人，提交后由运营部部长接单派发
+    if (this.data.canRequest && !this.data.canCreate) {
+      showLoading('提交中...')
+      callFunction('manageHandoffs', {
+        action: 'createOperationsLayout',
+        title: form.title.trim(),
+        layoutType: LAYOUT_TYPES[form.layoutTypeIndex].key,
+        deadline: form.deadline,
+        note: form.note.trim(),
+        attachments: this.data.createAttachments
+      }).then(() => {
+        hideLoading()
+        showToast('已提交，待运营部接单', 'success')
+        this.closeCreateModal()
+        this.loadTasks()
+      }).catch(err => {
+        hideLoading()
+        showToast(err.message || '提交失败')
+      })
+      return
+    }
+    const member = this.data.operationsMembers[form.assigneeIndex]
+    const firstReviewer = this.data.operationsMinisters[form.firstReviewerIndex]
+    const secondReviewer = this.data.operationsMinisters[form.secondReviewerIndex]
     if (!member) { showToast('请选择排版干事'); return }
+    if (!firstReviewer) { showToast('请选择一审部长'); return }
+    if (!secondReviewer) { showToast('请选择二审部长'); return }
     showLoading('提交中...')
     callFunction('manageHandoffs', {
       action: 'createOperationsLayout',
@@ -159,7 +199,10 @@ Page({
       layoutType: LAYOUT_TYPES[form.layoutTypeIndex].key,
       deadline: form.deadline,
       assigneeName: member.name,
-      note: form.note.trim()
+      firstReviewerName: firstReviewer.name,
+      secondReviewerName: secondReviewer.name,
+      note: form.note.trim(),
+      attachments: this.data.createAttachments
     }).then(() => {
       hideLoading()
       showToast('已创建并通知干事', 'success')
@@ -168,6 +211,55 @@ Page({
     }).catch(err => {
       hideLoading()
       showToast(err.message || '创建失败')
+    })
+  },
+
+  // 运营部部长/admin 接单：从待接单需求选择干事与一审/二审部长后派单
+  openAssignModal: function () {
+    const target = this.data.detailTarget
+    if (!target || !target.canAssign) return
+    if (!this.data.operationsMembers.length || !this.data.operationsMinisters.length) this.loadMembers()
+    this.setData({
+      showAssignModal: true,
+      assignTarget: target,
+      assignForm: { assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0 }
+    })
+  },
+
+  closeAssignModal: function () { this.setData({ showAssignModal: false, assignTarget: null }) },
+
+  onAssignFieldChange: function (e) {
+    const field = e.currentTarget.dataset.field
+    if (!field) return
+    const data = {}
+    data['assignForm.' + field] = Number(e.detail.value) || 0
+    this.setData(data)
+  },
+
+  confirmAssign: function () {
+    const target = this.data.assignTarget
+    if (!target) return
+    const member = this.data.operationsMembers[this.data.assignForm.assigneeIndex]
+    const firstReviewer = this.data.operationsMinisters[this.data.assignForm.firstReviewerIndex]
+    const secondReviewer = this.data.operationsMinisters[this.data.assignForm.secondReviewerIndex]
+    if (!member) { showToast('请选择排版干事'); return }
+    if (!firstReviewer) { showToast('请选择一审部长'); return }
+    if (!secondReviewer) { showToast('请选择二审部长'); return }
+    showLoading('派单中...')
+    callFunction('manageHandoffs', {
+      action: 'assignOperationsLayout',
+      handoffId: target._id,
+      assigneeName: member.name,
+      firstReviewerName: firstReviewer.name,
+      secondReviewerName: secondReviewer.name
+    }).then(() => {
+      hideLoading()
+      showToast('已派单并通知干事', 'success')
+      this.setData({ showAssignModal: false, assignTarget: null, showDetailModal: false })
+      this.loadTasks()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '派单失败')
     })
   },
 
@@ -203,7 +295,7 @@ Page({
   openCompleteModal: function () {
     const target = this.data.detailTarget
     if (!target) return
-    this.setData({ showCompleteModal: true, completeTarget: target, syncResult: '' })
+    this.setData({ showCompleteModal: true, completeTarget: target, syncResult: '', completeAttachments: [] })
   },
 
   closeCompleteModal: function () { this.setData({ showCompleteModal: false }) },
@@ -216,7 +308,8 @@ Page({
     callFunction('manageHandoffs', {
       action: 'completeHandoff',
       handoffId: this.data.completeTarget._id,
-      syncResult: this.data.syncResult.trim()
+      syncResult: this.data.syncResult.trim(),
+      attachments: this.data.completeAttachments
     }).then(() => {
       hideLoading()
       showToast('已提交部长审核', 'success')
@@ -228,50 +321,119 @@ Page({
     })
   },
 
+  // 一键审核：通过无需填写任何内容；仅退回时打开弹窗选择接收人
   openReviewModal: function () {
     const target = this.data.detailTarget
     if (!target) return
-    this.setData({ showReviewModal: true, reviewTarget: target, reviewComment: '', returnTargets: [], returnToIndex: 0 })
-    callFunction('manageHandoffs', {
-      action: 'getHandoffReturnTargets',
-      handoffId: target._id
-    }).then(list => {
-      const targets = list || []
-      let index = 0
-      if (target.assigneeName) {
-        const found = targets.findIndex(t => t.name === target.assigneeName)
-        if (found >= 0) index = found
+    const self = this
+    const approveLabel = (target.status === 'completed' && target.firstReviewerName) ? '一审通过' : '通过并归档'
+    wx.showActionSheet({
+      itemList: [approveLabel, '退回修改'],
+      success(res) {
+        if (res.tapIndex === 0) {
+          self.doReview(target, true, '')
+        } else if (res.tapIndex === 1) {
+          self.setData({ showReviewModal: true, reviewTarget: target, returnTargets: [], returnToIndex: 0 })
+          callFunction('manageHandoffs', {
+            action: 'getHandoffReturnTargets',
+            handoffId: target._id
+          }).then(list => {
+            const targets = list || []
+            let index = 0
+            if (target.assigneeName) {
+              const found = targets.findIndex(t => t.name === target.assigneeName)
+              if (found >= 0) index = found
+            }
+            self.setData({ returnTargets: targets, returnToIndex: index })
+          }).catch(() => {})
+        }
       }
-      this.setData({ returnTargets: targets, returnToIndex: index })
-    }).catch(() => {})
+    })
   },
 
   closeReviewModal: function () { this.setData({ showReviewModal: false }) },
 
-  onReviewCommentInput: function (e) { this.setData({ reviewComment: e.detail.value }) },
-
   onReturnToChange: function (e) { this.setData({ returnToIndex: Number(e.detail.value) || 0 }) },
 
-  confirmReview: function (e) {
-    const approvedValue = e.currentTarget.dataset.approved
-    const approved = approvedValue === true || approvedValue === 'true'
-    const target = this.data.returnTargets[this.data.returnToIndex]
-    if (!approved && !target) { showToast('请选择退回对象'); return }
+  doReview: function (target, approved, returnToName) {
     showLoading('审核中...')
     callFunction('manageHandoffs', {
       action: 'reviewHandoff',
-      handoffId: this.data.reviewTarget._id,
+      handoffId: target._id,
       approved,
-      reviewComment: this.data.reviewComment.trim(),
-      returnToName: approved ? '' : (target ? target.name : '')
-    }).then(() => {
+      returnToName
+    }).then(result => {
       hideLoading()
-      showToast(approved ? '已归档，工时已自动核算' : '已退回', 'success')
+      const msg = approved ? (result && result.firstReviewed ? '一审已通过，待二审' : '已归档，工时已自动核算') : '已退回'
+      showToast(msg, 'success')
       this.setData({ showReviewModal: false, showDetailModal: false })
       this.loadTasks()
     }).catch(err => {
       hideLoading()
       showToast(err.message || '审核失败')
     })
-  }
+  },
+
+  // 退回路径：仅退回时需要选择接收人
+  confirmReview: function () {
+    const target = this.data.returnTargets[this.data.returnToIndex]
+    this.doReview(this.data.reviewTarget, false, target ? target.name : '')
+  },
+
+  // 附件：从聊天选择文件上传到云存储，可点击打开
+  chooseCreateAttachment: function () { this.chooseAttachments('createAttachments') },
+  chooseCompleteAttachment: function () { this.chooseAttachments('completeAttachments') },
+
+  chooseAttachments: function (key) {
+    const current = this.data[key] || []
+    const remain = 9 - current.length
+    if (remain <= 0) { showToast('最多上传 9 个附件'); return }
+    const self = this
+    wx.chooseMessageFile({
+      count: remain,
+      type: 'file',
+      success(res) {
+        const files = res.tempFiles || []
+        if (!files.length) return
+        showLoading('上传附件中...')
+        const uploads = files.map(file => wx.cloud.uploadFile({
+          cloudPath: 'handoff-attachments/' + Date.now() + '-' + Math.floor(Math.random() * 100000) + '-' + file.name,
+          filePath: file.path
+        }).then(r => ({ fileID: r.fileID, name: file.name, size: file.size })))
+        Promise.all(uploads).then(list => {
+          hideLoading()
+          const data = {}
+          data[key] = current.concat(list)
+          self.setData(data)
+        }).catch(() => {
+          hideLoading()
+          showToast('附件上传失败')
+        })
+      }
+    })
+  },
+
+  removeAttachment: function (e) {
+    const key = e.currentTarget.dataset.key
+    const index = Number(e.currentTarget.dataset.index)
+    if (!key) return
+    const list = (this.data[key] || []).slice()
+    list.splice(index, 1)
+    const data = {}
+    data[key] = list
+    this.setData(data)
+  },
+
+  openAttachment: function (e) {
+    const file = e.currentTarget.dataset.file
+    if (!file || !file.fileID) return
+    showLoading('打开中...')
+    wx.cloud.downloadFile({ fileID: file.fileID }).then(res => {
+      hideLoading()
+      wx.openDocument({ filePath: res.tempFilePath, showMenu: true })
+    }).catch(() => {
+      hideLoading()
+      showToast('文件打开失败')
+    })
+  },
 })

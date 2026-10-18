@@ -107,6 +107,10 @@
   background: linear-gradient(135deg, #9B59B6, #7D3C98);
 }
 
+.external-icon {
+  background: linear-gradient(135deg, #16A085, #0E6655);
+}
+
 .module-body {
   flex: 1;
   min-width: 0;
