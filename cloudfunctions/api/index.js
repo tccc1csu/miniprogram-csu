@@ -2575,8 +2575,9 @@ async function handleManageHandoffs(event, user, openid) {
         firstReviewed = true
         return
       }
-      const settledRecords = approved
-        ? await (handoff.workflowType === 'operationsLayout'
+      // 外部需求没有对应的津贴规则：发起方是外部组织、承接方按部门另行统计，此处不虚构计量。
+      const settledRecords = approved && current.workflowType !== 'externalRequest'
+        ? await (current.workflowType === 'operationsLayout'
           ? settleOperationsLayoutWorkload(event.handoffId, current, now, user, openid, transaction)
           : settleHandoffWorkload(event.handoffId, current, now, user, openid, transaction))
         : []
