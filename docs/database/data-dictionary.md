@@ -175,7 +175,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
 | booking_id | INTEGER | NN | PK1 | 摄制预约标识 |
-| requester_id | INTEGER | NN | FK → member.member_id | 预约人 |
+| requester_id | INTEGER | NN | FK → member.member_id | 外部需求发布成员 |
 | terms_id | INTEGER | NN | FK → booking_terms.terms_id | 摄制约定的不可变版本标识 |
 | title | TEXT | NN | — | 业务标题 |
 | starts_at | TEXT | NN | — | 预约开始 |
@@ -224,53 +224,117 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：除主键外无额外候选键。
 
-## 20. 任务阶段（task_stage）
+## 20. 外部需求（external_request）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1 | 阶段标识 |
+| request_id | INTEGER | NN | PK1 | 外部需求标识 |
+| requester_id | INTEGER | NN | FK → member.member_id | 外部需求发布成员 |
+| target_department_id | INTEGER | NN | FK → department.department_id | 任意指定承接部门 |
+| title | TEXT | NN | — | 业务标题 |
+| request_note | TEXT | NN | — | 需求补充说明 |
+| deadline_at | TEXT | NULL | — | 可选期限；未提供为 NULL |
+| submitted_at | TEXT | NN | — | 提交时刻 |
+
+唯一组合：除主键外无额外候选键。
+
+## 21. 外部需求承接责任（external_request_assignment）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| request_id | INTEGER | NN | PK1；FK → external_request.request_id | 外部需求标识 |
+| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
+| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
+| assigned_at | TEXT | NN | — | 承接成立时刻 |
+
+唯一组合：除主键外无额外候选键。
+
+## 22. 公众号排版任务（operations_layout_task）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| layout_task_id | INTEGER | NN | PK1 | 公众号排版任务标识 |
+| title | TEXT | NN | — | 业务标题 |
+| layout_kind | TEXT | NN | — | BASIC 基础／PHOTO 影像志／REPRINT 转载 |
+| deadline_at | TEXT | NN | — | 可选期限；未提供为 NULL |
+| created_by | INTEGER | NN | FK → member.member_id | 建立该公众号排版任务的部长或管理员 |
+| created_at | TEXT | NN | — | 建立时刻 |
+
+唯一组合：除主键外无额外候选键。
+
+## 23. 排版承接责任（operations_layout_assignment）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| layout_task_id | INTEGER | NN | PK1；FK → operations_layout_task.layout_task_id | 公众号排版任务标识 |
+| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
+| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
+| assigned_at | TEXT | NN | — | 承接成立时刻 |
+
+唯一组合：除主键外无额外候选键。
+
+## 24. 任务阶段（task_stage）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| stage_id | INTEGER | NN | PK1 | 任务阶段标识 |
 | workflow_id | INTEGER | NN | FK → workflow.workflow_id | 整体流转任务标识 |
 | department_id | INTEGER | NN | FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-| sequence_no | INTEGER | NN | — | 同一任务内唯一序号；前后序由排序推导 |
-| result_requirement | TEXT | NN | — | 成果要求 |
-| review_policy | TEXT | NN | — | NONE 非稿件审查／OPERATIONS_TWO_LEVEL 运营双审／OTHER_CONFIRMED 其他已确认规则 |
+| sequence_no | INTEGER | NN | — | 阶段在任务中的顺序号 |
+| result_requirement | TEXT | NN | — | 阶段要求提交的成果类型或数量说明 |
+| review_policy | TEXT | NN | — | 阶段采用的审核策略代码 |
 | deadline_at | TEXT | NULL | — | 可选期限；未提供为 NULL |
 
 唯一组合：workflow_id, sequence_no。
 
-## 21. 阶段承接责任（stage_assignment）
+## 25. 阶段承接责任（stage_assignment）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 阶段标识 |
+| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
 | assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
 | assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
 | assigned_at | TEXT | NN | — | 承接成立时刻 |
-| roster_basis | TEXT | NULL | — | 可选人工排班依据，不存自动排班承诺 |
+| roster_basis | TEXT | NULL | — | 阶段承接成员的来源或分工说明 |
 
 唯一组合：除主键外无额外候选键。
 
-## 22. 唯一业务来源（business_source）
+## 26. 唯一业务来源（business_source）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
 | source_id | INTEGER | NN | PK1 | 跨流程共同引用的实际业务来源标识 |
 | editorial_id | INTEGER | NULL | FK → editorial.editorial_id；UQ | 采编协同标识 |
 | booking_id | INTEGER | NULL | FK → production_booking.booking_id；UQ | 摄制预约标识 |
-| stage_id | INTEGER | NULL | FK → task_stage.stage_id；UQ | 阶段标识 |
+| stage_id | INTEGER | NULL | FK → task_stage.stage_id；UQ | 任务阶段标识 |
+| external_request_id | INTEGER | NULL | FK → external_request.request_id；UQ | 外部需求来源标识，与其他业务来源互斥 |
+| operations_layout_task_id | INTEGER | NULL | FK → operations_layout_task.layout_task_id；UQ | 公众号排版来源标识，与其他业务来源互斥 |
 
-唯一组合：stage_id；booking_id；editorial_id。
+唯一组合：operations_layout_task_id；external_request_id；stage_id；booking_id；editorial_id。
 
-## 23. 阶段来源映射（stage_source）
+## 27. 业务来源附件（source_attachment）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 阶段标识 |
+| attachment_id | INTEGER | NN | PK1 | 附件标识 |
+| source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
+| file_name | TEXT | NN | — | 附件展示名 |
+| storage_ref | TEXT | NN | — | 文件存储引用；文件内容存对象存储 |
+| uploaded_by | INTEGER | NN | FK → member.member_id | 实际上传成员 |
+| uploaded_at | TEXT | NN | — | 登记上传时刻 |
+
+唯一组合：source_id, storage_ref。
+
+## 28. 阶段来源映射（stage_source）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
 | source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
 
 唯一组合：除主键外无额外候选键。
 
-## 24. 成果提交（outcome）
+## 29. 成果提交（outcome）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -281,9 +345,9 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 | completed_note | TEXT | NN | — | 完成说明 |
 | submitted_at | TEXT | NN | — | 提交时刻 |
 
-唯一组合：source_id, submission_no。
+唯一组合：outcome_id, source_id；source_id, submission_no。
 
-## 25. 成果附件（outcome_attachment）
+## 30. 成果附件（outcome_attachment）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -294,7 +358,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：outcome_id, storage_ref。
 
-## 26. 成果稿件版本（outcome_version）
+## 31. 成果稿件版本（outcome_version）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -303,7 +367,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：outcome_id, version_id。
 
-## 27. 发布成果（publication）
+## 32. 发布成果（publication）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -315,21 +379,21 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：outcome_id, platform_id, result_url（条件唯一，见 DDL 的 WHERE）；outcome_id, version_id, platform_id（条件唯一，见 DDL 的 WHERE）。
 
-## 28. 阶段当前送审版（stage_current_draft）
+## 33. 阶段当前送审版（stage_current_draft）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 阶段标识 |
+| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
 | outcome_id | INTEGER | NN | FK → outcome_version.outcome_id | 成果提交标识 |
 | version_id | INTEGER | NN | FK → outcome_version.outcome_id | 不可改写的稿件版本标识 |
 
 唯一组合：除主键外无额外候选键。
 
-## 29. 稿件审查结论（manuscript_review）
+## 34. 稿件审查结论（manuscript_review）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| review_id | INTEGER | NN | PK1 | 稿件审核事件标识 |
+| review_id | INTEGER | NN | PK1 | 审核事件标识 |
 | version_id | INTEGER | NN | FK → manuscript_version.version_id | 不可改写的稿件版本标识 |
 | level | INTEGER | NN | — | 1 一审／2 二审 |
 | round_no | INTEGER | NN | — | 同一版次和审查层次内的审核轮次 |
@@ -337,11 +401,11 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 | decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
 | opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
 | reviewed_at | TEXT | NN | — | 审核时刻 |
-| prior_review_id | INTEGER | NULL | FK → manuscript_review.review_id | 该二审引用的同版通过一审；不适用前序审核时为空 |
+| prior_review_id | INTEGER | NULL | FK → manuscript_review.review_id | 该二审引用的同一成果前序一审；不适用时为空 |
 
 唯一组合：version_id, level, round_no。
 
-## 30. 同步审核结论（editorial_review）
+## 35. 同步审核结论（editorial_review）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -354,16 +418,57 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：outcome_id。
 
-## 31. 同步审核稿件依据（editorial_review_item）
+## 36. 同步审核稿件依据（editorial_review_item）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
 | editorial_review_id | INTEGER | NN | PK1；FK → editorial_review.editorial_review_id | 整次采编同步审核标识 |
-| review_id | INTEGER | NN | PK2；FK → manuscript_review.review_id | 稿件审核事件标识 |
+| review_id | INTEGER | NN | PK2；FK → manuscript_review.review_id | 审核事件标识 |
 
 唯一组合：editorial_review_id, review_id。
 
-## 32. 采编归档完成（editorial_archive）
+## 37. 来源审核岗位安排（source_review_assignment）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| source_id | INTEGER | NN | PK1；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
+| level | INTEGER | NN | PK2 | 1 一审／2 二审 |
+| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
+| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
+| assigned_at | TEXT | NN | — | 承接成立时刻 |
+
+唯一组合：source_id, level。
+
+## 38. 来源审核事件（source_review）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| review_id | INTEGER | NN | PK1 | 审核事件标识 |
+| source_id | INTEGER | NN | FK → outcome.source_id；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
+| outcome_id | INTEGER | NN | FK → outcome.outcome_id；FK → outcome.outcome_id | 成果提交标识 |
+| level | INTEGER | NN | — | 1 一审／2 二审 |
+| round_no | INTEGER | NN | — | 同一版次和审查层次内的审核轮次 |
+| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
+| decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
+| opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
+| reviewed_at | TEXT | NN | — | 审核时刻 |
+| prior_review_id | INTEGER | NULL | FK → source_review.review_id | 该二审引用的同一成果前序一审；不适用时为空 |
+
+唯一组合：review_id, source_id, outcome_id；source_id, outcome_id, level, round_no。
+
+## 39. 来源最终归档（source_archive）
+
+| 列 | 参考类型 | 可空 | 键 | 业务含义 |
+| --- | --- | --- | --- | --- |
+| source_id | INTEGER | NN | PK1；FK → source_review.source_id；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
+| outcome_id | INTEGER | NN | FK → source_review.outcome_id；FK → outcome.outcome_id；UQ | 成果提交标识 |
+| final_review_id | INTEGER | NN | FK → source_review.review_id；UQ | 最终归档采用的审核事件 |
+| archived_by | INTEGER | NN | FK → member.member_id | 实际归档成员 |
+| archived_at | TEXT | NN | — | 归档完成时刻 |
+
+唯一组合：final_review_id；outcome_id。
+
+## 40. 采编归档完成（editorial_archive）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -373,23 +478,23 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：editorial_review_id。
 
-## 33. 摄制归档完成（production_archive）
+## 41. 摄制归档完成（production_archive）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
 | booking_id | INTEGER | NN | PK1；FK → production_booking.booking_id | 摄制预约标识 |
 | outcome_id | INTEGER | NN | FK → outcome.outcome_id；UQ | 成果提交标识 |
-| archived_by | INTEGER | NN | FK → member.member_id | 实际办公归档成员 |
+| archived_by | INTEGER | NN | FK → member.member_id | 实际归档成员 |
 | archived_at | TEXT | NN | — | 归档完成时刻 |
 
 唯一组合：outcome_id。
 
-## 34. 阶段确认结论（stage_confirmation）
+## 42. 阶段确认结论（stage_confirmation）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
 | confirmation_id | INTEGER | NN | PK1 | 阶段确认事件标识 |
-| stage_id | INTEGER | NN | FK → task_stage.stage_id | 阶段标识 |
+| stage_id | INTEGER | NN | FK → task_stage.stage_id | 任务阶段标识 |
 | outcome_id | INTEGER | NN | FK → outcome.outcome_id | 成果提交标识 |
 | confirmed_by | INTEGER | NN | FK → member.member_id | 实际确认部长 |
 | decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
@@ -398,17 +503,17 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：除主键外无额外候选键。
 
-## 35. 阶段完成（stage_completion）
+## 43. 阶段完成（stage_completion）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 阶段标识 |
+| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
 | confirmation_id | INTEGER | NN | FK → stage_confirmation.confirmation_id；UQ | 阶段确认事件标识 |
 | second_review_id | INTEGER | NULL | FK → manuscript_review.review_id | 本次阶段完成实际采信的二审结论；运营稿件必填，非稿件阶段为空 |
 
 唯一组合：confirmation_id。
 
-## 36. 任务完成（workflow_completion）
+## 44. 任务完成（workflow_completion）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -417,7 +522,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：除主键外无额外候选键。
 
-## 37. 贡献类型（contribution_type）
+## 45. 贡献类型（contribution_type）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -427,7 +532,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：name；code。
 
-## 38. 部门津贴标准版本（allowance_standard）
+## 46. 部门津贴标准版本（allowance_standard）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -439,7 +544,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：department_id, effective_from；department_id, version_no。
 
-## 39. 贡献计量规则（contribution_policy）
+## 47. 贡献计量规则（contribution_policy）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -451,7 +556,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：standard_id, type_id。
 
-## 40. 工作贡献依据（contribution_basis）
+## 48. 工作贡献依据（contribution_basis）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -465,16 +570,16 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：source_id, type_id, member_id。
 
-## 41. 阶段贡献引用（stage_contribution）
+## 49. 阶段贡献引用（stage_contribution）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 阶段标识 |
+| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
 | basis_id | INTEGER | NN | PK2；FK → contribution_basis.basis_id | 实际贡献依据标识；同来源＋类型＋成员唯一 |
 
 唯一组合：stage_id, basis_id。
 
-## 42. 已核实贡献计量（contribution_measurement）
+## 50. 已核实贡献计量（contribution_measurement）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -485,7 +590,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：除主键外无额外候选键。
 
-## 43. 中心周报批次（weekly_report）
+## 51. 中心周报批次（weekly_report）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -497,7 +602,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：除主键外无额外候选键。
 
-## 44. 周报部门范围（report_department）
+## 52. 周报部门范围（report_department）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -506,7 +611,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：report_id, department_id。
 
-## 45. 周报有效明细集合（report_contribution）
+## 53. 周报有效明细集合（report_contribution）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -515,7 +620,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：report_id, basis_id。
 
-## 46. 周报待核对项（report_pending）
+## 54. 周报待核对项（report_pending）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |
@@ -525,7 +630,7 @@ PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 
 
 唯一组合：report_id, basis_id。
 
-## 47. 周报封存（report_seal）
+## 55. 周报封存（report_seal）
 
 | 列 | 参考类型 | 可空 | 键 | 业务含义 |
 | --- | --- | --- | --- | --- |

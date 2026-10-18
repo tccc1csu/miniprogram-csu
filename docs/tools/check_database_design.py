@@ -22,13 +22,13 @@ def reject(name,sql,args=()):
 db.executescript('''
 INSERT INTO organization VALUES(1,'青年传媒中心');
 INSERT INTO department VALUES(1,1,'办公部',1),(2,1,'摄制部',1),(3,1,'运营部',1),(4,1,'美编部',1),(5,1,'采编部',1);
-INSERT INTO member VALUES(1,'老师','teacher',NULL,'ADMIN',NULL,1),(2,'办公成员','office',NULL,'MEMBER',1,1),(3,'摄制成员','camera',NULL,'MEMBER',2,1),(4,'摄制部长','camera_head',NULL,'MINISTER',2,1),(5,'办公部长','office_head',NULL,'MINISTER',1,1),(6,'运营成员','ops',NULL,'MEMBER',3,1),(7,'运营部长','ops_head',NULL,'MINISTER',3,1),(8,'采编成员','editor',NULL,'MEMBER',5,1);
+INSERT INTO member VALUES(1,'老师','teacher',NULL,'ADMIN',NULL,1),(2,'办公成员','office',NULL,'MEMBER',1,1),(3,'摄制成员','camera',NULL,'MEMBER',2,1),(4,'摄制部长','camera_head',NULL,'MINISTER',2,1),(5,'办公部长','office_head',NULL,'MINISTER',1,1),(6,'运营成员','ops',NULL,'MEMBER',3,1),(7,'运营部长一','ops_head',NULL,'MINISTER',3,1),(8,'采编成员','editor',NULL,'MEMBER',5,1),(9,'运营部长二','ops_head2',NULL,'MINISTER',3,1);
 INSERT INTO production_schedule VALUES(1,2);
 INSERT INTO booking_terms VALUES(1,1,1,'2026-10-01 00:00:00',2,'HOURS_24',15000,'本测试采用隔离日程，不代表会议冲突口径');
 INSERT INTO production_booking VALUES(1,8,1,'拍摄','2026-10-13 12:00:00','2026-10-13 14:00:00','校园','联系说明','2026-10-12 12:00:00',1,1);
 INSERT INTO production_assignment VALUES(1,3,4,'ASSIGN','2026-10-12 13:00:00');
 INSERT INTO production_archive_responsibility VALUES(1,2,3,'2026-10-13 14:30:00');
-INSERT INTO business_source VALUES(1,NULL,1,NULL);
+INSERT INTO business_source VALUES(1,NULL,1,NULL,NULL,NULL);
 INSERT INTO outcome VALUES(1,1,1,3,'拍摄完成','2026-10-13 14:30:00');
 INSERT INTO contribution_type VALUES(1,'PRODUCTION','摄制'),(2,'ARCHIVE','办公归档'),(3,'DESIGN','设计');
 INSERT INTO allowance_standard VALUES(1,2,1,'2026-10-01 00:00:00',1200),(2,1,1,'2026-10-01 00:00:00',1000),(3,4,1,'2026-10-01 00:00:00',1000);
@@ -42,9 +42,9 @@ reject('invalid timestamp is rejected',"INSERT INTO login_session VALUES(99,1,'t
 reject('non-admin requires a department',"INSERT INTO member VALUES(99,'无部门','bad',NULL,'MEMBER',NULL,1)")
 reject('unique login name',"INSERT INTO member VALUES(99,'同名账号','camera',NULL,'MEMBER',2,1)")
 reject('FK rejects orphan member department',"INSERT INTO member VALUES(99,'孤儿','orphan',NULL,'MEMBER',99,1)")
-reject('source requires exactly one owner',"INSERT INTO business_source VALUES(99,NULL,NULL,NULL)")
-reject('source may not have two owners',"INSERT INTO business_source VALUES(99,99,1,NULL)")
-reject('specialized source is unique',"INSERT INTO business_source VALUES(99,NULL,1,NULL)")
+reject('source requires exactly one owner',"INSERT INTO business_source VALUES(99,NULL,NULL,NULL,NULL,NULL)")
+reject('source may not have two owners',"INSERT INTO business_source VALUES(99,99,1,NULL,NULL,NULL)")
+reject('specialized source is unique',"INSERT INTO business_source VALUES(99,NULL,1,NULL,NULL,NULL)")
 reject('assignment and claim compete for one PK',"INSERT INTO production_assignment VALUES(1,3,3,'CLAIM','2026-10-12 13:01:00')")
 reject('claim actor must claim for self',"INSERT INTO production_assignment VALUES(99,3,4,'CLAIM','2026-10-12 13:01:00')")
 reject('source type member deduplicates contribution',"INSERT INTO contribution_basis VALUES(99,1,1,3,2,'2026-10-13 14:00:00','重复')")
@@ -67,6 +67,43 @@ reject('cannot rewrite measurement',"UPDATE contribution_measurement SET base_ho
 ok('weekly view has one member week row',db.execute("SELECT COUNT(*),SUM(total_hours_u) FROM v_member_weekly_summary WHERE member_id=3 AND week_start='2026-10-12'").fetchone()==(1,30000))
 ok('Sunday and Monday belong to correct weeks',db.execute("SELECT date('2026-10-18 23:59:59','weekday 0','-6 days'),date('2026-10-19 00:00:00','weekday 0','-6 days')").fetchone()==('2026-10-12','2026-10-19'))
 
+# External requests and the upgraded operations-layout review workflow.
+db.executescript('''
+INSERT INTO external_request VALUES(1,8,1,'外部排版需求','兄弟部门需求','2026-10-20 18:00:00','2026-10-18 09:00:00');
+INSERT INTO operations_layout_task VALUES(1,'运营排版','BASIC','2026-10-20 18:00:00',7,'2026-10-18 09:00:00');
+INSERT INTO business_source VALUES(11,NULL,NULL,NULL,NULL,1);
+''')
+reject('external request cannot assign outside target department',"INSERT INTO external_request_assignment VALUES(1,8,5,'2026-10-18 09:10:00')")
+reject('external request cannot be dispatched by unrelated department',"INSERT INTO external_request_assignment VALUES(1,2,4,'2026-10-18 09:10:00')")
+reject('operations layout cannot assign outside operations',"INSERT INTO operations_layout_assignment VALUES(1,8,7,'2026-10-18 09:05:00')")
+reject('layout review slot requires operations minister',"INSERT INTO source_review_assignment VALUES(11,1,6,7,'2026-10-18 09:06:00')")
+db.executescript('''
+INSERT INTO external_request_assignment VALUES(1,2,5,'2026-10-18 09:10:00');
+INSERT INTO business_source VALUES(10,NULL,NULL,NULL,1,NULL);
+INSERT INTO outcome VALUES(10,10,1,2,'外部需求成果','2026-10-18 12:00:00');
+INSERT INTO source_review VALUES(10,10,10,1,1,5,'PASS','审核通过','2026-10-18 12:10:00',NULL);
+INSERT INTO source_archive VALUES(10,10,10,5,'2026-10-18 12:11:00');
+INSERT INTO operations_layout_assignment VALUES(1,6,7,'2026-10-18 09:05:00');
+INSERT INTO outcome VALUES(11,11,1,6,'排版成果','2026-10-18 13:00:00');
+INSERT INTO source_review_assignment VALUES(11,1,7,7,'2026-10-18 09:06:00'),(11,2,9,7,'2026-10-18 09:06:00');
+INSERT INTO source_review VALUES(11,11,11,1,1,7,'PASS','一审通过','2026-10-18 13:10:00',NULL);
+''')
+reject('assigned layout reviewer cannot be replaced by a different reviewer',"INSERT INTO source_review VALUES(90,11,11,1,2,9,'PASS','越权审核','2026-10-18 13:10:30',NULL)")
+reject('different second reviewer cannot archive after first review',"INSERT INTO source_archive VALUES(11,11,11,7,'2026-10-18 13:11:00')")
+db.executescript("INSERT INTO source_review VALUES(12,11,11,2,1,9,'PASS','二审通过','2026-10-18 13:12:00',11); INSERT INTO source_archive VALUES(11,11,12,9,'2026-10-18 13:13:00');")
+db.executescript('''
+INSERT INTO operations_layout_task VALUES(2,'同人审核排版','PHOTO','2026-10-21 18:00:00',7,'2026-10-18 10:00:00');
+INSERT INTO operations_layout_assignment VALUES(2,6,7,'2026-10-18 10:05:00');
+INSERT INTO business_source VALUES(12,NULL,NULL,NULL,NULL,2);
+INSERT INTO outcome VALUES(12,12,1,6,'同人审核成果','2026-10-18 14:00:00');
+INSERT INTO source_review_assignment VALUES(12,1,7,7,'2026-10-18 10:06:00'),(12,2,7,7,'2026-10-18 10:06:00');
+INSERT INTO source_review VALUES(13,12,12,1,1,7,'PASS','一审通过','2026-10-18 14:10:00',NULL);
+INSERT INTO source_archive VALUES(12,12,13,7,'2026-10-18 14:11:00');
+''')
+ok('external request archives after one authorized review',db.execute('SELECT COUNT(*) FROM source_archive WHERE source_id=10').fetchone()==(1,))
+ok('different reviewers require a second review',db.execute('SELECT final_review_id FROM source_archive WHERE source_id=11').fetchone()==(12,))
+ok('same reviewer archives directly after first review',db.execute('SELECT final_review_id FROM source_archive WHERE source_id=12').fetchone()==(13,))
+
 # Two versions of one work: an old review must never authorize the new draft.
 db.executescript('''
 INSERT INTO work VALUES(1,'推文','ORIGINAL');
@@ -75,7 +112,7 @@ INSERT INTO manuscript_version VALUES(1,1,1,'第一版',6,'2026-10-13 09:00:00')
 INSERT INTO manuscript_review VALUES(1,1,1,1,7,'PASS','一审通过','2026-10-13 09:10:00',NULL),(2,1,2,1,1,'PASS','二审通过','2026-10-13 09:20:00',1);
 INSERT INTO workflow VALUES(1,6,'运营推文','中心任务','发布推文','2026-10-13 08:00:00');
 INSERT INTO task_stage VALUES(1,1,3,1,'完成并发布推文','OPERATIONS_TWO_LEVEL',NULL);
-INSERT INTO business_source VALUES(2,NULL,NULL,1);
+INSERT INTO business_source VALUES(2,NULL,NULL,1,NULL,NULL);
 INSERT INTO stage_source VALUES(1,2);
 INSERT INTO stage_assignment VALUES(1,6,7,'2026-10-13 08:30:00',NULL);
 INSERT INTO outcome VALUES(2,2,1,6,'新版本成果','2026-10-13 10:00:00');
@@ -99,7 +136,7 @@ reject('cannot append stage to completed workflow',"INSERT INTO task_stage VALUE
 db.executescript('''
 INSERT INTO workflow VALUES(2,6,'设计流转','中心任务','设计成果','2026-10-13 08:00:00');
 INSERT INTO task_stage VALUES(2,2,4,1,'设计','NONE',NULL),(3,2,3,2,'接收设计','NONE',NULL);
-INSERT INTO business_source VALUES(3,NULL,NULL,2),(4,NULL,NULL,3);
+INSERT INTO business_source VALUES(3,NULL,NULL,2,NULL,NULL),(4,NULL,NULL,3,NULL,NULL);
 INSERT INTO stage_source VALUES(2,3),(3,4);
 INSERT INTO outcome VALUES(3,3,1,6,'设计成果','2026-10-13 09:00:00'),(4,4,1,6,'后续成果','2026-10-13 10:00:00');
 INSERT INTO contribution_basis VALUES(3,3,3,6,4,'2026-10-13 09:00:00','设计贡献');

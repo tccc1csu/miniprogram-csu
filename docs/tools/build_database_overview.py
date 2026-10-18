@@ -16,11 +16,14 @@ mapping={
 'Version': ['manuscript_version'],
 'Outcome': ['outcome','outcome_attachment','outcome_version'],
 'Publication': ['publication'],
-'Review': ['manuscript_review','editorial_review','editorial_review_item'],
 'Schedule': ['production_schedule'],
 'BookingTerms': ['booking_terms'],
 'Booking': ['production_booking','production_assignment','production_archive_responsibility','production_archive'],
 'Workflow': ['workflow','workflow_completion','business_source'],
+'ExternalRequest': ['external_request','external_request_assignment','source_attachment'],
+'OperationsLayout': ['operations_layout_task','operations_layout_assignment'],
+'ReviewAssignment': ['source_review_assignment'],
+'Review': ['manuscript_review','editorial_review','editorial_review_item','source_review','source_archive'],
 'Stage': ['task_stage','stage_assignment','stage_source','stage_current_draft','stage_confirmation','stage_completion','stage_contribution'],
 'Ledger': ['contribution_basis','contribution_measurement','v_contribution_detail','v_contribution_money','v_pending_contribution'],
 'Contribution': ['contribution_basis','contribution_measurement','contribution_type','v_contribution_detail','v_contribution_money'],
@@ -33,7 +36,8 @@ regions=[
 ('组织与账号','#EAF2FB',['organization','department','member','external_identity','login_session','archive_preference']),
 ('采编协同与稿件','#FFF5E8',['editorial','editorial_work','editorial_target','editorial_assignment','work','manuscript_version','platform','editorial_review','editorial_review_item','editorial_archive']),
 ('摄制预约','#EAF6F0',['production_schedule','booking_terms','production_booking','production_assignment','production_archive_responsibility','production_archive']),
-('流转任务与阶段','#F0EDFA',['workflow','task_stage','stage_assignment','business_source','stage_source','stage_confirmation','stage_completion','workflow_completion']),
+('外部需求与公众号排版','#F4EFFA',['external_request','external_request_assignment','operations_layout_task','operations_layout_assignment','business_source','source_attachment','source_review_assignment','source_review','source_archive']),
+('流转任务与阶段','#F0EDFA',['workflow','task_stage','stage_assignment','stage_source','stage_confirmation','stage_completion','workflow_completion']),
 ('成果与版本审核','#FFF0F1',['outcome','outcome_attachment','outcome_version','publication','stage_current_draft','manuscript_review']),
 ('工作贡献与津贴规则','#EFF8FA',['contribution_type','allowance_standard','contribution_policy','contribution_basis','stage_contribution','contribution_measurement','v_contribution_detail','v_contribution_money','v_member_weekly_summary','v_pending_contribution']),
 ('中心周报','#F7F6E8',['weekly_report','report_department','report_contribution','report_pending','report_seal','v_report_member_summary']),
@@ -60,7 +64,7 @@ view_labels={'v_contribution_detail':'有效贡献工时','v_contribution_money'
 source='''@startuml
 title
 图 46  青年传媒中心数据库关系总图
-分析实体映射 · 47 张基表与 5 个派生视图 · 七个分区共用一个关系模型
+分析实体映射 · 55 张基表与 5 个派生视图 · 八个分区共用一个关系模型
 end title
 skinparam defaultFontName Microsoft YaHei
 skinparam defaultFontSize 12
@@ -128,11 +132,11 @@ endlegend
 idx['overview']=dict(slug='db-overview',regions=[dict(label=l,tables=m) for l,c,m in regions],relations=relations,dependencies=dependencies)
 idx['class_mapping']=mapping
 (D/'model-index.json').write_text(json.dumps(idx,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-out='# 数据库外键关系清单\n\n本清单列出全部真实外键，R 编号对应完整 PlantUML 模型及模型索引。主图的61条线覆盖全部业务表之间的外键和组织区内公共引用；24条跨区成员／部门共享引用仅在字段旁显示蓝色箭头与目标表名。复合外键是一条整体关系，完整组成列及基数见下表。\n\n| 编号 | 子表（外键列） | 父表（被引用列） | 每条子记录对应父记录 | 一个父记录对应子记录 |\n| --- | --- | --- | --- | --- |\n'
+out='# 数据库外键关系清单\n\n本清单列出全部真实外键，R 编号对应完整 PlantUML 模型及模型索引。主图按八个分区绘制业务关系；跨区共享成员／部门引用仍在字段旁显示蓝色箭头与目标表名。复合外键是一条整体关系，完整组成列及基数见下表。\n\n| 编号 | 子表（外键列） | 父表（被引用列） | 每条子记录对应父记录 | 一个父记录对应子记录 |\n| --- | --- | --- | --- | --- |\n'
 for r in relations:
     parentcols=r['target_columns']
     if any(c is None for c in parentcols):parentcols=[c['name'] for c in sorted(tables[r['parent']]['columns'],key=lambda c:c['pk']) if c['pk']]
     out+=f'| {r["code"]} | {r["child"]}（'+', '.join(r['columns'])+'） | '+r['parent']+'（'+', '.join(parentcols)+'） | '+('0..1' if r['nullable'] else '1')+' | '+('0..1' if r['unique'] else '0..*')+' |\n'
-out+='\n`business_source` 的三条可空外键受“恰好一列非空”的 CHECK 联合限制。`publication` 的复合外键允许非稿件成果的 version_id 为空，但 outcome_id 仍由单独外键保证存在。父记录至少拥有一个子记录等跨行完整性，在发布／归档事务中检查。\n'
+out+='\n`business_source` 的五条可空外键受“恰好一列非空”的 CHECK 联合限制。`publication` 的复合外键允许非稿件成果的 version_id 为空，但 outcome_id 仍由单独外键保证存在。父记录至少拥有一个子记录等跨行完整性，在发布／归档事务中检查。\n'
 (ROOT/'database/foreign-key-relations.md').write_text(out,encoding='utf-8')
 print(f'Built ONE overview: {len(tables)} tables, {len(dependencies)} views, {len(relations)} FK relations, {len(mapping)} analysis-entity mappings.')

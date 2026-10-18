@@ -32,6 +32,9 @@ catalog={
 'Booking':('摄制预约',['任务名称','预约时段','地点','联系方式','提交时刻','抢单开放','承接方式','加急倍率','归档时刻（可选）'],['建立预约','确定承接','提交摄制成果','归档摄制成果','提取应计贡献','完成归档']),
 'Workflow':('流转任务',['名称','需求来源','工作目标','结束时刻（可选）'],['建立任务','派发阶段','提交阶段成果','审查阶段稿件','确认阶段完成','提供待计量贡献']),
 'Stage':('任务阶段',['次序','成果要求','截止日期（可选）','完成时刻（可选）'],['派发','提交成果','审查稿件','确认完成','检查可开始','提供贡献依据']),
+'ExternalRequest':('外部需求',['标题','需求说明','截止日期（可选）','提交时刻'],['发布需求','选择承接部门','接单派发','提交成果','审核归档']),
+'OperationsLayout':('公众号排版任务',['标题','排版类型','截止日期','创建时刻'],['发布排版需求','接单派发','提交排版成果','审核归档','提供待计量贡献']),
+'ReviewAssignment':('审核岗位安排',['审核层次','指定时刻'],['核验审核资格','提供指定审核人']),
 'Ledger':('工作量台账',[],['归集贡献','查询个人工作量','核对部门工作量','生成中心周报','识别未计入贡献']),
 'Contribution':('工作贡献',['贡献类型','发生时刻','基础工时','计入工时','适用倍率'],['验证计量依据','确认计量','核算津贴']),
 'Weekly':('成员周汇总',['周次','/有效工时'],['按明细汇总','核对一致性','核算津贴']),
@@ -80,7 +83,7 @@ Booking "0..1" *-- "0..1" Outcome : 提交的成果
 ''','派发和抢单共同调用确定承接()。\n该对象操作保证最多一名当前承接人。\n有冲突不建立摄制预约；加急判断保留受理时依据。\n冲突资源口径、两天的精度待确认，由摄制约定封装。')
 
 class_view('class-workflow','分析类图（三）— 部门与跨部门流转',
-['Member','Department','Workflow','Stage','Outcome','Version','Review'],'''
+['Member','Department','Workflow','Stage','ExternalRequest','OperationsLayout','ReviewAssignment','Outcome','Version','Review'],'''
 Member "1" -- "0..*" Workflow : 发起人
 Workflow "1" *-- "1..*" Stage : 顺序阶段
 Stage "后继 0..1" --> "前序 0..1" Stage : 相邻阶段
@@ -91,7 +94,16 @@ Stage "0..*" -- "0..1" Version : 当前送审版
 Outcome "0..*" -- "0..*" Version : 涉及稿件
 Version "1" -- "0..*" Review : 版本审查
 Member "1" -- "0..*" Review : 审核人
-''','任务拥有阶段，控制类先请求流转任务，再由任务委派阶段。\n每阶段一名当前承接人，贡献人员不等同于当前负责人。\n本轮按已有规约的顺序流转方案分析，不新增并行汇合制度。')
+ExternalRequest "0..*" -- "1" Member : 外部需求发布人
+ExternalRequest "0..*" -- "1" Department : 承接部门
+ExternalRequest "0..*" -- "0..1" Member : 当前承接人
+OperationsLayout "0..*" -- "1" Member : 布置部长
+OperationsLayout "1" *-- "1..2" ReviewAssignment : 一审与二审岗位
+ReviewAssignment "0..*" -- "1" Member : 指定审核部长
+ReviewAssignment "1" -- "0..*" Review : 实际审核事件
+OperationsLayout "0..1" -- "0..*" Outcome : 历次排版成果
+ExternalRequest "0..1" -- "0..*" Outcome : 历次承接成果
+''','流转任务拥有顺序阶段；外部需求是面向单一承接部门的独立业务，不是多阶段项目。\n公众号排版任务独立记录承接人与审核岗位；指定一审、二审可以是同一部长。\n审核岗位安排不等于实际审核事件；通过事件关联同一份成果，最终归档引用最后通过的审核。')
 
 class_view('class-accounting','分析类图（四）— 工作贡献与津贴核算',
 ['Ledger','Contribution','Weekly','Allowance','Report','Member','Department'],'''
@@ -116,12 +128,14 @@ Report "0..*" -- "0..*" Weekly : 统计依据
 Editorial "0..1" -- "0..*" Contribution : 协同来源
 Booking "0..1" -- "0..*" Contribution : 摄制来源
 Stage "0..1" -- "0..*" Contribution : 阶段来源
+ExternalRequest "0..1" -- "0..*" Contribution : 外部需求来源
+OperationsLayout "0..1" -- "0..*" Contribution : 排版来源
 note bottom of Contribution
-  {xor} 三种来源恰有一种成立。
+  {xor} 五种来源恰有一种成立。
   每项贡献关联一个实际来源；
   来源、贡献类型、成员共同防止重复。
 end note
-''','工作贡献对应需求中的任务明细；成员周汇总对应每周一条汇总。\n每项贡献恰关联一个来源协同、预约或任务阶段，不能重复计量。\n同一成员、周次只有一份汇总；有效工时由明细推导。\n基础工时 → 计入工时 → 津贴，加急倍率只应用一次。')
+''','工作贡献对应需求中的任务明细；成员周汇总对应每周一条汇总。\n每项贡献恰关联一个来源协同、预约、任务阶段、外部需求或公众号排版，不能重复计量。\n同一成员、周次只有一份汇总；有效工时由明细推导。\n基础工时 → 计入工时 → 津贴，加急倍率只应用一次。')
 
 # State and sequence messages use the same catalog of entity operations.
 seqs=[]

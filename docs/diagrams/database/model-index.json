@@ -1173,6 +1173,273 @@
       ],
       "uniques": []
     },
+    "external_request": {
+      "name": "external_request",
+      "label": "外部需求",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "requester_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "target_department_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "request_note",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "''",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "deadline_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "submitted_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "department",
+          "col": "target_department_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "requester_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "external_request_assignment": {
+      "name": "external_request_assignment",
+      "label": "外部需求承接责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "assignee_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "assignee_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "external_request",
+          "col": "request_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "operations_layout_task": {
+      "name": "operations_layout_task",
+      "label": "公众号排版任务",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "layout_task_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "title",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "layout_kind",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "deadline_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "created_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "created_by",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
+    "operations_layout_assignment": {
+      "name": "operations_layout_assignment",
+      "label": "排版承接责任",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "layout_task_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "assignee_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "assignee_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "operations_layout_task",
+          "col": "layout_task_id",
+          "to": null
+        }
+      ],
+      "uniques": []
+    },
     "task_stage": {
       "name": "task_stage",
       "label": "任务阶段",
@@ -1366,25 +1633,55 @@
           "nullable": true,
           "default": null,
           "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "external_request_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "operations_layout_task_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
         }
       ],
       "fks": [
         {
           "id": 0,
           "seq": 0,
+          "target": "operations_layout_task",
+          "col": "operations_layout_task_id",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "external_request",
+          "col": "external_request_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
           "target": "task_stage",
           "col": "stage_id",
           "to": null
         },
         {
-          "id": 1,
+          "id": 3,
           "seq": 0,
           "target": "production_booking",
           "col": "booking_id",
           "to": null
         },
         {
-          "id": 2,
+          "id": 4,
           "seq": 0,
           "target": "editorial",
           "col": "editorial_id",
@@ -1392,6 +1689,20 @@
         }
       ],
       "uniques": [
+        {
+          "name": "sqlite_autoindex_business_source_5",
+          "columns": [
+            "operations_layout_task_id"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_business_source_4",
+          "columns": [
+            "external_request_id"
+          ],
+          "partial": false
+        },
         {
           "name": "sqlite_autoindex_business_source_3",
           "columns": [
@@ -1410,6 +1721,86 @@
           "name": "sqlite_autoindex_business_source_1",
           "columns": [
             "editorial_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "source_attachment": {
+      "name": "source_attachment",
+      "label": "业务来源附件",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "attachment_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "file_name",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "storage_ref",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "uploaded_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "uploaded_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "uploaded_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_source_attachment_1",
+          "columns": [
+            "source_id",
+            "storage_ref"
           ],
           "partial": false
         }
@@ -1524,6 +1915,14 @@
         }
       ],
       "uniques": [
+        {
+          "name": "sqlite_autoindex_outcome_2",
+          "columns": [
+            "outcome_id",
+            "source_id"
+          ],
+          "partial": false
+        },
         {
           "name": "sqlite_autoindex_outcome_1",
           "columns": [
@@ -2023,6 +2422,342 @@
           "columns": [
             "editorial_review_id",
             "review_id"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "source_review_assignment": {
+      "name": "source_review_assignment",
+      "label": "来源审核岗位安排",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "level",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 2
+        },
+        {
+          "cid": 2,
+          "name": "reviewer_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "assigned_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "assigned_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "member",
+          "col": "assigned_by",
+          "to": null
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "reviewer_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_source_review_assignment_1",
+          "columns": [
+            "source_id",
+            "level"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "source_review": {
+      "name": "source_review",
+      "label": "来源审核事件",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "level",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "round_no",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "reviewer_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "decision",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "opinion",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "reviewed_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "prior_review_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": "outcome_id"
+        },
+        {
+          "id": 0,
+          "seq": 1,
+          "target": "outcome",
+          "col": "source_id",
+          "to": "source_id"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "source_review",
+          "col": "prior_review_id",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "member",
+          "col": "reviewer_id",
+          "to": null
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 4,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_source_review_2",
+          "columns": [
+            "review_id",
+            "source_id",
+            "outcome_id"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_source_review_1",
+          "columns": [
+            "source_id",
+            "outcome_id",
+            "level",
+            "round_no"
+          ],
+          "partial": false
+        }
+      ]
+    },
+    "source_archive": {
+      "name": "source_archive",
+      "label": "来源最终归档",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "source_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "outcome_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "final_review_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "archived_by",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "archived_at",
+          "type": "TEXT",
+          "nullable": false,
+          "default": null,
+          "pk": 0
+        }
+      ],
+      "fks": [
+        {
+          "id": 0,
+          "seq": 0,
+          "target": "source_review",
+          "col": "final_review_id",
+          "to": "review_id"
+        },
+        {
+          "id": 0,
+          "seq": 1,
+          "target": "source_review",
+          "col": "source_id",
+          "to": "source_id"
+        },
+        {
+          "id": 0,
+          "seq": 2,
+          "target": "source_review",
+          "col": "outcome_id",
+          "to": "outcome_id"
+        },
+        {
+          "id": 1,
+          "seq": 0,
+          "target": "member",
+          "col": "archived_by",
+          "to": null
+        },
+        {
+          "id": 2,
+          "seq": 0,
+          "target": "outcome",
+          "col": "outcome_id",
+          "to": null
+        },
+        {
+          "id": 3,
+          "seq": 0,
+          "target": "business_source",
+          "col": "source_id",
+          "to": null
+        }
+      ],
+      "uniques": [
+        {
+          "name": "sqlite_autoindex_source_archive_2",
+          "columns": [
+            "final_review_id"
+          ],
+          "partial": false
+        },
+        {
+          "name": "sqlite_autoindex_source_archive_1",
+          "columns": [
+            "outcome_id"
           ],
           "partial": false
         }
@@ -3012,25 +3747,46 @@
       ]
     },
     {
+      "slug": "db-external-layout",
+      "title": "外部需求与公众号排版",
+      "tables": [
+        "external_request",
+        "external_request_assignment",
+        "operations_layout_task",
+        "operations_layout_assignment",
+        "business_source",
+        "source_attachment",
+        "source_review_assignment",
+        "source_review",
+        "source_archive"
+      ],
+      "context": [
+        "department",
+        "editorial",
+        "member",
+        "outcome",
+        "production_booking",
+        "task_stage"
+      ]
+    },
+    {
       "slug": "db-workflow",
       "title": "任务、阶段与来源",
       "tables": [
         "workflow",
         "task_stage",
         "stage_assignment",
-        "business_source",
         "stage_source",
         "stage_confirmation",
         "stage_completion",
         "workflow_completion"
       ],
       "context": [
+        "business_source",
         "department",
-        "editorial",
         "manuscript_review",
         "member",
-        "outcome",
-        "production_booking"
+        "outcome"
       ]
     },
     {
@@ -3128,6 +3884,12 @@
     "editorial_review_item",
     "editorial_archive",
     "production_archive",
+    "source_attachment",
+    "source_review_assignment",
+    "source_review",
+    "source_archive",
+    "external_request_assignment",
+    "operations_layout_assignment",
     "stage_assignment",
     "stage_confirmation",
     "stage_completion",
@@ -3184,12 +3946,25 @@
         ]
       },
       {
+        "label": "外部需求与公众号排版",
+        "tables": [
+          "external_request",
+          "external_request_assignment",
+          "operations_layout_task",
+          "operations_layout_assignment",
+          "business_source",
+          "source_attachment",
+          "source_review_assignment",
+          "source_review",
+          "source_archive"
+        ]
+      },
+      {
         "label": "流转任务与阶段",
         "tables": [
           "workflow",
           "task_stage",
           "stage_assignment",
-          "business_source",
           "stage_source",
           "stage_confirmation",
           "stage_completion",
@@ -3590,10 +4365,10 @@
       },
       {
         "code": "R028",
-        "child": "task_stage",
+        "child": "external_request",
         "parent": "department",
         "columns": [
-          "department_id"
+          "target_department_id"
         ],
         "target_columns": [
           null
@@ -3603,10 +4378,10 @@
       },
       {
         "code": "R029",
-        "child": "task_stage",
-        "parent": "workflow",
+        "child": "external_request",
+        "parent": "member",
         "columns": [
-          "workflow_id"
+          "requester_id"
         ],
         "target_columns": [
           null
@@ -3616,7 +4391,7 @@
       },
       {
         "code": "R030",
-        "child": "stage_assignment",
+        "child": "external_request_assignment",
         "parent": "member",
         "columns": [
           "assigned_by"
@@ -3629,7 +4404,7 @@
       },
       {
         "code": "R031",
-        "child": "stage_assignment",
+        "child": "external_request_assignment",
         "parent": "member",
         "columns": [
           "assignee_id"
@@ -3642,6 +4417,123 @@
       },
       {
         "code": "R032",
+        "child": "external_request_assignment",
+        "parent": "external_request",
+        "columns": [
+          "request_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R033",
+        "child": "operations_layout_task",
+        "parent": "member",
+        "columns": [
+          "created_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R034",
+        "child": "operations_layout_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R035",
+        "child": "operations_layout_assignment",
+        "parent": "member",
+        "columns": [
+          "assignee_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R036",
+        "child": "operations_layout_assignment",
+        "parent": "operations_layout_task",
+        "columns": [
+          "layout_task_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R037",
+        "child": "task_stage",
+        "parent": "department",
+        "columns": [
+          "department_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R038",
+        "child": "task_stage",
+        "parent": "workflow",
+        "columns": [
+          "workflow_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R039",
+        "child": "stage_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R040",
+        "child": "stage_assignment",
+        "parent": "member",
+        "columns": [
+          "assignee_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R041",
         "child": "stage_assignment",
         "parent": "task_stage",
         "columns": [
@@ -3654,7 +4546,33 @@
         "unique": true
       },
       {
-        "code": "R033",
+        "code": "R042",
+        "child": "business_source",
+        "parent": "operations_layout_task",
+        "columns": [
+          "operations_layout_task_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": true
+      },
+      {
+        "code": "R043",
+        "child": "business_source",
+        "parent": "external_request",
+        "columns": [
+          "external_request_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": true
+      },
+      {
+        "code": "R044",
         "child": "business_source",
         "parent": "task_stage",
         "columns": [
@@ -3667,7 +4585,7 @@
         "unique": true
       },
       {
-        "code": "R034",
+        "code": "R045",
         "child": "business_source",
         "parent": "production_booking",
         "columns": [
@@ -3680,7 +4598,7 @@
         "unique": true
       },
       {
-        "code": "R035",
+        "code": "R046",
         "child": "business_source",
         "parent": "editorial",
         "columns": [
@@ -3693,7 +4611,33 @@
         "unique": true
       },
       {
-        "code": "R036",
+        "code": "R047",
+        "child": "source_attachment",
+        "parent": "member",
+        "columns": [
+          "uploaded_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R048",
+        "child": "source_attachment",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R049",
         "child": "stage_source",
         "parent": "business_source",
         "columns": [
@@ -3706,7 +4650,7 @@
         "unique": false
       },
       {
-        "code": "R037",
+        "code": "R050",
         "child": "stage_source",
         "parent": "task_stage",
         "columns": [
@@ -3719,7 +4663,7 @@
         "unique": true
       },
       {
-        "code": "R038",
+        "code": "R051",
         "child": "outcome",
         "parent": "member",
         "columns": [
@@ -3732,7 +4676,7 @@
         "unique": false
       },
       {
-        "code": "R039",
+        "code": "R052",
         "child": "outcome",
         "parent": "business_source",
         "columns": [
@@ -3745,7 +4689,7 @@
         "unique": false
       },
       {
-        "code": "R040",
+        "code": "R053",
         "child": "outcome_attachment",
         "parent": "outcome",
         "columns": [
@@ -3758,7 +4702,7 @@
         "unique": false
       },
       {
-        "code": "R041",
+        "code": "R054",
         "child": "outcome_version",
         "parent": "manuscript_version",
         "columns": [
@@ -3771,7 +4715,7 @@
         "unique": false
       },
       {
-        "code": "R042",
+        "code": "R055",
         "child": "outcome_version",
         "parent": "outcome",
         "columns": [
@@ -3784,7 +4728,7 @@
         "unique": false
       },
       {
-        "code": "R043",
+        "code": "R056",
         "child": "publication",
         "parent": "outcome_version",
         "columns": [
@@ -3799,7 +4743,7 @@
         "unique": false
       },
       {
-        "code": "R044",
+        "code": "R057",
         "child": "publication",
         "parent": "platform",
         "columns": [
@@ -3812,7 +4756,7 @@
         "unique": false
       },
       {
-        "code": "R045",
+        "code": "R058",
         "child": "publication",
         "parent": "outcome",
         "columns": [
@@ -3825,7 +4769,7 @@
         "unique": false
       },
       {
-        "code": "R046",
+        "code": "R059",
         "child": "stage_current_draft",
         "parent": "outcome_version",
         "columns": [
@@ -3840,7 +4784,7 @@
         "unique": false
       },
       {
-        "code": "R047",
+        "code": "R060",
         "child": "stage_current_draft",
         "parent": "task_stage",
         "columns": [
@@ -3853,7 +4797,7 @@
         "unique": true
       },
       {
-        "code": "R048",
+        "code": "R061",
         "child": "manuscript_review",
         "parent": "manuscript_review",
         "columns": [
@@ -3866,7 +4810,7 @@
         "unique": false
       },
       {
-        "code": "R049",
+        "code": "R062",
         "child": "manuscript_review",
         "parent": "member",
         "columns": [
@@ -3879,7 +4823,7 @@
         "unique": false
       },
       {
-        "code": "R050",
+        "code": "R063",
         "child": "manuscript_review",
         "parent": "manuscript_version",
         "columns": [
@@ -3892,7 +4836,7 @@
         "unique": false
       },
       {
-        "code": "R051",
+        "code": "R064",
         "child": "editorial_review",
         "parent": "member",
         "columns": [
@@ -3905,7 +4849,7 @@
         "unique": false
       },
       {
-        "code": "R052",
+        "code": "R065",
         "child": "editorial_review",
         "parent": "outcome",
         "columns": [
@@ -3918,7 +4862,7 @@
         "unique": true
       },
       {
-        "code": "R053",
+        "code": "R066",
         "child": "editorial_review_item",
         "parent": "manuscript_review",
         "columns": [
@@ -3931,7 +4875,7 @@
         "unique": false
       },
       {
-        "code": "R054",
+        "code": "R067",
         "child": "editorial_review_item",
         "parent": "editorial_review",
         "columns": [
@@ -3944,7 +4888,169 @@
         "unique": false
       },
       {
-        "code": "R055",
+        "code": "R068",
+        "child": "source_review_assignment",
+        "parent": "member",
+        "columns": [
+          "assigned_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R069",
+        "child": "source_review_assignment",
+        "parent": "member",
+        "columns": [
+          "reviewer_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R070",
+        "child": "source_review_assignment",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R071",
+        "child": "source_review",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id",
+          "source_id"
+        ],
+        "target_columns": [
+          "outcome_id",
+          "source_id"
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R072",
+        "child": "source_review",
+        "parent": "source_review",
+        "columns": [
+          "prior_review_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": true,
+        "unique": false
+      },
+      {
+        "code": "R073",
+        "child": "source_review",
+        "parent": "member",
+        "columns": [
+          "reviewer_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R074",
+        "child": "source_review",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R075",
+        "child": "source_review",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R076",
+        "child": "source_archive",
+        "parent": "source_review",
+        "columns": [
+          "final_review_id",
+          "source_id",
+          "outcome_id"
+        ],
+        "target_columns": [
+          "review_id",
+          "source_id",
+          "outcome_id"
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R077",
+        "child": "source_archive",
+        "parent": "member",
+        "columns": [
+          "archived_by"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": false
+      },
+      {
+        "code": "R078",
+        "child": "source_archive",
+        "parent": "outcome",
+        "columns": [
+          "outcome_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R079",
+        "child": "source_archive",
+        "parent": "business_source",
+        "columns": [
+          "source_id"
+        ],
+        "target_columns": [
+          null
+        ],
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "code": "R080",
         "child": "editorial_archive",
         "parent": "editorial_review",
         "columns": [
@@ -3957,7 +5063,7 @@
         "unique": true
       },
       {
-        "code": "R056",
+        "code": "R081",
         "child": "editorial_archive",
         "parent": "editorial",
         "columns": [
@@ -3970,7 +5076,7 @@
         "unique": true
       },
       {
-        "code": "R057",
+        "code": "R082",
         "child": "production_archive",
         "parent": "member",
         "columns": [
@@ -3983,7 +5089,7 @@
         "unique": false
       },
       {
-        "code": "R058",
+        "code": "R083",
         "child": "production_archive",
         "parent": "outcome",
         "columns": [
@@ -3996,7 +5102,7 @@
         "unique": true
       },
       {
-        "code": "R059",
+        "code": "R084",
         "child": "production_archive",
         "parent": "production_booking",
         "columns": [
@@ -4009,7 +5115,7 @@
         "unique": true
       },
       {
-        "code": "R060",
+        "code": "R085",
         "child": "stage_confirmation",
         "parent": "member",
         "columns": [
@@ -4022,7 +5128,7 @@
         "unique": false
       },
       {
-        "code": "R061",
+        "code": "R086",
         "child": "stage_confirmation",
         "parent": "outcome",
         "columns": [
@@ -4035,7 +5141,7 @@
         "unique": false
       },
       {
-        "code": "R062",
+        "code": "R087",
         "child": "stage_confirmation",
         "parent": "task_stage",
         "columns": [
@@ -4048,7 +5154,7 @@
         "unique": false
       },
       {
-        "code": "R063",
+        "code": "R088",
         "child": "stage_completion",
         "parent": "manuscript_review",
         "columns": [
@@ -4061,7 +5167,7 @@
         "unique": false
       },
       {
-        "code": "R064",
+        "code": "R089",
         "child": "stage_completion",
         "parent": "stage_confirmation",
         "columns": [
@@ -4074,7 +5180,7 @@
         "unique": true
       },
       {
-        "code": "R065",
+        "code": "R090",
         "child": "stage_completion",
         "parent": "task_stage",
         "columns": [
@@ -4087,7 +5193,7 @@
         "unique": true
       },
       {
-        "code": "R066",
+        "code": "R091",
         "child": "workflow_completion",
         "parent": "workflow",
         "columns": [
@@ -4100,7 +5206,7 @@
         "unique": true
       },
       {
-        "code": "R067",
+        "code": "R092",
         "child": "allowance_standard",
         "parent": "department",
         "columns": [
@@ -4113,7 +5219,7 @@
         "unique": false
       },
       {
-        "code": "R068",
+        "code": "R093",
         "child": "contribution_policy",
         "parent": "contribution_type",
         "columns": [
@@ -4126,7 +5232,7 @@
         "unique": false
       },
       {
-        "code": "R069",
+        "code": "R094",
         "child": "contribution_policy",
         "parent": "allowance_standard",
         "columns": [
@@ -4139,7 +5245,7 @@
         "unique": false
       },
       {
-        "code": "R070",
+        "code": "R095",
         "child": "contribution_basis",
         "parent": "department",
         "columns": [
@@ -4152,7 +5258,7 @@
         "unique": false
       },
       {
-        "code": "R071",
+        "code": "R096",
         "child": "contribution_basis",
         "parent": "member",
         "columns": [
@@ -4165,7 +5271,7 @@
         "unique": false
       },
       {
-        "code": "R072",
+        "code": "R097",
         "child": "contribution_basis",
         "parent": "contribution_type",
         "columns": [
@@ -4178,7 +5284,7 @@
         "unique": false
       },
       {
-        "code": "R073",
+        "code": "R098",
         "child": "contribution_basis",
         "parent": "business_source",
         "columns": [
@@ -4191,7 +5297,7 @@
         "unique": false
       },
       {
-        "code": "R074",
+        "code": "R099",
         "child": "stage_contribution",
         "parent": "contribution_basis",
         "columns": [
@@ -4204,7 +5310,7 @@
         "unique": false
       },
       {
-        "code": "R075",
+        "code": "R100",
         "child": "stage_contribution",
         "parent": "task_stage",
         "columns": [
@@ -4217,7 +5323,7 @@
         "unique": false
       },
       {
-        "code": "R076",
+        "code": "R101",
         "child": "contribution_measurement",
         "parent": "contribution_policy",
         "columns": [
@@ -4230,7 +5336,7 @@
         "unique": false
       },
       {
-        "code": "R077",
+        "code": "R102",
         "child": "contribution_measurement",
         "parent": "contribution_basis",
         "columns": [
@@ -4243,7 +5349,7 @@
         "unique": true
       },
       {
-        "code": "R078",
+        "code": "R103",
         "child": "weekly_report",
         "parent": "member",
         "columns": [
@@ -4256,7 +5362,7 @@
         "unique": false
       },
       {
-        "code": "R079",
+        "code": "R104",
         "child": "report_department",
         "parent": "department",
         "columns": [
@@ -4269,7 +5375,7 @@
         "unique": false
       },
       {
-        "code": "R080",
+        "code": "R105",
         "child": "report_department",
         "parent": "weekly_report",
         "columns": [
@@ -4282,7 +5388,7 @@
         "unique": false
       },
       {
-        "code": "R081",
+        "code": "R106",
         "child": "report_contribution",
         "parent": "contribution_measurement",
         "columns": [
@@ -4295,7 +5401,7 @@
         "unique": false
       },
       {
-        "code": "R082",
+        "code": "R107",
         "child": "report_contribution",
         "parent": "weekly_report",
         "columns": [
@@ -4308,7 +5414,7 @@
         "unique": false
       },
       {
-        "code": "R083",
+        "code": "R108",
         "child": "report_pending",
         "parent": "contribution_basis",
         "columns": [
@@ -4321,7 +5427,7 @@
         "unique": false
       },
       {
-        "code": "R084",
+        "code": "R109",
         "child": "report_pending",
         "parent": "weekly_report",
         "columns": [
@@ -4334,7 +5440,7 @@
         "unique": false
       },
       {
-        "code": "R085",
+        "code": "R110",
         "child": "report_seal",
         "parent": "weekly_report",
         "columns": [
@@ -4411,11 +5517,6 @@
     "Publication": [
       "publication"
     ],
-    "Review": [
-      "manuscript_review",
-      "editorial_review",
-      "editorial_review_item"
-    ],
     "Schedule": [
       "production_schedule"
     ],
@@ -4432,6 +5533,25 @@
       "workflow",
       "workflow_completion",
       "business_source"
+    ],
+    "ExternalRequest": [
+      "external_request",
+      "external_request_assignment",
+      "source_attachment"
+    ],
+    "OperationsLayout": [
+      "operations_layout_task",
+      "operations_layout_assignment"
+    ],
+    "ReviewAssignment": [
+      "source_review_assignment"
+    ],
+    "Review": [
+      "manuscript_review",
+      "editorial_review",
+      "editorial_review_item",
+      "source_review",
+      "source_archive"
     ],
     "Stage": [
       "task_stage",

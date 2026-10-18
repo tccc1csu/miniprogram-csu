@@ -50,6 +50,34 @@ class "任务阶段" as Stage <<entity>> {
   + 检查可开始(业务信息)
   + 提供贡献依据()
 }
+class "外部需求" as ExternalRequest <<entity>> {
+  - 标题
+  - 需求说明
+  - 截止日期（可选）
+  - 提交时刻
+  + 发布需求(业务信息)
+  + 选择承接部门(业务信息)
+  + 接单派发(业务信息)
+  + 提交成果(业务信息)
+  + 审核归档(业务信息)
+}
+class "公众号排版任务" as OperationsLayout <<entity>> {
+  - 标题
+  - 排版类型
+  - 截止日期
+  - 创建时刻
+  + 发布排版需求(业务信息)
+  + 接单派发(业务信息)
+  + 提交排版成果(业务信息)
+  + 审核归档(业务信息)
+  + 提供待计量贡献()
+}
+class "审核岗位安排" as ReviewAssignment <<entity>> {
+  - 审核层次
+  - 指定时刻
+  + 核验审核资格(业务信息)
+  + 提供指定审核人(业务信息)
+}
 class "成果" as Outcome <<entity>> {
   - 完成说明
   - 提交时刻
@@ -80,6 +108,15 @@ Stage "0..*" -- "0..1" Version : 当前送审版
 Outcome "0..*" -- "0..*" Version : 涉及稿件
 Version "1" -- "0..*" Review : 版本审查
 Member "1" -- "0..*" Review : 审核人
+ExternalRequest "0..*" -- "1" Member : 外部需求发布人
+ExternalRequest "0..*" -- "1" Department : 承接部门
+ExternalRequest "0..*" -- "0..1" Member : 当前承接人
+OperationsLayout "0..*" -- "1" Member : 布置部长
+OperationsLayout "1" *-- "1..2" ReviewAssignment : 一审与二审岗位
+ReviewAssignment "0..*" -- "1" Member : 指定审核部长
+ReviewAssignment "1" -- "0..*" Review : 实际审核事件
+OperationsLayout "0..1" -- "0..*" Outcome : 历次排版成果
+ExternalRequest "0..1" -- "0..*" Outcome : 历次承接成果
 
-note "任务拥有阶段，控制类先请求流转任务，再由任务委派阶段。\n每阶段一名当前承接人，贡献人员不等同于当前负责人。\n本轮按已有规约的顺序流转方案分析，不新增并行汇合制度。" as Guidance
+note "流转任务拥有顺序阶段；外部需求是面向单一承接部门的独立业务，不是多阶段项目。\n公众号排版任务独立记录承接人与审核岗位；指定一审、二审可以是同一部长。\n审核岗位安排不等于实际审核事件；通过事件关联同一份成果，最终归档引用最后通过的审核。" as Guidance
 @enduml

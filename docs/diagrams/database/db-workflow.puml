@@ -38,13 +38,6 @@ entity "阶段承接责任\nstage_assignment" as stage_assignment {
   assigned_at : TEXT <<NN>>
   roster_basis : TEXT <<NULL>>
 }
-entity "唯一业务来源\nbusiness_source" as business_source {
-  source_id : INTEGER <<PK, NN>>
-  --
-  editorial_id : INTEGER <<FK, UQ, NULL>>
-  booking_id : INTEGER <<FK, UQ, NULL>>
-  stage_id : INTEGER <<FK, UQ, NULL>>
-}
 entity "阶段来源映射\nstage_source" as stage_source {
   stage_id : INTEGER <<PK, FK, NN>>
   --
@@ -71,11 +64,11 @@ entity "任务完成\nworkflow_completion" as workflow_completion {
   --
   completed_at : TEXT <<NN>>
 }
+entity "唯一业务来源\nbusiness_source" as business_source {
+  source_id : INTEGER <<PK, NN>>
+}
 entity "部门\ndepartment" as department {
   department_id : INTEGER <<PK, NN>>
-}
-entity "采编协同\neditorial" as editorial {
-  editorial_id : INTEGER <<PK, NN>>
 }
 entity "稿件审查结论\nmanuscript_review" as manuscript_review {
   review_id : INTEGER <<PK, NN>>
@@ -86,17 +79,11 @@ entity "成员与账号\nmember" as member {
 entity "成果提交\noutcome" as outcome {
   outcome_id : INTEGER <<PK, NN>>
 }
-entity "摄制预约\nproduction_booking" as production_booking {
-  booking_id : INTEGER <<PK, NN>>
-}
 member ||--o{ workflow
 department ||--o{ task_stage
 workflow ||--o{ task_stage
 member ||--o{ stage_assignment
 task_stage ||--o| stage_assignment
-task_stage |o--o| business_source
-production_booking |o--o| business_source
-editorial |o--o| business_source
 business_source ||--o{ stage_source
 task_stage ||--o| stage_source
 member ||--o{ stage_confirmation

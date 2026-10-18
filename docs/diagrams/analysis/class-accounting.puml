@@ -85,11 +85,13 @@ Report "0..*" -- "0..*" Weekly : 统计依据
 Editorial "0..1" -- "0..*" Contribution : 协同来源
 Booking "0..1" -- "0..*" Contribution : 摄制来源
 Stage "0..1" -- "0..*" Contribution : 阶段来源
+ExternalRequest "0..1" -- "0..*" Contribution : 外部需求来源
+OperationsLayout "0..1" -- "0..*" Contribution : 排版来源
 note bottom of Contribution
-  {xor} 三种来源恰有一种成立。
+  {xor} 五种来源恰有一种成立。
   每项贡献关联一个实际来源；
   来源、贡献类型、成员共同防止重复。
 end note
 
-note "工作贡献对应需求中的任务明细；成员周汇总对应每周一条汇总。\n每项贡献恰关联一个来源协同、预约或任务阶段，不能重复计量。\n同一成员、周次只有一份汇总；有效工时由明细推导。\n基础工时 → 计入工时 → 津贴，加急倍率只应用一次。" as Guidance
+note "工作贡献对应需求中的任务明细；成员周汇总对应每周一条汇总。\n每项贡献恰关联一个来源协同、预约、任务阶段、外部需求或公众号排版，不能重复计量。\n同一成员、周次只有一份汇总；有效工时由明细推导。\n基础工时 → 计入工时 → 津贴，加急倍率只应用一次。" as Guidance
 @enduml

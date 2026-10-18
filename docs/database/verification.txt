@@ -1,4 +1,4 @@
-PASS: 108 scenario/artifact checks; 47 tables; 5 views; ONE complete overview + 8 detail views.
+PASS: 122 scenario/artifact checks; 55 tables; 5 views; ONE complete overview + 9 detail views.
 PASS canonical timestamps reject mixed T formatting
 PASS invalid timestamp is rejected
 PASS non-admin requires a department
@@ -23,6 +23,15 @@ PASS cannot rewrite historical rate
 PASS cannot rewrite measurement
 PASS weekly view has one member week row
 PASS Sunday and Monday belong to correct weeks
+PASS external request cannot assign outside target department
+PASS external request cannot be dispatched by unrelated department
+PASS operations layout cannot assign outside operations
+PASS layout review slot requires operations minister
+PASS assigned layout reviewer cannot be replaced by a different reviewer
+PASS different second reviewer cannot archive after first review
+PASS external request archives after one authorized review
+PASS different reviewers require a second review
+PASS same reviewer archives directly after first review
 PASS old first review cannot authorize new second review
 PASS old passed version cannot complete changed draft
 PASS publication version must belong to outcome
@@ -64,6 +73,11 @@ PASS db-production rendered .png
 PASS db-production rendered .svg
 PASS db-production has no render error
 PASS db-production render is current
+PASS db-external-layout uses orthogonal connectors
+PASS db-external-layout rendered .png
+PASS db-external-layout rendered .svg
+PASS db-external-layout has no render error
+PASS db-external-layout render is current
 PASS db-workflow uses orthogonal connectors
 PASS db-workflow rendered .png
 PASS db-workflow rendered .svg

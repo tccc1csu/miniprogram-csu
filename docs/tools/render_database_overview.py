@@ -61,7 +61,7 @@ for n in list(tables)+idx['views']:
                 footer+=wrap('UQ ('+', '.join(u['columns'])+')'+where,CW-24)
         for r in [r for r in rels if r['child']==n and len(r['columns'])>1]:
             footer+=wrap(r['code']+' FK ('+', '.join(r['columns'])+') · 复合外键',CW-24)
-        if n=='business_source':footer+=['CHECK：三种来源外键恰好一列非空']
+        if n=='business_source':footer+=['CHECK：五种来源外键恰好一列非空']
     else:footer=['VIEW · 派生结果，无物理 PK / FK',{'v_contribution_detail':'粒度：basis_id','v_contribution_money':'粒度：basis_id','v_member_weekly_summary':'粒度：member_id + week_start','v_pending_contribution':'粒度：basis_id','v_report_member_summary':'粒度：report_id + member_id'}[n]]
     widths=[width(n,17)+28,width(label,15)+28,width('分析类：'+'／'.join(owners),11)+28]
     for line in lines:
@@ -72,16 +72,17 @@ for n in list(tables)+idx['views']:
 
 # Three lanes; each region is a two-column compact row layout. A small strip
 # per region is explicitly reserved for additions, instead of global blank space.
-bands=[[0,2,1,6],[3,4,5]]
-colors=['#EAF2FB','#FFF3E3','#E8F4ED','#EFEBF8','#FCECEF','#E8F4F6','#F5F2DD']
+bands=[[0,1,2,3],[4,5,6,7]]
+colors=['#EAF2FB','#FFF3E3','#E8F4ED','#EFEBF8','#FCECEF','#E8F4F6','#F5F2DD','#F7F6E8']
 columns={
 0:[['organization','department','member'],['external_identity','login_session','archive_preference']],
 1:[['work','manuscript_version','platform'],['editorial','editorial_work','editorial_target','editorial_assignment'],['editorial_review','editorial_review_item','editorial_archive']],
 2:[['production_schedule','booking_terms','production_booking'],['production_assignment','production_archive_responsibility','production_archive']],
-3:[['workflow','task_stage','stage_assignment'],['business_source','stage_source','workflow_completion'],['stage_confirmation','stage_completion']],
-4:[['outcome','outcome_attachment','outcome_version'],['manuscript_review','stage_current_draft','publication']],
-5:[['allowance_standard','contribution_policy','contribution_measurement'],['contribution_type','contribution_basis','stage_contribution'],['v_contribution_detail','v_pending_contribution'],['v_contribution_money','v_member_weekly_summary']],
-6:[['weekly_report','report_department','report_seal'],['report_contribution','report_pending','v_report_member_summary']],
+3:[['external_request','external_request_assignment','operations_layout_task'],['operations_layout_assignment','business_source','source_attachment'],['source_review_assignment','source_review','source_archive']],
+4:[['workflow','task_stage','stage_assignment'],['stage_source','stage_confirmation','stage_completion','workflow_completion']],
+5:[['outcome','outcome_attachment','outcome_version'],['manuscript_review','stage_current_draft','publication']],
+6:[['allowance_standard','contribution_policy','contribution_measurement'],['contribution_type','contribution_basis','stage_contribution'],['v_contribution_detail','v_pending_contribution'],['v_contribution_money','v_member_weekly_summary']],
+7:[['weekly_report','report_department','report_seal'],['report_contribution','report_pending','v_report_member_summary']],
 }
 zones=[];totalwidths=[];y=126
 for regions in bands:
@@ -213,7 +214,7 @@ emit(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox=
 emit('''<style>.relation {stroke:#526579;stroke-width:1.7;fill:none} .edge:hover .relation {stroke:#1b67af;stroke-width:3} .card:hover rect {stroke:#245e95;stroke-width:1.8}</style>''')
 emit(f'<rect width="{W}" height="{H}" fill="#fff"/>')
 txt(48,42,'图 46  青年传媒中心 · 数据库关系总图',30,weight='bold')
-txt(48,75,'47 张基表 / 5 个派生视图 · 完整业务关联与基数 · 黄色钥匙标主键 / 蓝色箭头标外键目标表',17,color='#526579')
+txt(48,75,'55 张基表 / 5 个派生视图 · 完整业务关联与基数 · 黄色钥匙标主键 / 蓝色箭头标外键目标表',17,color='#526579')
 for z in zones:
     emit(f'<g id="region-{z["id"]}"><rect x="{z["x"]}" y="{z["y"]}" width="{z["w"]}" height="{z["h"]}" rx="0" fill="{z["color"]}" stroke="#bac6d2"/>')
     txt(z['x']+PAD,z['y']+32,str(z['id']+1)+'  '+z['label'],19,weight='bold')

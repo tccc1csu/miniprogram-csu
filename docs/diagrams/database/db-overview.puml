@@ -1,7 +1,7 @@
 @startuml
 title
 图 46  青年传媒中心数据库关系总图
-分析实体映射 · 47 张基表与 5 个派生视图 · 七个分区共用一个关系模型
+分析实体映射 · 55 张基表与 5 个派生视图 · 八个分区共用一个关系模型
 end title
 skinparam defaultFontName Microsoft YaHei
 skinparam defaultFontSize 12
@@ -167,39 +167,39 @@ entity "发布平台\nplatform" as platform <<作品>> {
 }
 entity "同步审核结论\neditorial_review" as editorial_review <<审核结论>> {
   editorial_review_id : I64 [PK1; NN]
-  outcome_id : I64 [FK R052; UQ; NN]
-  reviewer_id : I64 [FK R051; NN]
+  outcome_id : I64 [FK R065; UQ; NN]
+  reviewer_id : I64 [FK R064; NN]
   decision : TEXT [NN]
   opinion : TEXT [NN]
   reviewed_at : TEXT [NN]
   --
   PK(editorial_review_id)
-  R051 FK(reviewer_id)
+  R064 FK(reviewer_id)
     → member(member_id)
-  R052 FK(outcome_id)
+  R065 FK(outcome_id)
     → outcome(outcome_id)
 }
 entity "同步审核稿件依据\neditorial_review_item" as editorial_review_item <<审核结论>> {
-  editorial_review_id : I64 [PK1; FK R054; NN]
-  review_id : I64 [PK2; FK R053; NN]
+  editorial_review_id : I64 [PK1; FK R067; NN]
+  review_id : I64 [PK2; FK R066; NN]
   --
   PK(editorial_review_id, review_id)
-  R053 FK(review_id)
+  R066 FK(review_id)
     → manuscript_review(review_id)
-  R054 FK(editorial_review_id)
+  R067 FK(editorial_review_id)
     → editorial_review(editorial_review_id)
   --
   UQ(editorial_review_id,review_id)
 }
 entity "采编归档完成\neditorial_archive" as editorial_archive <<采编协同>> {
-  editorial_id : I64 [PK1; FK R056; NN]
-  editorial_review_id : I64 [FK R055; UQ; NN]
+  editorial_id : I64 [PK1; FK R081; NN]
+  editorial_review_id : I64 [FK R080; UQ; NN]
   archived_at : TEXT [NN]
   --
   PK(editorial_id)
-  R055 FK(editorial_review_id)
+  R080 FK(editorial_review_id)
     → editorial_review(editorial_review_id)
-  R056 FK(editorial_id)
+  R081 FK(editorial_id)
     → editorial(editorial_id)
 }
 }
@@ -278,21 +278,175 @@ entity "指定办公归档责任\nproduction_archive_responsibility" as producti
     → production_booking(booking_id)
 }
 entity "摄制归档完成\nproduction_archive" as production_archive <<摄制预约>> {
-  booking_id : I64 [PK1; FK R059; NN]
-  outcome_id : I64 [FK R058; UQ; NN]
-  archived_by : I64 [FK R057; NN]
+  booking_id : I64 [PK1; FK R084; NN]
+  outcome_id : I64 [FK R083; UQ; NN]
+  archived_by : I64 [FK R082; NN]
   archived_at : TEXT [NN]
   --
   PK(booking_id)
-  R057 FK(archived_by)
+  R082 FK(archived_by)
     → member(member_id)
-  R058 FK(outcome_id)
+  R083 FK(outcome_id)
     → outcome(outcome_id)
-  R059 FK(booking_id)
+  R084 FK(booking_id)
     → production_booking(booking_id)
 }
 }
-package "4. 流转任务与阶段" as region3 #F0EDFA {
+package "4. 外部需求与公众号排版" as region3 #F4EFFA {
+entity "外部需求\nexternal_request" as external_request <<外部需求>> {
+  request_id : I64 [PK1; NN]
+  requester_id : I64 [FK R029; NN]
+  target_department_id : I64 [FK R028; NN]
+  title : TEXT [NN]
+  request_note : TEXT [NN]
+  deadline_at : TEXT [NULL]
+  submitted_at : TEXT [NN]
+  --
+  PK(request_id)
+  R028 FK(target_department_id)
+    → department(department_id)
+  R029 FK(requester_id)
+    → member(member_id)
+}
+entity "外部需求承接责任\nexternal_request_assignment" as external_request_assignment <<外部需求>> {
+  request_id : I64 [PK1; FK R032; NN]
+  assignee_id : I64 [FK R031; NN]
+  assigned_by : I64 [FK R030; NN]
+  assigned_at : TEXT [NN]
+  --
+  PK(request_id)
+  R030 FK(assigned_by)
+    → member(member_id)
+  R031 FK(assignee_id)
+    → member(member_id)
+  R032 FK(request_id)
+    → external_request(request_id)
+}
+entity "公众号排版任务\noperations_layout_task" as operations_layout_task <<公众号排版任务>> {
+  layout_task_id : I64 [PK1; NN]
+  title : TEXT [NN]
+  layout_kind : TEXT [NN]
+  deadline_at : TEXT [NN]
+  created_by : I64 [FK R033; NN]
+  created_at : TEXT [NN]
+  --
+  PK(layout_task_id)
+  R033 FK(created_by)
+    → member(member_id)
+}
+entity "排版承接责任\noperations_layout_assignment" as operations_layout_assignment <<公众号排版任务>> {
+  layout_task_id : I64 [PK1; FK R036; NN]
+  assignee_id : I64 [FK R035; NN]
+  assigned_by : I64 [FK R034; NN]
+  assigned_at : TEXT [NN]
+  --
+  PK(layout_task_id)
+  R034 FK(assigned_by)
+    → member(member_id)
+  R035 FK(assignee_id)
+    → member(member_id)
+  R036 FK(layout_task_id)
+    → operations_layout_task(layout_task_id)
+}
+entity "唯一业务来源\nbusiness_source" as business_source <<跨流程来源标识（设计辅助）>> {
+  source_id : I64 [PK1; NN]
+  editorial_id : I64 [FK R046; UQ; NULL]
+  booking_id : I64 [FK R045; UQ; NULL]
+  stage_id : I64 [FK R044; UQ; NULL]
+  external_request_id : I64 [FK R043; UQ; NULL]
+  operations_layout_task_id : I64 [FK R042; UQ; NULL]
+  --
+  PK(source_id)
+  R042 FK(operations_layout_task_id)
+    → operations_layout_task(layout_task_id)
+  R043 FK(external_request_id)
+    → external_request(request_id)
+  R044 FK(stage_id)
+    → task_stage(stage_id)
+  R045 FK(booking_id)
+    → production_booking(booking_id)
+  R046 FK(editorial_id)
+    → editorial(editorial_id)
+}
+entity "业务来源附件\nsource_attachment" as source_attachment <<外部需求>> {
+  attachment_id : I64 [PK1; NN]
+  source_id : I64 [FK R048; NN]
+  file_name : TEXT [NN]
+  storage_ref : TEXT [NN]
+  uploaded_by : I64 [FK R047; NN]
+  uploaded_at : TEXT [NN]
+  --
+  PK(attachment_id)
+  R047 FK(uploaded_by)
+    → member(member_id)
+  R048 FK(source_id)
+    → business_source(source_id)
+  --
+  UQ(source_id,storage_ref)
+}
+entity "来源审核岗位安排\nsource_review_assignment" as source_review_assignment <<审核岗位安排>> {
+  source_id : I64 [PK1; FK R070; NN]
+  level : I64 [PK2; NN]
+  reviewer_id : I64 [FK R069; NN]
+  assigned_by : I64 [FK R068; NN]
+  assigned_at : TEXT [NN]
+  --
+  PK(source_id, level)
+  R068 FK(assigned_by)
+    → member(member_id)
+  R069 FK(reviewer_id)
+    → member(member_id)
+  R070 FK(source_id)
+    → business_source(source_id)
+  --
+  UQ(source_id,level)
+}
+entity "来源审核事件\nsource_review" as source_review <<审核结论>> {
+  review_id : I64 [PK1; NN]
+  source_id : I64 [FK R071,R075; NN]
+  outcome_id : I64 [FK R071,R074; NN]
+  level : I64 [NN]
+  round_no : I64 [NN]
+  reviewer_id : I64 [FK R073; NN]
+  decision : TEXT [NN]
+  opinion : TEXT [NN]
+  reviewed_at : TEXT [NN]
+  prior_review_id : I64 [FK R072; NULL]
+  --
+  PK(review_id)
+  R071 FK(outcome_id, source_id)
+    → outcome(outcome_id, source_id)
+  R072 FK(prior_review_id)
+    → source_review(review_id)
+  R073 FK(reviewer_id)
+    → member(member_id)
+  R074 FK(outcome_id)
+    → outcome(outcome_id)
+  R075 FK(source_id)
+    → business_source(source_id)
+  --
+  UQ(review_id,source_id,outcome_id)
+  UQ(source_id,outcome_id,level,round_no)
+}
+entity "来源最终归档\nsource_archive" as source_archive <<审核结论>> {
+  source_id : I64 [PK1; FK R076,R079; NN]
+  outcome_id : I64 [FK R076,R078; UQ; NN]
+  final_review_id : I64 [FK R076; UQ; NN]
+  archived_by : I64 [FK R077; NN]
+  archived_at : TEXT [NN]
+  --
+  PK(source_id)
+  R076 FK(final_review_id, source_id, outcome_id)
+    → source_review(review_id, source_id, outcome_id)
+  R077 FK(archived_by)
+    → member(member_id)
+  R078 FK(outcome_id)
+    → outcome(outcome_id)
+  R079 FK(source_id)
+    → business_source(source_id)
+}
+}
+package "5. 流转任务与阶段" as region4 #F0EDFA {
 entity "流转任务\nworkflow" as workflow <<流转任务>> {
   workflow_id : I64 [PK1; NN]
   initiator_id : I64 [FK R027; NN]
@@ -307,192 +461,179 @@ entity "流转任务\nworkflow" as workflow <<流转任务>> {
 }
 entity "任务阶段\ntask_stage" as task_stage <<任务阶段>> {
   stage_id : I64 [PK1; NN]
-  workflow_id : I64 [FK R029; NN]
-  department_id : I64 [FK R028; NN]
+  workflow_id : I64 [FK R038; NN]
+  department_id : I64 [FK R037; NN]
   sequence_no : I64 [NN]
   result_requirement : TEXT [NN]
   review_policy : TEXT [NN]
   deadline_at : TEXT [NULL]
   --
   PK(stage_id)
-  R028 FK(department_id)
+  R037 FK(department_id)
     → department(department_id)
-  R029 FK(workflow_id)
+  R038 FK(workflow_id)
     → workflow(workflow_id)
   --
   UQ(workflow_id,sequence_no)
 }
 entity "阶段承接责任\nstage_assignment" as stage_assignment <<任务阶段>> {
-  stage_id : I64 [PK1; FK R032; NN]
-  assignee_id : I64 [FK R031; NN]
-  assigned_by : I64 [FK R030; NN]
+  stage_id : I64 [PK1; FK R041; NN]
+  assignee_id : I64 [FK R040; NN]
+  assigned_by : I64 [FK R039; NN]
   assigned_at : TEXT [NN]
   roster_basis : TEXT [NULL]
   --
   PK(stage_id)
-  R030 FK(assigned_by)
+  R039 FK(assigned_by)
     → member(member_id)
-  R031 FK(assignee_id)
+  R040 FK(assignee_id)
     → member(member_id)
-  R032 FK(stage_id)
+  R041 FK(stage_id)
     → task_stage(stage_id)
-}
-entity "唯一业务来源\nbusiness_source" as business_source <<跨流程来源标识（设计辅助）>> {
-  source_id : I64 [PK1; NN]
-  editorial_id : I64 [FK R035; UQ; NULL]
-  booking_id : I64 [FK R034; UQ; NULL]
-  stage_id : I64 [FK R033; UQ; NULL]
-  --
-  PK(source_id)
-  R033 FK(stage_id)
-    → task_stage(stage_id)
-  R034 FK(booking_id)
-    → production_booking(booking_id)
-  R035 FK(editorial_id)
-    → editorial(editorial_id)
 }
 entity "阶段来源映射\nstage_source" as stage_source <<任务阶段>> {
-  stage_id : I64 [PK1; FK R037; NN]
-  source_id : I64 [FK R036; NN]
+  stage_id : I64 [PK1; FK R050; NN]
+  source_id : I64 [FK R049; NN]
   --
   PK(stage_id)
-  R036 FK(source_id)
+  R049 FK(source_id)
     → business_source(source_id)
-  R037 FK(stage_id)
+  R050 FK(stage_id)
     → task_stage(stage_id)
 }
 entity "阶段确认结论\nstage_confirmation" as stage_confirmation <<任务阶段>> {
   confirmation_id : I64 [PK1; NN]
-  stage_id : I64 [FK R062; NN]
-  outcome_id : I64 [FK R061; NN]
-  confirmed_by : I64 [FK R060; NN]
+  stage_id : I64 [FK R087; NN]
+  outcome_id : I64 [FK R086; NN]
+  confirmed_by : I64 [FK R085; NN]
   decision : TEXT [NN]
   opinion : TEXT [NN]
   confirmed_at : TEXT [NN]
   --
   PK(confirmation_id)
-  R060 FK(confirmed_by)
+  R085 FK(confirmed_by)
     → member(member_id)
-  R061 FK(outcome_id)
+  R086 FK(outcome_id)
     → outcome(outcome_id)
-  R062 FK(stage_id)
+  R087 FK(stage_id)
     → task_stage(stage_id)
 }
 entity "阶段完成\nstage_completion" as stage_completion <<任务阶段>> {
-  stage_id : I64 [PK1; FK R065; NN]
-  confirmation_id : I64 [FK R064; UQ; NN]
-  second_review_id : I64 [FK R063; NULL]
+  stage_id : I64 [PK1; FK R090; NN]
+  confirmation_id : I64 [FK R089; UQ; NN]
+  second_review_id : I64 [FK R088; NULL]
   --
   PK(stage_id)
-  R063 FK(second_review_id)
+  R088 FK(second_review_id)
     → manuscript_review(review_id)
-  R064 FK(confirmation_id)
+  R089 FK(confirmation_id)
     → stage_confirmation(confirmation_id)
-  R065 FK(stage_id)
+  R090 FK(stage_id)
     → task_stage(stage_id)
 }
 entity "任务完成\nworkflow_completion" as workflow_completion <<流转任务>> {
-  workflow_id : I64 [PK1; FK R066; NN]
+  workflow_id : I64 [PK1; FK R091; NN]
   completed_at : TEXT [NN]
   --
   PK(workflow_id)
-  R066 FK(workflow_id)
+  R091 FK(workflow_id)
     → workflow(workflow_id)
 }
 }
-package "5. 成果与版本审核" as region4 #FFF0F1 {
+package "6. 成果与版本审核" as region5 #FFF0F1 {
 entity "成果提交\noutcome" as outcome <<成果>> {
   outcome_id : I64 [PK1; NN]
-  source_id : I64 [FK R039; NN]
+  source_id : I64 [FK R052; NN]
   submission_no : I64 [NN]
-  submitted_by : I64 [FK R038; NN]
+  submitted_by : I64 [FK R051; NN]
   completed_note : TEXT [NN]
   submitted_at : TEXT [NN]
   --
   PK(outcome_id)
-  R038 FK(submitted_by)
+  R051 FK(submitted_by)
     → member(member_id)
-  R039 FK(source_id)
+  R052 FK(source_id)
     → business_source(source_id)
   --
+  UQ(outcome_id,source_id)
   UQ(source_id,submission_no)
 }
 entity "成果附件\noutcome_attachment" as outcome_attachment <<成果>> {
   attachment_id : I64 [PK1; NN]
-  outcome_id : I64 [FK R040; NN]
+  outcome_id : I64 [FK R053; NN]
   file_name : TEXT [NN]
   storage_ref : TEXT [NN]
   --
   PK(attachment_id)
-  R040 FK(outcome_id)
+  R053 FK(outcome_id)
     → outcome(outcome_id)
   --
   UQ(outcome_id,storage_ref)
 }
 entity "成果稿件版本\noutcome_version" as outcome_version <<成果>> {
-  outcome_id : I64 [PK1; FK R042; NN]
-  version_id : I64 [PK2; FK R041; NN]
+  outcome_id : I64 [PK1; FK R055; NN]
+  version_id : I64 [PK2; FK R054; NN]
   --
   PK(outcome_id, version_id)
-  R041 FK(version_id)
+  R054 FK(version_id)
     → manuscript_version(version_id)
-  R042 FK(outcome_id)
+  R055 FK(outcome_id)
     → outcome(outcome_id)
   --
   UQ(outcome_id,version_id)
 }
 entity "发布成果\npublication" as publication <<发布成果>> {
   publication_id : I64 [PK1; NN]
-  outcome_id : I64 [FK R043,R045; NN]
-  version_id : I64 [FK R043; NULL]
-  platform_id : I64 [FK R044; NN]
+  outcome_id : I64 [FK R056,R058; NN]
+  version_id : I64 [FK R056; NULL]
+  platform_id : I64 [FK R057; NN]
   result_url : TEXT [NN]
   --
   PK(publication_id)
-  R043 FK(outcome_id, version_id)
+  R056 FK(outcome_id, version_id)
     → outcome_version(outcome_id, version_id)
-  R044 FK(platform_id)
+  R057 FK(platform_id)
     → platform(platform_id)
-  R045 FK(outcome_id)
+  R058 FK(outcome_id)
     → outcome(outcome_id)
   --
   UQ(outcome_id,platform_id,result_url [WHERE])
   UQ(outcome_id,version_id,platform_id [WHERE])
 }
 entity "阶段当前送审版\nstage_current_draft" as stage_current_draft <<任务阶段>> {
-  stage_id : I64 [PK1; FK R047; NN]
-  outcome_id : I64 [FK R046; NN]
-  version_id : I64 [FK R046; NN]
+  stage_id : I64 [PK1; FK R060; NN]
+  outcome_id : I64 [FK R059; NN]
+  version_id : I64 [FK R059; NN]
   --
   PK(stage_id)
-  R046 FK(outcome_id, version_id)
+  R059 FK(outcome_id, version_id)
     → outcome_version(outcome_id, version_id)
-  R047 FK(stage_id)
+  R060 FK(stage_id)
     → task_stage(stage_id)
 }
 entity "稿件审查结论\nmanuscript_review" as manuscript_review <<审核结论>> {
   review_id : I64 [PK1; NN]
-  version_id : I64 [FK R050; NN]
+  version_id : I64 [FK R063; NN]
   level : I64 [NN]
   round_no : I64 [NN]
-  reviewer_id : I64 [FK R049; NN]
+  reviewer_id : I64 [FK R062; NN]
   decision : TEXT [NN]
   opinion : TEXT [NN]
   reviewed_at : TEXT [NN]
-  prior_review_id : I64 [FK R048; NULL]
+  prior_review_id : I64 [FK R061; NULL]
   --
   PK(review_id)
-  R048 FK(prior_review_id)
+  R061 FK(prior_review_id)
     → manuscript_review(review_id)
-  R049 FK(reviewer_id)
+  R062 FK(reviewer_id)
     → member(member_id)
-  R050 FK(version_id)
+  R063 FK(version_id)
     → manuscript_version(version_id)
   --
   UQ(version_id,level,round_no)
 }
 }
-package "6. 工作贡献与津贴规则" as region5 #EFF8FA {
+package "7. 工作贡献与津贴规则" as region6 #EFF8FA {
 entity "贡献类型\ncontribution_type" as contribution_type <<工作贡献>> {
   type_id : I64 [PK1; NN]
   code : TEXT [UQ; NN]
@@ -502,13 +643,13 @@ entity "贡献类型\ncontribution_type" as contribution_type <<工作贡献>> {
 }
 entity "部门津贴标准版本\nallowance_standard" as allowance_standard <<津贴标准>> {
   standard_id : I64 [PK1; NN]
-  department_id : I64 [FK R067; NN]
+  department_id : I64 [FK R092; NN]
   version_no : I64 [NN]
   effective_from : TEXT [NN]
   hourly_rate_cents : I64 [NN]
   --
   PK(standard_id)
-  R067 FK(department_id)
+  R092 FK(department_id)
     → department(department_id)
   --
   UQ(department_id,effective_from)
@@ -516,62 +657,62 @@ entity "部门津贴标准版本\nallowance_standard" as allowance_standard <<�
 }
 entity "贡献计量规则\ncontribution_policy" as contribution_policy <<津贴标准>> {
   policy_id : I64 [PK1; NN]
-  standard_id : I64 [FK R069; NN]
-  type_id : I64 [FK R068; NN]
+  standard_id : I64 [FK R094; NN]
+  type_id : I64 [FK R093; NN]
   basis_rule : TEXT [NN]
   urgent_applies : I64 [NN]
   --
   PK(policy_id)
-  R068 FK(type_id)
+  R093 FK(type_id)
     → contribution_type(type_id)
-  R069 FK(standard_id)
+  R094 FK(standard_id)
     → allowance_standard(standard_id)
   --
   UQ(standard_id,type_id)
 }
 entity "工作贡献依据\ncontribution_basis" as contribution_basis <<工作贡献>> {
   basis_id : I64 [PK1; NN]
-  source_id : I64 [FK R073; NN]
-  type_id : I64 [FK R072; NN]
-  member_id : I64 [FK R071; NN]
-  department_id : I64 [FK R070; NN]
+  source_id : I64 [FK R098; NN]
+  type_id : I64 [FK R097; NN]
+  member_id : I64 [FK R096; NN]
+  department_id : I64 [FK R095; NN]
   occurred_at : TEXT [NN]
   evidence : TEXT [NN]
   --
   PK(basis_id)
-  R070 FK(department_id)
+  R095 FK(department_id)
     → department(department_id)
-  R071 FK(member_id)
+  R096 FK(member_id)
     → member(member_id)
-  R072 FK(type_id)
+  R097 FK(type_id)
     → contribution_type(type_id)
-  R073 FK(source_id)
+  R098 FK(source_id)
     → business_source(source_id)
   --
   UQ(source_id,type_id,member_id)
 }
 entity "阶段贡献引用\nstage_contribution" as stage_contribution <<任务阶段>> {
-  stage_id : I64 [PK1; FK R075; NN]
-  basis_id : I64 [PK2; FK R074; NN]
+  stage_id : I64 [PK1; FK R100; NN]
+  basis_id : I64 [PK2; FK R099; NN]
   --
   PK(stage_id, basis_id)
-  R074 FK(basis_id)
+  R099 FK(basis_id)
     → contribution_basis(basis_id)
-  R075 FK(stage_id)
+  R100 FK(stage_id)
     → task_stage(stage_id)
   --
   UQ(stage_id,basis_id)
 }
 entity "已核实贡献计量\ncontribution_measurement" as contribution_measurement <<工作贡献>> {
-  basis_id : I64 [PK1; FK R077; NN]
-  policy_id : I64 [FK R076; NN]
+  basis_id : I64 [PK1; FK R102; NN]
+  policy_id : I64 [FK R101; NN]
   base_hours_u : I64 [NN]
   assessed_at : TEXT [NN]
   --
   PK(basis_id)
-  R076 FK(policy_id)
+  R101 FK(policy_id)
     → contribution_policy(policy_id)
-  R077 FK(basis_id)
+  R102 FK(basis_id)
     → contribution_basis(basis_id)
 }
 entity "有效贡献工时\nv_contribution_detail" as v_contribution_detail <<工作贡献 · VIEW>> #E1F3E6 {
@@ -622,60 +763,60 @@ entity "待核对贡献\nv_pending_contribution" as v_pending_contribution << ·
   evidence
 }
 }
-package "7. 中心周报" as region6 #F7F6E8 {
+package "8. 中心周报" as region7 #F7F6E8 {
 entity "中心周报批次\nweekly_report" as weekly_report <<中心周报>> {
   report_id : I64 [PK1; NN]
   week_start : TEXT [NN]
-  generated_by : I64 [FK R078; NN]
+  generated_by : I64 [FK R103; NN]
   generated_at : TEXT [NN]
   export_ref : TEXT [NULL]
   --
   PK(report_id)
-  R078 FK(generated_by)
+  R103 FK(generated_by)
     → member(member_id)
 }
 entity "周报部门范围\nreport_department" as report_department <<中心周报>> {
-  report_id : I64 [PK1; FK R080; NN]
-  department_id : I64 [PK2; FK R079; NN]
+  report_id : I64 [PK1; FK R105; NN]
+  department_id : I64 [PK2; FK R104; NN]
   --
   PK(report_id, department_id)
-  R079 FK(department_id)
+  R104 FK(department_id)
     → department(department_id)
-  R080 FK(report_id)
+  R105 FK(report_id)
     → weekly_report(report_id)
   --
   UQ(report_id,department_id)
 }
 entity "周报有效明细集合\nreport_contribution" as report_contribution <<中心周报>> {
-  report_id : I64 [PK1; FK R082; NN]
-  basis_id : I64 [PK2; FK R081; NN]
+  report_id : I64 [PK1; FK R107; NN]
+  basis_id : I64 [PK2; FK R106; NN]
   --
   PK(report_id, basis_id)
-  R081 FK(basis_id)
+  R106 FK(basis_id)
     → contribution_measurement(basis_id)
-  R082 FK(report_id)
+  R107 FK(report_id)
     → weekly_report(report_id)
   --
   UQ(report_id,basis_id)
 }
 entity "周报待核对项\nreport_pending" as report_pending <<中心周报>> {
-  report_id : I64 [PK1; FK R084; NN]
-  basis_id : I64 [PK2; FK R083; NN]
+  report_id : I64 [PK1; FK R109; NN]
+  basis_id : I64 [PK2; FK R108; NN]
   reason : TEXT [NN]
   --
   PK(report_id, basis_id)
-  R083 FK(basis_id)
+  R108 FK(basis_id)
     → contribution_basis(basis_id)
-  R084 FK(report_id)
+  R109 FK(report_id)
     → weekly_report(report_id)
   --
   UQ(report_id,basis_id)
 }
 entity "周报封存\nreport_seal" as report_seal <<中心周报>> {
-  report_id : I64 [PK1; FK R085; NN]
+  report_id : I64 [PK1; FK R110; NN]
   --
   PK(report_id)
-  R085 FK(report_id)
+  R110 FK(report_id)
     → weekly_report(report_id)
 }
 entity "历史周报成员汇总\nv_report_member_summary" as v_report_member_summary <<中心周报 · VIEW>> #E1F3E6 {
@@ -713,64 +854,89 @@ member ||--o{ production_archive_responsibility : R024
 member ||--o{ production_archive_responsibility : R025
 production_booking ||--o| production_archive_responsibility : R026
 member ||--o{ workflow : R027
-department ||--o{ task_stage : R028
-workflow ||--o{ task_stage : R029
-member ||--o{ stage_assignment : R030
-member ||--o{ stage_assignment : R031
-task_stage ||--o| stage_assignment : R032
-task_stage |o--o| business_source : R033
-production_booking |o--o| business_source : R034
-editorial |o--o| business_source : R035
-business_source ||--o{ stage_source : R036
-task_stage ||--o| stage_source : R037
-member ||--o{ outcome : R038
-business_source ||--o{ outcome : R039
-outcome ||--o{ outcome_attachment : R040
-manuscript_version ||--o{ outcome_version : R041
-outcome ||--o{ outcome_version : R042
-outcome_version |o--o{ publication : R043
-platform ||--o{ publication : R044
-outcome ||--o{ publication : R045
-outcome_version ||--o{ stage_current_draft : R046
-task_stage ||--o| stage_current_draft : R047
-manuscript_review |o--o{ manuscript_review : R048
-member ||--o{ manuscript_review : R049
-manuscript_version ||--o{ manuscript_review : R050
-member ||--o{ editorial_review : R051
-outcome ||--o| editorial_review : R052
-manuscript_review ||--o{ editorial_review_item : R053
-editorial_review ||--o{ editorial_review_item : R054
-editorial_review ||--o| editorial_archive : R055
-editorial ||--o| editorial_archive : R056
-member ||--o{ production_archive : R057
-outcome ||--o| production_archive : R058
-production_booking ||--o| production_archive : R059
-member ||--o{ stage_confirmation : R060
-outcome ||--o{ stage_confirmation : R061
-task_stage ||--o{ stage_confirmation : R062
-manuscript_review |o--o{ stage_completion : R063
-stage_confirmation ||--o| stage_completion : R064
-task_stage ||--o| stage_completion : R065
-workflow ||--o| workflow_completion : R066
-department ||--o{ allowance_standard : R067
-contribution_type ||--o{ contribution_policy : R068
-allowance_standard ||--o{ contribution_policy : R069
-department ||--o{ contribution_basis : R070
-member ||--o{ contribution_basis : R071
-contribution_type ||--o{ contribution_basis : R072
-business_source ||--o{ contribution_basis : R073
-contribution_basis ||--o{ stage_contribution : R074
-task_stage ||--o{ stage_contribution : R075
-contribution_policy ||--o{ contribution_measurement : R076
-contribution_basis ||--o| contribution_measurement : R077
-member ||--o{ weekly_report : R078
-department ||--o{ report_department : R079
-weekly_report ||--o{ report_department : R080
-contribution_measurement ||--o{ report_contribution : R081
-weekly_report ||--o{ report_contribution : R082
-contribution_basis ||--o{ report_pending : R083
-weekly_report ||--o{ report_pending : R084
-weekly_report ||--o| report_seal : R085
+department ||--o{ external_request : R028
+member ||--o{ external_request : R029
+member ||--o{ external_request_assignment : R030
+member ||--o{ external_request_assignment : R031
+external_request ||--o| external_request_assignment : R032
+member ||--o{ operations_layout_task : R033
+member ||--o{ operations_layout_assignment : R034
+member ||--o{ operations_layout_assignment : R035
+operations_layout_task ||--o| operations_layout_assignment : R036
+department ||--o{ task_stage : R037
+workflow ||--o{ task_stage : R038
+member ||--o{ stage_assignment : R039
+member ||--o{ stage_assignment : R040
+task_stage ||--o| stage_assignment : R041
+operations_layout_task |o--o| business_source : R042
+external_request |o--o| business_source : R043
+task_stage |o--o| business_source : R044
+production_booking |o--o| business_source : R045
+editorial |o--o| business_source : R046
+member ||--o{ source_attachment : R047
+business_source ||--o{ source_attachment : R048
+business_source ||--o{ stage_source : R049
+task_stage ||--o| stage_source : R050
+member ||--o{ outcome : R051
+business_source ||--o{ outcome : R052
+outcome ||--o{ outcome_attachment : R053
+manuscript_version ||--o{ outcome_version : R054
+outcome ||--o{ outcome_version : R055
+outcome_version |o--o{ publication : R056
+platform ||--o{ publication : R057
+outcome ||--o{ publication : R058
+outcome_version ||--o{ stage_current_draft : R059
+task_stage ||--o| stage_current_draft : R060
+manuscript_review |o--o{ manuscript_review : R061
+member ||--o{ manuscript_review : R062
+manuscript_version ||--o{ manuscript_review : R063
+member ||--o{ editorial_review : R064
+outcome ||--o| editorial_review : R065
+manuscript_review ||--o{ editorial_review_item : R066
+editorial_review ||--o{ editorial_review_item : R067
+member ||--o{ source_review_assignment : R068
+member ||--o{ source_review_assignment : R069
+business_source ||--o{ source_review_assignment : R070
+outcome ||--o{ source_review : R071
+source_review |o--o{ source_review : R072
+member ||--o{ source_review : R073
+outcome ||--o{ source_review : R074
+business_source ||--o{ source_review : R075
+source_review ||--o{ source_archive : R076
+member ||--o{ source_archive : R077
+outcome ||--o| source_archive : R078
+business_source ||--o| source_archive : R079
+editorial_review ||--o| editorial_archive : R080
+editorial ||--o| editorial_archive : R081
+member ||--o{ production_archive : R082
+outcome ||--o| production_archive : R083
+production_booking ||--o| production_archive : R084
+member ||--o{ stage_confirmation : R085
+outcome ||--o{ stage_confirmation : R086
+task_stage ||--o{ stage_confirmation : R087
+manuscript_review |o--o{ stage_completion : R088
+stage_confirmation ||--o| stage_completion : R089
+task_stage ||--o| stage_completion : R090
+workflow ||--o| workflow_completion : R091
+department ||--o{ allowance_standard : R092
+contribution_type ||--o{ contribution_policy : R093
+allowance_standard ||--o{ contribution_policy : R094
+department ||--o{ contribution_basis : R095
+member ||--o{ contribution_basis : R096
+contribution_type ||--o{ contribution_basis : R097
+business_source ||--o{ contribution_basis : R098
+contribution_basis ||--o{ stage_contribution : R099
+task_stage ||--o{ stage_contribution : R100
+contribution_policy ||--o{ contribution_measurement : R101
+contribution_basis ||--o| contribution_measurement : R102
+member ||--o{ weekly_report : R103
+department ||--o{ report_department : R104
+weekly_report ||--o{ report_department : R105
+contribution_measurement ||--o{ report_contribution : R106
+weekly_report ||--o{ report_contribution : R107
+contribution_basis ||--o{ report_pending : R108
+weekly_report ||--o{ report_pending : R109
+weekly_report ||--o| report_seal : R110
 contribution_basis ..> v_contribution_detail
 contribution_measurement ..> v_contribution_detail
 contribution_policy ..> v_contribution_detail

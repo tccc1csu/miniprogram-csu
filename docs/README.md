@@ -6,9 +6,9 @@
 
 2026-10-14 新确认与实现见[一键审核、业务附件与计量口径](./implementation/06-one-click-review-and-documents.md)：公众号布置时记录两岗人员，部长一次确认归档；审核合计 2 小时按成员平分。该文件明确课程目标模型与当前排班功能的区别，并附私有导出的聚合检查结果。
 
-课程目标与真实代码的同步记录见[课程设计与小程序实现对照](./implementation/01-course-runtime-alignment.md)。已逐项映射 20 个分析实体，标明实现、本轮改进和待开发差距；[发布与回退](./implementation/02-rollout-and-rollback.md)说明线上核验、数据备份与分批部署。数据库总图仍是规范目标；本轮代码在独立分支修改，尚未部署。
+课程目标与真实代码的同步记录见[课程设计与小程序实现对照](./implementation/01-course-runtime-alignment.md)。原对照已逐项映射 20 个分析实体；本轮新增外部需求、公众号排版和审核岗位安排三个实体，数据库模型与当前 `handoffs` 文档结构差异已在数据库设计中说明。[发布与回退](./implementation/02-rollout-and-rollback.md)说明线上核验、数据备份与分批部署。数据库总图仍是规范目标，本轮未迁移线上集合。
 
-[数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含七个分区、全部表、原分析实体名称及字段旁外键目标；61 条表外线覆盖全部业务表之间的外键，两端标明关系基数。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。20 个分析实体逐项对应 47 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。
+[数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含八个分区、全部表、原分析实体名称及字段旁外键目标；外部需求与公众号排版的承接、审核、归档关系已纳入总图。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。分析实体逐项对应 55 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。
 
 [分析部分（图为主）](./analysis/05-analysis-models.md)已补充分析类图、20 个用例对应的分析序列图和核心对象状态机图，并同步至下方合并稿第 5 节。课程依据、假设与核对记录见[分析评审记录](./analysis/06-analysis-review.md)。
 
@@ -115,7 +115,7 @@
 
 数据库设计依据本次课件第 398～403 页，规范化说明见第 6.5 节；[设计评审记录](./design/02-database-review.md)保存未确认细则、计算口径与实现限制，不并入作业主文。
 
-数据库附件：[数据字典](./database/data-dictionary.md)、[完整外键清单](./database/foreign-key-relations.md)、[本地参考 DDL](./database/schema.sqlite.sql)、[验证记录](./database/verification.txt)。SQLite 仅用于内存数据库校验；未访问或迁移现有云数据库。八张数据库分视图保留为辅助资料，作业中展示一张总图。
+数据库附件：[数据字典](./database/data-dictionary.md)、[完整外键清单](./database/foreign-key-relations.md)、[本地参考 DDL](./database/schema.sqlite.sql)、[验证记录](./database/verification.txt)。SQLite 仅用于内存数据库校验；未访问或迁移现有云数据库。九张数据库分视图保留为辅助资料，作业中展示一张总图。
 
 数据库工件再生成：
 
@@ -128,7 +128,7 @@
     python docs/tools/check_database_design.py
     python docs/tools/build_course_assignment.py
 
-总图已按两份 ERD 示范重新排为横向两排分区，表宽随字段内容调整。主键用黄色钥匙，外键用独立蓝色箭头，箭头后仅显示目标表名；不显示 Type、Null、R 编号及键组合表达式。表外恢复 61 条完整业务及组织区内关系，以乌鸦脚标基数，包含中间表两端关联。其余 24 条跨区成员／部门公共引用只在字段旁标目标表；全部 85 条真实外键及复合约束保存在模型、关系清单和数据字典。扩展空间缩为分区边缘小幅留白。PlantUML 保留完整模型来源；最终 SVG／PNG 使用同一模型数据生成确定性紧凑版式，因此再生成时必须执行上面的总图布局与栅格化两步。栅格化依赖 `@resvg/resvg-js`，本机已安装在项目外的 `../tmp/database-layout-runtime/`；重装可执行 `npm install --prefix ../tmp/database-layout-runtime --no-audit --no-fund @resvg/resvg-js`。
+总图已按两份 ERD 示范重新排为横向两排分区，表宽随字段内容调整。主键用黄色钥匙，外键用独立蓝色箭头，箭头后仅显示目标表名；不显示 Type、Null、R 编号及键组合表达式。表外关系以乌鸦脚表示一对多基数，包含外部需求、排版审核和归档等新增关系；跨区公共成员／部门引用只在字段旁标目标表。PlantUML 保留完整模型来源；最终 SVG／PNG 使用同一模型数据生成确定性紧凑版式，因此再生成时必须执行上面的总图布局与栅格化两步。栅格化依赖 `@resvg/resvg-js`，本机已安装在项目外的 `../tmp/database-layout-runtime/`；重装可执行 `npm install --prefix ../tmp/database-layout-runtime --no-audit --no-fund @resvg/resvg-js`。
 
 课件：D:/xwechat_files/wxid_5dtr00kf6nc822_1671/msg/file/2026-09/系统分析与设计-精简2026-9(1).pdf。
 重点核对第 33、86、87、89、108 页（PDF 物理页）；课程要求是本任务的写作依据，参考项目仅用于文档组织方法。

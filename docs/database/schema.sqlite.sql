@@ -144,6 +144,36 @@ CREATE TABLE workflow (
   objective TEXT NOT NULL CHECK(length(trim(objective)) > 0),
   created_at TEXT NOT NULL CHECK((datetime(created_at) IS NOT NULL AND datetime(created_at)=created_at))
 );
+CREATE TABLE external_request (
+  request_id INTEGER PRIMARY KEY,
+  requester_id INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  target_department_id INTEGER NOT NULL REFERENCES department ON DELETE RESTRICT,
+  title TEXT NOT NULL CHECK(length(trim(title)) > 0),
+  request_note TEXT NOT NULL DEFAULT '',
+  deadline_at TEXT CHECK(deadline_at IS NULL OR (datetime(deadline_at) IS NOT NULL AND datetime(deadline_at)=deadline_at)),
+  submitted_at TEXT NOT NULL CHECK((datetime(submitted_at) IS NOT NULL AND datetime(submitted_at)=submitted_at)),
+  CHECK(deadline_at IS NULL OR deadline_at > submitted_at)
+);
+CREATE TABLE external_request_assignment (
+  request_id INTEGER PRIMARY KEY REFERENCES external_request ON DELETE RESTRICT,
+  assignee_id INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_at TEXT NOT NULL CHECK((datetime(assigned_at) IS NOT NULL AND datetime(assigned_at)=assigned_at))
+);
+CREATE TABLE operations_layout_task (
+  layout_task_id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL CHECK(length(trim(title)) > 0),
+  layout_kind TEXT NOT NULL CHECK(layout_kind IN ('BASIC','PHOTO','REPRINT')),
+  deadline_at TEXT NOT NULL CHECK(datetime(deadline_at) IS NOT NULL AND datetime(deadline_at)=deadline_at),
+  created_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  created_at TEXT NOT NULL CHECK((datetime(created_at) IS NOT NULL AND datetime(created_at)=created_at))
+);
+CREATE TABLE operations_layout_assignment (
+  layout_task_id INTEGER PRIMARY KEY REFERENCES operations_layout_task ON DELETE RESTRICT,
+  assignee_id INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_at TEXT NOT NULL CHECK((datetime(assigned_at) IS NOT NULL AND datetime(assigned_at)=assigned_at))
+);
 CREATE TABLE task_stage (
   stage_id INTEGER PRIMARY KEY,
   workflow_id INTEGER NOT NULL REFERENCES workflow ON DELETE RESTRICT,
@@ -167,7 +197,19 @@ CREATE TABLE business_source (
   editorial_id INTEGER UNIQUE REFERENCES editorial ON DELETE RESTRICT,
   booking_id INTEGER UNIQUE REFERENCES production_booking ON DELETE RESTRICT,
   stage_id INTEGER UNIQUE REFERENCES task_stage ON DELETE RESTRICT,
-  CHECK((editorial_id IS NOT NULL)+(booking_id IS NOT NULL)+(stage_id IS NOT NULL)=1)
+  external_request_id INTEGER UNIQUE REFERENCES external_request ON DELETE RESTRICT,
+  operations_layout_task_id INTEGER UNIQUE REFERENCES operations_layout_task ON DELETE RESTRICT,
+  CHECK((editorial_id IS NOT NULL)+(booking_id IS NOT NULL)+(stage_id IS NOT NULL)+
+        (external_request_id IS NOT NULL)+(operations_layout_task_id IS NOT NULL)=1)
+);
+CREATE TABLE source_attachment (
+  attachment_id INTEGER PRIMARY KEY,
+  source_id INTEGER NOT NULL REFERENCES business_source ON DELETE RESTRICT,
+  file_name TEXT NOT NULL CHECK(length(trim(file_name)) > 0),
+  storage_ref TEXT NOT NULL,
+  uploaded_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  uploaded_at TEXT NOT NULL CHECK((datetime(uploaded_at) IS NOT NULL AND datetime(uploaded_at)=uploaded_at)),
+  UNIQUE(source_id,storage_ref)
 );
 -- A stage can reuse an existing specialized source rather than create duplicate work.
 CREATE TABLE stage_source (
@@ -181,7 +223,8 @@ CREATE TABLE outcome (
   submitted_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
   completed_note TEXT NOT NULL CHECK(length(trim(completed_note)) > 0),
   submitted_at TEXT NOT NULL CHECK((datetime(submitted_at) IS NOT NULL AND datetime(submitted_at)=submitted_at)),
-  UNIQUE(source_id,submission_no)
+  UNIQUE(source_id,submission_no),
+  UNIQUE(outcome_id,source_id)
 );
 CREATE TABLE outcome_attachment (
   attachment_id INTEGER PRIMARY KEY,
@@ -236,6 +279,38 @@ CREATE TABLE editorial_review_item (
   editorial_review_id INTEGER NOT NULL REFERENCES editorial_review ON DELETE RESTRICT,
   review_id INTEGER NOT NULL REFERENCES manuscript_review ON DELETE RESTRICT,
   PRIMARY KEY(editorial_review_id,review_id)
+);
+CREATE TABLE source_review_assignment (
+  source_id INTEGER NOT NULL REFERENCES business_source ON DELETE RESTRICT,
+  level INTEGER NOT NULL CHECK(level IN (1,2)),
+  reviewer_id INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  assigned_at TEXT NOT NULL CHECK((datetime(assigned_at) IS NOT NULL AND datetime(assigned_at)=assigned_at)),
+  PRIMARY KEY(source_id,level)
+);
+CREATE TABLE source_review (
+  review_id INTEGER PRIMARY KEY,
+  source_id INTEGER NOT NULL REFERENCES business_source ON DELETE RESTRICT,
+  outcome_id INTEGER NOT NULL REFERENCES outcome ON DELETE RESTRICT,
+  level INTEGER NOT NULL CHECK(level IN (1,2)),
+  round_no INTEGER NOT NULL CHECK(round_no >= 1),
+  reviewer_id INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  decision TEXT NOT NULL CHECK(decision IN ('PASS','RETURN')),
+  opinion TEXT NOT NULL CHECK(length(trim(opinion)) > 0),
+  reviewed_at TEXT NOT NULL CHECK((datetime(reviewed_at) IS NOT NULL AND datetime(reviewed_at)=reviewed_at)),
+  prior_review_id INTEGER REFERENCES source_review ON DELETE RESTRICT,
+  FOREIGN KEY(outcome_id,source_id) REFERENCES outcome(outcome_id,source_id) ON DELETE RESTRICT,
+  UNIQUE(source_id,outcome_id,level,round_no),
+  UNIQUE(review_id,source_id,outcome_id),
+  CHECK(level=2 OR prior_review_id IS NULL)
+);
+CREATE TABLE source_archive (
+  source_id INTEGER PRIMARY KEY REFERENCES business_source ON DELETE RESTRICT,
+  outcome_id INTEGER NOT NULL UNIQUE REFERENCES outcome ON DELETE RESTRICT,
+  final_review_id INTEGER NOT NULL UNIQUE,
+  archived_by INTEGER NOT NULL REFERENCES member ON DELETE RESTRICT,
+  archived_at TEXT NOT NULL CHECK((datetime(archived_at) IS NOT NULL AND datetime(archived_at)=archived_at)),
+  FOREIGN KEY(final_review_id,source_id,outcome_id) REFERENCES source_review(review_id,source_id,outcome_id) ON DELETE RESTRICT
 );
 CREATE TABLE editorial_archive (
   editorial_id INTEGER PRIMARY KEY REFERENCES editorial ON DELETE RESTRICT,
@@ -343,6 +418,8 @@ CREATE INDEX member_department_idx ON member(department_id);
 CREATE INDEX session_member_idx ON login_session(member_id,expires_at);
 CREATE INDEX booking_interval_idx ON production_booking(starts_at,ends_at);
 CREATE INDEX outcome_source_idx ON outcome(source_id,submitted_at);
+CREATE INDEX external_request_target_deadline_idx ON external_request(target_department_id,deadline_at);
+CREATE INDEX source_review_outcome_idx ON source_review(source_id,outcome_id,level,reviewed_at);
 CREATE INDEX contribution_member_time_idx ON contribution_basis(member_id,occurred_at);
 CREATE INDEX contribution_department_time_idx ON contribution_basis(department_id,occurred_at);
 CREATE INDEX review_version_time_idx ON manuscript_review(version_id,reviewed_at);
@@ -418,6 +495,62 @@ WHEN NOT EXISTS(
  WHERE o.outcome_id=NEW.outcome_id AND s.booking_id=NEW.booking_id AND r.office_member_id=NEW.archived_by
 )
 BEGIN SELECT RAISE(ABORT,'production archive requires its own outcome and designated office member'); END;
+CREATE TRIGGER source_review_assignment_guard BEFORE INSERT ON source_review_assignment
+WHEN NOT EXISTS(
+ SELECT 1 FROM business_source s JOIN operations_layout_task t ON t.layout_task_id=s.operations_layout_task_id
+ WHERE s.source_id=NEW.source_id
+)
+ OR NOT EXISTS(
+ SELECT 1 FROM member reviewer JOIN member assigner ON assigner.member_id=NEW.assigned_by
+ WHERE reviewer.member_id=NEW.reviewer_id AND reviewer.account_role='MINISTER' AND reviewer.department_id=(SELECT department_id FROM department WHERE name='运营部' LIMIT 1)
+   AND (assigner.account_role='ADMIN' OR (assigner.account_role='MINISTER' AND assigner.department_id=reviewer.department_id))
+ )
+BEGIN SELECT RAISE(ABORT,'review assignments are supported for operations layout tasks'); END;
+CREATE TRIGGER operations_layout_assignment_guard BEFORE INSERT ON operations_layout_assignment
+WHEN NOT EXISTS(
+ SELECT 1 FROM operations_layout_task t JOIN member assignee ON assignee.member_id=NEW.assignee_id
+ JOIN member assigner ON assigner.member_id=NEW.assigned_by
+ WHERE t.layout_task_id=NEW.layout_task_id AND assignee.department_id=(SELECT department_id FROM department WHERE name='运营部' LIMIT 1)
+   AND (assigner.account_role='ADMIN' OR (assigner.account_role='MINISTER' AND assigner.department_id=assignee.department_id))
+)
+BEGIN SELECT RAISE(ABORT,'operations layout assignment requires an operations member and authorized dispatcher'); END;
+CREATE TRIGGER source_review_guard BEFORE INSERT ON source_review
+WHEN (
+ (NOT EXISTS(
+   SELECT 1 FROM member m WHERE m.member_id=NEW.reviewer_id AND m.account_role='ADMIN'
+  ) AND NOT EXISTS(
+   SELECT 1 FROM source_review_assignment a WHERE a.source_id=NEW.source_id AND a.level=NEW.level AND a.reviewer_id=NEW.reviewer_id
+  ) AND NOT EXISTS(
+   SELECT 1 FROM business_source s JOIN external_request e ON e.request_id=s.external_request_id
+   JOIN member m ON m.member_id=NEW.reviewer_id
+   WHERE s.source_id=NEW.source_id AND NEW.level=1 AND m.account_role='MINISTER' AND m.department_id=e.target_department_id
+  ))
+ OR (NEW.level=2 AND NOT EXISTS(
+   SELECT 1 FROM source_review p WHERE p.review_id=NEW.prior_review_id AND p.source_id=NEW.source_id
+    AND p.outcome_id=NEW.outcome_id AND p.level=1 AND p.decision='PASS' AND p.reviewed_at<=NEW.reviewed_at
+  ))
+ OR (NEW.level=1 AND NEW.prior_review_id IS NOT NULL)
+)
+BEGIN SELECT RAISE(ABORT,'review event must match assigned reviewer and same-outcome review order'); END;
+CREATE TRIGGER external_request_assignment_guard BEFORE INSERT ON external_request_assignment
+WHEN NOT EXISTS(
+ SELECT 1 FROM external_request e JOIN member a ON a.member_id=NEW.assignee_id
+ JOIN member d ON d.member_id=NEW.assigned_by
+ WHERE e.request_id=NEW.request_id AND a.department_id=e.target_department_id AND
+  (d.account_role='ADMIN' OR (d.account_role='MINISTER' AND d.department_id=e.target_department_id))
+)
+BEGIN SELECT RAISE(ABORT,'external request assignment must use a target-department member and authorized dispatcher'); END;
+CREATE TRIGGER source_archive_guard BEFORE INSERT ON source_archive
+WHEN NOT EXISTS(
+ SELECT 1 FROM source_review r JOIN business_source s ON s.source_id=r.source_id
+ WHERE r.review_id=NEW.final_review_id AND r.source_id=NEW.source_id AND r.outcome_id=NEW.outcome_id AND r.decision='PASS'
+ AND ((s.operations_layout_task_id IS NOT NULL AND EXISTS(
+   SELECT 1 FROM source_review_assignment a1 JOIN source_review_assignment a2 ON a2.source_id=a1.source_id
+   WHERE a1.source_id=s.source_id AND a1.level=1 AND a2.level=2 AND
+     ((a1.reviewer_id<>a2.reviewer_id AND r.level=2) OR (a1.reviewer_id=a2.reviewer_id AND r.level=1))))
+   OR (s.external_request_id IS NOT NULL AND r.level=1))
+)
+BEGIN SELECT RAISE(ABORT,'archive must reference a passed final review of the same task and result'); END;
 CREATE TRIGGER stage_assignment_guard BEFORE INSERT ON stage_assignment
 WHEN EXISTS(
  SELECT 1 FROM task_stage cur JOIN task_stage prev ON prev.workflow_id=cur.workflow_id AND prev.sequence_no<cur.sequence_no
@@ -470,6 +603,7 @@ WHEN NOT EXISTS(
  WHERE b.basis_id=NEW.basis_id AND (
  EXISTS(SELECT 1 FROM editorial_archive a WHERE a.editorial_id=s.editorial_id) OR
  EXISTS(SELECT 1 FROM production_archive a WHERE a.booking_id=s.booking_id) OR
+ EXISTS(SELECT 1 FROM source_archive a WHERE a.source_id=s.source_id) OR
  EXISTS(SELECT 1 FROM task_stage t JOIN workflow_completion c ON c.workflow_id=t.workflow_id WHERE t.stage_id=s.stage_id))
 )
 BEGIN SELECT RAISE(ABORT,'measurement requires archived source or completed workflow'); END;
@@ -554,6 +688,30 @@ CREATE TRIGGER production_archive_update_immutable BEFORE UPDATE ON production_a
 BEGIN SELECT RAISE(ABORT,'production_archive is immutable history'); END;
 CREATE TRIGGER production_archive_delete_immutable BEFORE DELETE ON production_archive
 BEGIN SELECT RAISE(ABORT,'production_archive is immutable history'); END;
+CREATE TRIGGER source_attachment_update_immutable BEFORE UPDATE ON source_attachment
+BEGIN SELECT RAISE(ABORT,'source_attachment is immutable history'); END;
+CREATE TRIGGER source_attachment_delete_immutable BEFORE DELETE ON source_attachment
+BEGIN SELECT RAISE(ABORT,'source_attachment is immutable history'); END;
+CREATE TRIGGER source_review_assignment_update_immutable BEFORE UPDATE ON source_review_assignment
+BEGIN SELECT RAISE(ABORT,'source_review_assignment is immutable history'); END;
+CREATE TRIGGER source_review_assignment_delete_immutable BEFORE DELETE ON source_review_assignment
+BEGIN SELECT RAISE(ABORT,'source_review_assignment is immutable history'); END;
+CREATE TRIGGER source_review_update_immutable BEFORE UPDATE ON source_review
+BEGIN SELECT RAISE(ABORT,'source_review is immutable history'); END;
+CREATE TRIGGER source_review_delete_immutable BEFORE DELETE ON source_review
+BEGIN SELECT RAISE(ABORT,'source_review is immutable history'); END;
+CREATE TRIGGER source_archive_update_immutable BEFORE UPDATE ON source_archive
+BEGIN SELECT RAISE(ABORT,'source_archive is immutable history'); END;
+CREATE TRIGGER source_archive_delete_immutable BEFORE DELETE ON source_archive
+BEGIN SELECT RAISE(ABORT,'source_archive is immutable history'); END;
+CREATE TRIGGER external_request_assignment_update_immutable BEFORE UPDATE ON external_request_assignment
+BEGIN SELECT RAISE(ABORT,'external_request_assignment is immutable history'); END;
+CREATE TRIGGER external_request_assignment_delete_immutable BEFORE DELETE ON external_request_assignment
+BEGIN SELECT RAISE(ABORT,'external_request_assignment is immutable history'); END;
+CREATE TRIGGER operations_layout_assignment_update_immutable BEFORE UPDATE ON operations_layout_assignment
+BEGIN SELECT RAISE(ABORT,'operations_layout_assignment is immutable history'); END;
+CREATE TRIGGER operations_layout_assignment_delete_immutable BEFORE DELETE ON operations_layout_assignment
+BEGIN SELECT RAISE(ABORT,'operations_layout_assignment is immutable history'); END;
 CREATE TRIGGER stage_assignment_update_immutable BEFORE UPDATE ON stage_assignment
 BEGIN SELECT RAISE(ABORT,'stage_assignment is immutable history'); END;
 CREATE TRIGGER stage_assignment_delete_immutable BEFORE DELETE ON stage_assignment
