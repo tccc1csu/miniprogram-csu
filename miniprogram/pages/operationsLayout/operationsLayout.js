@@ -1,4 +1,4 @@
-// pages/operationsLayout/operationsLayout.js - 运营部公众号排版排班（支持兄弟部门报名与加急）
+// pages/operationsLayout/operationsLayout.js - 运营部公众号排版排班（支持兄弟部门报名/发布需求与加急）
 const app = getApp()
 const { callFunction } = require('../../utils/db')
 const { showToast, showLoading, hideLoading } = require('../../utils/util')
@@ -15,6 +15,7 @@ Page({
     role: '',
     department: '',
     canCreate: false,
+    canRequest: false,
     isBrother: false,
     activeTab: 'active',
     tabs: [
@@ -25,6 +26,7 @@ Page({
     loading: false,
     layoutTypes: LAYOUT_TYPES,
     operationsMembers: [],
+    operationsMinisters: [],
     showCreateModal: false,
     createForm: { title: '', layoutTypeIndex: 0, deadline: '', assigneeIndex: 0, firstReviewerIndex: -1, secondReviewerIndex: -1, attachments: [], note: '' },
     showDetailModal: false,
@@ -38,7 +40,10 @@ Page({
     reviewTarget: null,
     reviewComment: '',
     returnTargets: [],
-    returnToIndex: 0
+    returnToIndex: 0,
+    showAssignModal: false,
+    assignTarget: null,
+    assignForm: { assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0 }
   },
 
 
@@ -59,6 +64,7 @@ Page({
       role,
       department,
       canCreate: role === 'admin' || (role === 'minister' && department === '运营部'),
+      canRequest: department === '兄弟部门',
       isBrother: department === '兄弟部门'
     })
     if (this.data.canCreate) this.loadMembers()
@@ -74,7 +80,8 @@ Page({
 
   loadMembers: function () {
     callFunction('manageData', { action: 'getMembers', department: '运营部' }).then(members => {
-      this.setData({ operationsMembers: (members || []).filter(m => m.department === '运营部') })
+      const list = (members || []).filter(m => m.department === '运营部')
+      this.setData({ operationsMembers: list, operationsMinisters: list.filter(m => m.role === 'minister') })
     }).catch(() => {})
   },
 
@@ -164,12 +171,35 @@ Page({
   submitCreate: function () {
     if (this.data.attachmentUploading) { showToast('请等待附件上传完成'); return }
     const form = this.data.createForm
-    const member = this.data.operationsMembers[form.assigneeIndex]
     if (!form.title.trim()) { showToast('请填写文章标题'); return }
     if (!form.deadline) { showToast('请选择截止日期'); return }
+    // 兄弟部门发布需求：不指定干事/审核人，提交后由运营部部长接单派发
+    if (this.data.canRequest && !this.data.canCreate) {
+      showLoading('提交中...')
+      callFunction('manageHandoffs', {
+        action: 'createOperationsLayout',
+        title: form.title.trim(),
+        layoutType: LAYOUT_TYPES[form.layoutTypeIndex].key,
+        deadline: form.deadline,
+        note: form.note.trim(),
+        attachments: form.attachments || []
+      }).then(() => {
+        hideLoading()
+        showToast('已提交，待运营部接单', 'success')
+        this.closeCreateModal()
+        this.loadTasks()
+      }).catch(err => {
+        hideLoading()
+        showToast(err.message || '提交失败')
+      })
+      return
+    }
+    const member = this.data.operationsMembers[form.assigneeIndex]
+    const firstReviewer = this.data.operationsMinisters[form.firstReviewerIndex]
+    const secondReviewer = this.data.operationsMinisters[form.secondReviewerIndex]
     if (!member) { showToast('请选择排版干事'); return }
-    const first = this.data.operationsMembers[form.firstReviewerIndex], second = this.data.operationsMembers[form.secondReviewerIndex]
-    if (!first || !second) { showToast('请指定一审和二审人员'); return }
+    if (!firstReviewer) { showToast('请选择一审部长'); return }
+    if (!secondReviewer) { showToast('请选择二审部长'); return }
     showLoading('提交中...')
     callFunction('manageHandoffs', {
       action: 'createOperationsLayout',
@@ -177,8 +207,8 @@ Page({
       layoutType: LAYOUT_TYPES[form.layoutTypeIndex].key,
       deadline: form.deadline,
       assigneeName: member.name, assigneeMemberId: member._id,
-      firstReviewerName: first.name, firstReviewerMemberId: first._id,
-      secondReviewerName: second.name, secondReviewerMemberId: second._id,
+      firstReviewerName: firstReviewer.name, firstReviewerMemberId: firstReviewer._id,
+      secondReviewerName: secondReviewer.name, secondReviewerMemberId: secondReviewer._id,
       attachments: form.attachments || [],
       note: form.note.trim()
     }).then(() => {
@@ -189,6 +219,55 @@ Page({
     }).catch(err => {
       hideLoading()
       showToast(err.message || '创建失败')
+    })
+  },
+
+  // 运营部部长/admin 接单：从兄弟部门需求中选择干事与一审/二审部长后派单
+  openAssignModal: function () {
+    const target = this.data.detailTarget
+    if (!target || !target.canAssign) return
+    if (!this.data.operationsMembers.length || !this.data.operationsMinisters.length) this.loadMembers()
+    this.setData({
+      showAssignModal: true,
+      assignTarget: target,
+      assignForm: { assigneeIndex: 0, firstReviewerIndex: 0, secondReviewerIndex: 0 }
+    })
+  },
+
+  closeAssignModal: function () { this.setData({ showAssignModal: false, assignTarget: null }) },
+
+  onAssignFieldChange: function (e) {
+    const field = e.currentTarget.dataset.field
+    if (!field) return
+    const data = {}
+    data['assignForm.' + field] = Number(e.detail.value) || 0
+    this.setData(data)
+  },
+
+  confirmAssign: function () {
+    const target = this.data.assignTarget
+    if (!target) return
+    const member = this.data.operationsMembers[this.data.assignForm.assigneeIndex]
+    const firstReviewer = this.data.operationsMinisters[this.data.assignForm.firstReviewerIndex]
+    const secondReviewer = this.data.operationsMinisters[this.data.assignForm.secondReviewerIndex]
+    if (!member) { showToast('请选择排版干事'); return }
+    if (!firstReviewer) { showToast('请选择一审部长'); return }
+    if (!secondReviewer) { showToast('请选择二审部长'); return }
+    showLoading('派单中...')
+    callFunction('manageHandoffs', {
+      action: 'assignOperationsLayout',
+      handoffId: target._id,
+      assigneeName: member.name,
+      firstReviewerName: firstReviewer.name,
+      secondReviewerName: secondReviewer.name
+    }).then(() => {
+      hideLoading()
+      showToast('已派单并通知干事', 'success')
+      this.setData({ showAssignModal: false, assignTarget: null, showDetailModal: false })
+      this.loadTasks()
+    }).catch(err => {
+      hideLoading()
+      showToast(err.message || '派单失败')
     })
   },
 
@@ -257,9 +336,12 @@ Page({
     const target = this.data.detailTarget
     if (!target || !target.canReview || this._approving) return
     this._approving = true
-    showLoading('审核归档中...')
-    return callFunction('manageHandoffs', { action: 'reviewHandoff', handoffId: target._id, approved: true }).then(() => {
-      hideLoading(); showToast('已归档，工时已自动核算', 'success')
+    showLoading('审核中...')
+    return callFunction('manageHandoffs', { action: 'reviewHandoff', handoffId: target._id, approved: true }).then(result => {
+      hideLoading()
+      // 指定了一审/二审的排版任务：一审通过后进入待二审，二审通过才归档计工时
+      if (result && result.firstReviewed) showToast('一审已通过，待二审', 'success')
+      else showToast('已归档，工时已自动核算', 'success')
       this.setData({ showDetailModal: false }); this.loadTasks()
     }).catch(err => { hideLoading(); showToast(err.message || '审核失败') }).then(() => { this._approving = false })
   },

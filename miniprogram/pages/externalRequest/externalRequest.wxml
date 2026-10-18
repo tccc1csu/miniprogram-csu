@@ -1,0 +1,195 @@
+<!--pages/externalRequest/externalRequest.wxml-->
+<view class="container">
+  <view class="layout-summary">
+    <view class="summary-title">外部需求协作</view>
+    <view class="summary-path">兄弟部门发布需求（可选任意部门）→ 承接部门部长接单派发 → 干事处理 → 部长归档</view>
+  </view>
+
+  <view class="tab-bar">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab-item {{activeTab === item.key ? 'active' : ''}}" data-tab="{{item.key}}" bindtap="switchTab">{{item.label}}</view>
+  </view>
+
+  <view class="create-entry" wx:if="{{activeTab === 'active' && canCreate}}">
+    <button class="btn-primary" bindtap="openCreateModal">+ 发布外部需求</button>
+  </view>
+
+  <view wx:if="{{activeTab === 'flow'}}" class="flow-card card">
+    <view class="flow-step">
+      <view class="step-index">1</view>
+      <view class="step-body"><view class="step-title">兄弟部门发布需求</view><view class="step-text">选择承接部门，填写标题、截止日期与附件。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">2</view>
+      <view class="step-body"><view class="step-title">承接部门部长接单</view><view class="step-text">部门部长选择本部门干事负责处理。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">3</view>
+      <view class="step-body"><view class="step-title">干事处理并提交</view><view class="step-text">干事完成后填写处理说明并提交。</view></view>
+    </view>
+    <view class="flow-step">
+      <view class="step-index">4</view>
+      <view class="step-body"><view class="step-title">部长归档</view><view class="step-text">承接部门部长审核通过后归档。</view></view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{activeTab !== 'flow' && !loading && handoffs.length === 0}}">暂无外部需求</view>
+
+  <view wx:for="{{handoffs}}" wx:key="_id" class="handoff-card card" data-item="{{item}}" bindtap="openDetail">
+    <view class="handoff-head">
+      <view class="handoff-head-left">
+        <view class="handoff-title">{{item.title}}</view>
+        <view class="handoff-meta">承接：{{item.targetDepartment}} · 发布方：{{item.submitterName}}（{{item.submitterDepartment}}）</view>
+      </view>
+      <view class="handoff-head-right">
+        <view class="status status-{{item.status}}">{{item.statusLabel}}</view>
+      </view>
+    </view>
+    <view class="deadline-bar" wx:if="{{item.deadline}}">
+      <view class="deadline-icon">⏰</view>
+      <text class="deadline-text {{item.countdownUrgent ? 'deadline-urgent' : ''}}">{{item.countdown || '计算中...'}}</text>
+      <text class="deadline-date">截止：{{item.deadline}}</text>
+    </view>
+    <view class="handoff-section" wx:if="{{item.assigneeName}}">
+      <view class="section-label">承接干事</view>
+      <view class="section-text">{{item.assigneeName}}</view>
+    </view>
+    <view class="handoff-section" wx:if="{{item.attachments.length > 0}}">
+      <view class="section-label">附件</view>
+      <view class="attachment-list">
+        <view class="attachment-item" wx:for="{{item.attachments}}" wx:for-item="file" wx:key="fileID" data-file="{{file}}" catchtap="openAttachment">
+          <text class="attachment-icon">📎</text>
+          <text class="attachment-name">{{file.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 发布需求弹窗 -->
+  <view class="modal-mask" wx:if="{{showCreateModal}}" bindtap="closeCreateModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">发布外部需求</view>
+      <view class="form-group">
+        <text class="form-label">需求标题</text>
+        <input class="form-input" placeholder="例如：设计活动宣传海报" value="{{createForm.title}}" bindinput="onCreateTitleInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">承接部门</text>
+        <picker mode="selector" range="{{targetDepartments}}" value="{{createForm.targetDepartmentIndex}}" bindchange="onTargetDepartmentChange">
+          <view class="form-picker"><text>{{targetDepartments[createForm.targetDepartmentIndex]}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">截止日期</text>
+        <picker mode="date" value="{{createForm.deadline}}" bindchange="onDeadlineChange">
+          <view class="form-picker"><text>{{createForm.deadline || '选择日期'}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">需求描述</text>
+        <textarea class="form-textarea" placeholder="详细描述需求内容、规格要求等" value="{{createForm.note}}" bindinput="onCreateNoteInput"></textarea>
+      </view>
+      <view class="form-group">
+        <text class="form-label">附件（可选）</text>
+        <view class="attachment-list" wx:if="{{createAttachments.length > 0}}">
+          <view class="attachment-item" wx:for="{{createAttachments}}" wx:for-item="file" wx:key="fileID">
+            <text class="attachment-name">{{file.name}}</text>
+            <text class="attachment-remove" data-key="createAttachments" data-index="{{index}}" catchtap="removeAttachment">×</text>
+          </view>
+        </view>
+        <button class="mini-btn upload-btn" bindtap="chooseCreateAttachment">+ 上传文档</button>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCreateModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="submitCreate">提交需求</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 详情弹窗 -->
+  <view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
+    <view class="modal-content" catchtap="stopTap" wx:if="{{detailTarget}}">
+      <view class="modal-title detail-title">{{detailTarget.title}}</view>
+      <view class="detail-row"><text class="detail-label">承接部门</text><text class="detail-value">{{detailTarget.targetDepartment}}</text></view>
+      <view class="detail-row"><text class="detail-label">发布方</text><text class="detail-value">{{detailTarget.submitterName}}（{{detailTarget.submitterDepartment}}）</text></view>
+      <view class="detail-row"><text class="detail-label">状态</text><text class="detail-value">{{detailTarget.statusLabel}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.deadline}}"><text class="detail-label">截止日期</text><text class="detail-value">{{detailTarget.deadline}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.note}}"><text class="detail-label">需求描述</text><text class="detail-value">{{detailTarget.note}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.assigneeName}}"><text class="detail-label">承接干事</text><text class="detail-value">{{detailTarget.assigneeName}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.syncResult}}"><text class="detail-label">处理说明</text><text class="detail-value">{{detailTarget.syncResult}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.reviewComment}}"><text class="detail-label">审核意见</text><text class="detail-value">{{detailTarget.reviewComment}}</text></view>
+      <view class="detail-row" wx:if="{{detailTarget.attachments.length > 0}}">
+        <text class="detail-label">附件</text>
+        <view class="attachment-list detail-attachments">
+          <view class="attachment-item" wx:for="{{detailTarget.attachments}}" wx:for-item="file" wx:key="fileID" data-file="{{file}}" bindtap="openAttachment">
+            <text class="attachment-icon">📎</text>
+            <text class="attachment-name">{{file.name}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-actions" wx:if="{{detailTarget.canAssign || detailTarget.canComplete || detailTarget.canReview}}">
+        <button class="mini-btn primary" wx:if="{{detailTarget.canAssign}}" bindtap="openAssignModal">接单派发</button>
+        <button class="mini-btn" wx:if="{{detailTarget.canComplete}}" bindtap="openCompleteModal">提交完成</button>
+        <button class="mini-btn primary" wx:if="{{detailTarget.canReview}}" bindtap="openReviewModal">审核归档</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 接单派发弹窗 -->
+  <view class="modal-mask" wx:if="{{showAssignModal}}" bindtap="closeAssignModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">接单派发</view>
+      <view class="form-group">
+        <text class="form-label">承接干事（{{assignTarget.targetDepartment}}）</text>
+        <picker mode="selector" range="{{assignMembers}}" range-key="name" value="{{assigneeIndex}}" bindchange="onAssigneeChange">
+          <view class="form-picker"><text>{{assignMembers.length > 0 ? assignMembers[assigneeIndex].name : '暂无成员'}}</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeAssignModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmAssign">确认派单</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交完成弹窗 -->
+  <view class="modal-mask" wx:if="{{showCompleteModal}}" bindtap="closeCompleteModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">提交完成</view>
+      <view class="form-group">
+        <text class="form-label">处理说明</text>
+        <textarea class="form-textarea" placeholder="填写处理结果、交付链接等" value="{{syncResult}}" bindinput="onSyncResultInput"></textarea>
+      </view>
+      <view class="form-group">
+        <text class="form-label">附件（可选）</text>
+        <view class="attachment-list" wx:if="{{completeAttachments.length > 0}}">
+          <view class="attachment-item" wx:for="{{completeAttachments}}" wx:for-item="file" wx:key="fileID">
+            <text class="attachment-name">{{file.name}}</text>
+            <text class="attachment-remove" data-key="completeAttachments" data-index="{{index}}" catchtap="removeAttachment">×</text>
+          </view>
+        </view>
+        <button class="mini-btn upload-btn" bindtap="chooseCompleteAttachment">+ 上传文档</button>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeCompleteModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmComplete">提交</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退回修改弹窗 -->
+  <view class="modal-mask" wx:if="{{showReviewModal}}" bindtap="closeReviewModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-title">退回修改</view>
+      <view class="form-group" wx:if="{{returnTargets.length > 0}}">
+        <text class="form-label">指定退回接收人</text>
+        <picker mode="selector" range="{{returnTargets}}" range-key="name" value="{{returnToIndex}}" bindchange="onReturnToChange">
+          <view class="form-picker"><text>{{returnTargets[returnToIndex].name}}（{{returnTargets[returnToIndex].department}}）</text><text>▾</text></view>
+        </picker>
+      </view>
+      <view class="modal-actions">
+        <button class="btn-secondary" bindtap="closeReviewModal">取消</button>
+        <button class="btn-primary modal-confirm" bindtap="confirmReview">确认退回</button>
+      </view>
+    </view>
+  </view>
+</view>
