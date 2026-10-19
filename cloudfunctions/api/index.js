@@ -110,7 +110,7 @@ const DEFAULT_ALLOWANCE_RULES = [
   { key: 'office_activity_planner', name: '大型活动策划', department: '办公部', role: '策划负责人', workType: '日常办公', unit: '次', hours: 4 },
   { key: 'office_activity_organizer', name: '大型活动组织', department: '办公部', role: '组织者', workType: '日常办公', unit: '次', hours: 3.5 },
   { key: 'office_regular_review', name: '常规审核或归档', department: '办公部', role: '审核人员', workType: '日常办公', unit: '人次', hours: 2 },
-  { key: 'office_handoff_sync', name: '采编办公对接', department: '办公部', role: '对接干事', workType: '日常办公', unit: '学期', hours: 4 },
+  { key: 'office_handoff_sync', name: '采编办公对接', department: '办公部', role: '对接干事', workType: '日常办公', unit: '人次', hours: 4 },
   { key: 'production_video_member', name: '摄制任务完成', department: '摄制部', role: '摄制干事', workType: '视频制作', unit: '次', hours: 4 },
   { key: 'production_archive_review', name: '摄制任务归档', department: '办公部', role: '归档人员', workType: '日常办公', unit: '人次', hours: 2 },
   { key: 'operations_review', name: '运营稿件审核', department: '运营部', role: '审核', workType: '日常办公', unit: '次', hours: 2 },
@@ -367,7 +367,13 @@ async function ensureDefaultAllowanceRules(existingRows) {
       })
     }))
   })
-  await Promise.all(inserts)
+  // 兼容旧数据：采编办公对接曾按学期一次性核算，现改为按单核算，同步修正展示单位。
+  const updates = rows
+    .filter(item => item.key === 'office_handoff_sync' && trim(item.unit) === '学期')
+    .map(item => collection.doc(item._id).update({
+      data: { unit: '人次', updateTime: new Date() }
+    }))
+  await Promise.all(inserts.concat(updates))
 }
 
 async function ensureDefaultResponsibilities(existingRows) {
@@ -2507,7 +2513,9 @@ async function handleManageHandoffs(event, user, openid) {
     const settledRecords = approved
       ? await (isLayout
         ? settleOperationsLayoutWorkload(event.handoffId, handoff, now, user, openid)
-        : settleHandoffWorkload(event.handoffId, handoff, now, user, openid))
+        : handoff.workflowType === 'externalRequest'
+          ? settleExternalRequestWorkload(event.handoffId, handoff, now, user, openid)
+          : settleHandoffWorkload(event.handoffId, handoff, now, user, openid))
       : []
     await handoffs.doc(event.handoffId).update({
       data: {
@@ -2852,28 +2860,23 @@ async function settleHandoffWorkload(handoffId, handoff, now, reviewer, reviewer
 
   if (trim(handoff.assigneeName)) {
     const syncRule = findAllowanceRule(rules, 'office_handoff_sync', '办公部', '日常办公')
-    const syncUnit = syncRule ? trim(syncRule.unit) : '学期'
-    const syncSourceId = syncUnit === '学期'
-      ? 'allowance:office_handoff_sync:' + getCurrentSemesterLabel(now)
-      : handoffId
-    const alreadySettled = syncUnit === '学期' && await hasWorkflowSource(
+    // 对接干事按单核算：每完成一单发放一次，做多拿多（不再按学期一次性发放）。
+    const syncSourceId = handoffId
+    const alreadySettled = await hasWorkflowSource(
       trim(handoff.assigneeName),
       '办公部',
       syncSourceId
     )
     if (!alreadySettled) {
-      const syncQuantity = getRuleQuantity(syncRule, quantity)
       const officeRecord = await upsertWorkflowWorkloadRecord({
         sourceHandoffId: syncSourceId,
         memberName: trim(handoff.assigneeName),
         memberOpenid: trim(handoff.assigneeOpenid),
         department: '办公部',
         workType: syncRule ? syncRule.workType : '日常办公',
-        workload: (syncRule ? syncRule.hours : 4) * syncQuantity,
+        workload: syncRule ? syncRule.hours : 4,
         content: '稿件同步：' + articleNames + (handoff.targetSites ? '（' + handoff.targetSites + '）' : ''),
-        remark: syncUnit === '学期'
-          ? '采编办公协同对接按学期自动核算，可由部长调整'
-          : '采编办公协同归档自动核算，可由部长调整',
+        remark: '采编办公协同对接按单自动核算，可由部长调整',
         now,
         reviewer,
         reviewerOpenid
@@ -3005,6 +3008,59 @@ async function settleOperationsLayoutWorkload(handoffId, handoff, now, reviewer,
       workload: LAYOUT_REVIEW_HOURS,
       content: '排版' + item.stage + '：' + handoff.title,
       remark: '公众号排版' + item.stage + '自动核算（审核固定 2 工时），可由部长调整',
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
+  return settled
+}
+
+// 外部需求归档自动计费：承接部门干事按本部门创作者规则发放，审核部长固定 2 工时；
+// 外部发起人（兄弟部门）不计创作者稿费。
+const EXTERNAL_REQUEST_REVIEW_HOURS = 2
+const EXTERNAL_REQUEST_WORKER_RULE_KEYS = {
+  '采编部': 'editorial_news_creator',
+  '美编部': 'design_basic',
+  '摄制部': 'production_video_member',
+  '运营部': 'operations_basic_layout',
+  '办公部': 'office_handoff_sync'
+}
+
+async function settleExternalRequestWorkload(handoffId, handoff, now, reviewer, reviewerOpenid) {
+  const rules = await getAllowanceRules()
+  const targetDepartment = trim(handoff.targetDepartment) || '办公部'
+  const ruleKey = EXTERNAL_REQUEST_WORKER_RULE_KEYS[targetDepartment]
+  const workerRule = ruleKey ? findAllowanceRule(rules, ruleKey, targetDepartment, '日常办公') : null
+  const settled = []
+  // 承接干事：按承接部门创作者规则发放；外部发起人一律不计创作者稿费。
+  if (trim(handoff.assigneeName)) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId,
+      memberName: trim(handoff.assigneeName),
+      memberOpenid: trim(handoff.assigneeOpenid),
+      department: targetDepartment,
+      workType: workerRule ? workerRule.workType : '日常办公',
+      workload: workerRule ? workerRule.hours : 2,
+      content: '外部需求承接：' + handoff.title,
+      remark: '外部需求归档自动核算，可由部长调整',
+      now,
+      reviewer,
+      reviewerOpenid
+    }))
+  }
+  // 审核部长：固定 2 工时。
+  const reviewName = (reviewer && trim(reviewer.name)) || ''
+  if (reviewName) {
+    settled.push(await upsertWorkflowWorkloadRecord({
+      sourceHandoffId: handoffId + ':review',
+      memberName: reviewName,
+      memberOpenid: reviewer.name === reviewName ? reviewerOpenid : '',
+      department: targetDepartment,
+      workType: '日常办公',
+      workload: EXTERNAL_REQUEST_REVIEW_HOURS,
+      content: '外部需求审核：' + handoff.title,
+      remark: '外部需求审核固定 2 工时，可由部长调整',
       now,
       reviewer,
       reviewerOpenid
