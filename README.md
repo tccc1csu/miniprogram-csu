@@ -18,6 +18,8 @@
 
 课程文档：[《系统开发与设计课程分析》](./docs/系统开发与设计课程分析.docx)（Word 格式，含系统分析与数据库设计说明）。
 
+课程作业 PDF：[course-assignment.pdf](./course-assignment.pdf)（A4 排版，含封面、58 张图与页码，由 [docs/course-assignment.md](./docs/course-assignment.md) 生成）。
+
 ## 已整合功能
 
 - 微信授权登录：已绑定账号可一键登录，登录态默认保留 14 天。
