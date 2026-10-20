@@ -391,3 +391,94 @@
   color: #333;
   box-sizing: border-box;
 }
+
+/* 腾讯文档式工具栏：筛选 / 排序 / 导出 */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 20rpx;
+  margin-bottom: 16rpx;
+  background: #fff;
+  border: 2rpx solid #E5E9F0;
+  border-radius: 12rpx;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 12rpx;
+}
+
+.chip {
+  padding: 10rpx 22rpx;
+  font-size: 24rpx;
+  color: #667085;
+  background: #F2F4F7;
+  border-radius: 999rpx;
+}
+
+.chip.active {
+  color: #fff;
+  background: linear-gradient(135deg, #4A90D9, #357ABD);
+  font-weight: 600;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.sort-picker {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 10rpx 18rpx;
+  font-size: 24rpx;
+  color: #333;
+  background: #F9FAFB;
+  border: 2rpx solid #E8E8E8;
+  border-radius: 8rpx;
+}
+
+.export-btn {
+  padding: 10rpx 24rpx;
+  font-size: 24rpx;
+  color: #245F9E;
+  background: #EAF2FB;
+  border: 2rpx solid #BBD6F1;
+  border-radius: 8rpx;
+  font-weight: 600;
+}
+
+.export-btn.disabled {
+  opacity: 0.5;
+}
+
+.auto-tag {
+  display: inline-block;
+  font-size: 18rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  margin-top: 6rpx;
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.save-flag {
+  font-size: 18rpx;
+  margin-top: 6rpx;
+}
+
+.save-saving {
+  color: #B7791F;
+}
+
+.save-saved {
+  color: #2E8B57;
+}
+
+.save-error {
+  color: #C0392B;
+}

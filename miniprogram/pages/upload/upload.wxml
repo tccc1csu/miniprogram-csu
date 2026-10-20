@@ -20,6 +20,10 @@
         <text class="summary-num">{{totalWorkload}}</text>
         <text class="summary-label">工作量(h)</text>
       </view>
+      <view class="summary-item">
+        <text class="summary-num">{{averageWorkload}}</text>
+        <text class="summary-label">人均(h)</text>
+      </view>
     </view>
   </view>
 
@@ -52,7 +56,25 @@
     </button>
   </view>
 
-  <!-- 成员批量编辑表格 -->
+  <!-- 腾讯文档式工具栏：筛选 / 排序 / 导出 -->
+  <view class="table-toolbar" wx:if="{{!isMember && memberForms.length > 0}}">
+    <view class="filter-chips">
+      <view class="chip {{filterMode === 'all' ? 'active' : ''}}" data-filter="all" bindtap="switchFilter">全部</view>
+      <view class="chip {{filterMode === 'pending' ? 'active' : ''}}" data-filter="pending" bindtap="switchFilter">待填写</view>
+      <view class="chip {{filterMode === 'done' ? 'active' : ''}}" data-filter="done" bindtap="switchFilter">已填写</view>
+    </view>
+    <view class="toolbar-right">
+      <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSortChange">
+        <view class="sort-picker">
+          <text>{{sortOptions[sortIndex]}}</text>
+          <text class="arrow">▾</text>
+        </view>
+      </picker>
+      <view class="export-btn {{exporting ? 'disabled' : ''}}" bindtap="handleExport">导出</view>
+    </view>
+  </view>
+
+  <!-- 成员批量编辑表格（单元格直接编辑，失焦自动保存） -->
   <view class="batch-table card" wx:if="{{!isMember}}">
     <view class="table-header-row">
       <view class="th th-name">成员</view>
@@ -61,10 +83,14 @@
       <view class="th th-workload">工时</view>
     </view>
 
-    <view wx:for="{{memberForms}}" wx:key="index" class="table-row {{item.hasRecord ? 'row-uploaded' : ''}}">
+    <view wx:for="{{memberForms}}" wx:key="memberName" wx:if="{{!item.hidden}}" class="table-row {{item.hasRecord ? 'row-uploaded' : ''}}">
       <view class="td td-name">
         <text class="member-name">{{item.memberName}}</text>
         <text class="status-badge {{item.hasRecord ? 'status-done' : (item.workContent ? 'status-ready' : 'status-pending')}}">{{item.status}}</text>
+        <text class="auto-tag" wx:if="{{item.auto}}">归档</text>
+        <text class="save-flag save-saving" wx:if="{{item.saveState === 'saving'}}">保存中</text>
+        <text class="save-flag save-saved" wx:if="{{item.saveState === 'saved'}}">✓ 已存</text>
+        <text class="save-flag save-error" wx:if="{{item.saveState === 'error'}}">保存失败</text>
       </view>
       <view class="td td-type">
         <picker mode="selector" range="{{workTypeOptions}}" value="{{item.workTypeIndex}}" data-index="{{index}}" bindchange="onWorkTypeChange">
@@ -75,15 +101,18 @@
         </picker>
       </view>
       <view class="td td-content"><document-attachments value="{{item.attachments}}" label="周报依据" data-path="memberForms[{{index}}].attachments" bindchange="onAttachmentsChange" bindbusy="onAttachmentBusy" />
-        <textarea class="inline-textarea" placeholder="填写工作内容..." value="{{item.workContent}}" bindinput="onContentInput" data-index="{{index}}" maxlength="200" auto-height />
+        <textarea class="inline-textarea" placeholder="填写工作内容..." value="{{item.workContent}}" bindinput="onContentInput" bindblur="onContentBlur" data-index="{{index}}" maxlength="200" auto-height />
       </view>
       <view class="td td-workload">
-        <input class="inline-input" type="digit" placeholder="h" value="{{item.workload}}" bindinput="onWorkloadInput" data-index="{{index}}" />
+        <input class="inline-input" type="digit" placeholder="h" value="{{item.workload}}" bindinput="onWorkloadInput" bindblur="onWorkloadBlur" data-index="{{index}}" />
       </view>
     </view>
 
     <view class="empty" wx:if="{{memberForms.length === 0}}">
       <text>本部门暂无成员，请先添加</text>
+    </view>
+    <view class="empty" wx:if="{{memberForms.length > 0 && visibleCount === 0}}">
+      <text>没有符合条件的成员</text>
     </view>
   </view>
 

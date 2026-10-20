@@ -199,6 +199,13 @@ test('场景3a 外部需求：团委办公室向运营部提需求并归档', as
   }, USERS.opsMin, 'openid-u-ops-min')
   assert.equal(reviewed.code, 0, `归档失败：${reviewed.message}`)
   assert.equal(db.rows.get('handoffs/' + id).status, 'archived')
+
+  // 外部需求计费（规则来自搭档提交 d8c48d4）：承接干事按运营部基础排版 4h，审核部长固定 2h，
+  // 外部发起人梁肖瑶不计创作者稿费。
+  const rows = workloadsOf(db)
+  assert.equal(rows.find(r => r.name === '苏绮雯').workload, 4, '承接干事按基础排版计 4 小时')
+  assert.equal(rows.find(r => r.name === '运营部长').workload, 2, '审核部长固定计 2 小时')
+  assert.equal(rows.find(r => r.name === '梁肖瑶'), undefined, '外部发起人不计创作者稿费')
 })
 
 test('场景3b 排版需求：兄弟部门发布 → 接单派发 → 一审 → 二审 → 归档', async () => {
@@ -282,7 +289,7 @@ test('场景4 排版排班：一周七条推文可建可查', async () => {
 // ─────────────────────────────────────────────────────────────
 // 边界：真实工作里高频出现、但容易被忽略的情况
 // ─────────────────────────────────────────────────────────────
-test('边界1 同一学期第二次采编对接：办公干事按学期只计一次', async () => {
+test('边界1 采编对接改为按单计费：第二单继续累加', async () => {
   const { db, api } = scenarioDB()
 
   async function runOne(title, deadline) {
@@ -298,12 +305,13 @@ test('边界1 同一学期第二次采编对接：办公干事按学期只计一
 
   await runOne('第一次对接', '2026-06-12')
   const firstRound = workloadsOf(db).find(r => r.name === '薛宇翔').workload
-  assert.equal(firstRound, 4, '首单办公对接计 4 小时（学期口径）')
+  assert.equal(firstRound, 4, '首单办公对接计 4 小时')
 
   await runOne('第二次对接', '2026-06-20')
   const secondRound = workloadsOf(db).find(r => r.name === '薛宇翔').workload
-  assert.equal(secondRound, 4, '同学期第二单不再叠加，仍为 4 小时')
-  // 业务提示：这意味着同一学期内做 1 单和做 10 单的办公干事工时相同。
+  assert.equal(secondRound, 8, '按单计费后第二单继续累加，同一周内合计 8 小时')
+  // 规则变更（2026-10 搭档提交 d8c48d4）：对接干事由「每学期一次」改为「每单一次」，
+  // 避免做 1 单和做 10 单拿同样工时。
 })
 
 test('边界2 外部需求附件超过 9 个时只保留前 9 个', async () => {
