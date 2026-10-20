@@ -30,6 +30,14 @@ rectangle "青年传媒中心工作统计与协作系统" {
   usecase "UC-REC-001 核对部门任务明细与周汇总" as UC_REC_001
   usecase "UC-STAT-001 生成并导出中心周报" as UC_STAT_001
   usecase "UC-ED-004 审核并归档采编协同" as UC_ED_004
+  usecase "UC-ER-001 发布外部需求" as UC_ER_001
+  usecase "UC-ER-002 接单派发外部需求" as UC_ER_002
+  usecase "UC-ER-003 提交外部需求成果" as UC_ER_003
+  usecase "UC-ER-004 审核归档外部需求" as UC_ER_004
+  usecase "UC-OL-001 发布公众号排版需求" as UC_OL_001
+  usecase "UC-OL-002 接单派发公众号排版" as UC_OL_002
+  usecase "UC-OL-003 提交公众号排版成果" as UC_OL_003
+  usecase "UC-OL-004 审核公众号排版并归档" as UC_OL_004
   usecase "UC-RV-002 二审稿件" as UC_RV_002
   usecase "UC-ORG-001 管理组织与人员" as UC_ORG_001
   usecase "UC-AUTH-001 登录系统" as UC_AUTH_001
@@ -51,6 +59,17 @@ Minister --> UC_RV_001
 Minister --> UC_REC_001
 Minister --> UC_STAT_001
 Admin --> UC_ED_004
+Member --> UC_ER_001
+Minister --> UC_ER_002
+Member --> UC_ER_003
+Minister --> UC_ER_004
+Admin --> UC_ER_004
+Member --> UC_OL_001
+Minister --> UC_OL_001
+Minister --> UC_OL_002
+Member --> UC_OL_003
+Minister --> UC_OL_004
+Admin --> UC_OL_004
 Admin --> UC_RV_002
 Admin --> UC_ORG_001
 Minister --> UC_PR_001

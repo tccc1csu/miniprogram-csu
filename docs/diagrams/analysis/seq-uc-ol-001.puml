@@ -1,0 +1,45 @@
+@startuml
+title UC-OL-001 发布公众号排版需求 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "兄弟部门成员或运营部部长" as A
+boundary "接口:普通成员接口" as B
+control "控制:发布公众号排版需求控制" as C
+participant "M:成员" as M
+participant "L:公众号排版任务" as L
+participant "RA:审核岗位安排" as RA
+A -> B: 发布公众号排版需求(业务信息)
+activate B
+B -> C: 发布公众号排版需求(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> L: 发布排版需求(标题、类型、截止日期、说明、附件)
+activate L
+L -> RA: 核验审核资格(待派发排版任务)
+RA --> L: 岗位安排可在派发时指定
+L --> C: 待接单或待派发排版任务
+deactivate L
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

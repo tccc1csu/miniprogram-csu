@@ -1,0 +1,34 @@
+@startuml
+title 分析状态机图（六）— 外部需求
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "待接单" as Unassigned
+state "待完成" as Assigned
+state "待审核" as Submitted
+state "待补正" as Returned
+state "已归档" as Archived
+[*] --> Unassigned
+Unassigned --> Assigned : 接单派发()\n[目标部门部长有权且承接成员有效]\n/ 确立唯一承接责任
+Assigned --> Submitted : 提交成果()\n[当前承接人且成果完整]\n/ 保存成果与附件
+Submitted --> Returned : 审核归档()\n[审核退回且意见完整]\n/ 保留补正责任
+Returned --> Submitted : 提交成果()\n[当前承接人且修订完整]\n/ 保存新成果
+Submitted --> Archived : 审核归档()\n[目标部门部长或管理员通过且成果齐备]\n/ 保存归档事实
+Archived : 审核归档()\n[重复合法请求]\n/ 返回原结果，不改变状态
+note bottom of Archived
+  外部需求归档是协作完成事实，
+  不自动形成津贴贡献。
+end note
+
+@enduml

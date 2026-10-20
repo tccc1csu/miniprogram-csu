@@ -1,0 +1,34 @@
+@startuml
+title 改进业务序列图：兄弟部门外部需求
+!include course-notation.iuml
+autonumber
+hide footbox
+participant "<$worker>\n兄弟部门需求成员" as Requester
+participant "<$worker>\n目标部门部长" as Minister
+participant "<$worker>\n目标部门承接成员" as Worker
+participant "<$worker>\n管理员" as Admin
+participant "<$entity>\n外部需求记录" as Request
+participant "<$entity>\n青年传媒中心工作统计与协作系统" as System
+Requester -> System: 发布目标部门需求、截止日期和附件
+System -> Request: 建立待接单需求
+Request --> System: 需求已登记
+System --> Minister: 通知待接单需求
+Minister -> System: 接单并指定承接成员
+System -> Request: 记录唯一承接责任
+System --> Worker: 通知需求要求和期限
+Worker -> System: 提交完成说明、链接和附件
+System -> Request: 保存成果并置为待审核
+Request --> System: 待审核成果
+alt 目标部门部长审核
+  Minister -> System: 审核通过或退回
+else 管理员审核
+  Admin -> System: 审核通过或退回
+end
+System -> Request: 记录审核结果；通过则归档
+Request --> System: 归档结果
+System --> Requester: 返回处理结果
+note over System,Request
+  外部需求归档不自动结算津贴。
+  只有对应业务规则确认后，才进入工作贡献统计。
+end note
+@enduml

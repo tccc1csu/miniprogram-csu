@@ -1,0 +1,48 @@
+@startuml
+title 改进业务序列图：公众号排版需求与逐级审核
+!include course-notation.iuml
+autonumber
+hide footbox
+participant "<$worker>\n兄弟部门需求成员" as Requester
+participant "<$worker>\n运营部部长" as Minister
+participant "<$worker>\n排版干事" as Worker
+participant "<$worker>\n指定一审人员" as First
+participant "<$worker>\n指定二审人员" as Second
+participant "<$entity>\n公众号排版任务" as Layout
+participant "<$entity>\n青年传媒中心工作统计与协作系统" as System
+Requester -> System: 发布排版需求、截止日期和素材
+System -> Layout: 建立待接单排版任务
+Minister -> System: 接单派发并指定干事、一审和二审
+System -> Layout: 记录任务承接与审核岗位
+System --> Worker: 通知排版要求
+opt 兄弟部门成员报名
+  Requester -> System: 报名并提交素材
+  System -> Layout: 保存报名；不足两天时标记加急
+  System --> Worker: 加急时发送提醒
+end
+Worker -> System: 提交排版成果和附件
+System -> Layout: 保存成果并置为待一审
+First -> System: 提交一审通过或退回
+System -> Layout: 记录实际审核人、时间和结论
+alt 一审退回
+  System --> Worker: 返回修改意见
+  Worker -> System: 修订后重新提交成果
+  System -> Layout: 保存新成果并重新进入待一审
+else 一审通过且两岗不同
+  System -> Layout: 更新为待二审
+  System --> Second: 通知二审
+  Second -> System: 提交二审通过或退回
+  System -> Layout: 记录实际审核人、时间和结论
+  alt 二审退回
+    System --> Worker: 返回修改意见
+  else 二审通过
+    System -> Layout: 归档并按规则结算排版与审核工时
+  end
+else 两岗为同一人且一审通过
+  System -> Layout: 直接归档并按规则结算工时
+end
+note over Layout,System
+  排版审核贡献合计 2 小时，由实际审核人员平分。
+  通过请求只需提交结论，系统保存审核人、时间和默认意见。
+end note
+@enduml

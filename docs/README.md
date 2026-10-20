@@ -1,142 +1,117 @@
-# 青年传媒中心系统分析与设计文档
+# 系统分析与设计课程文档
 
-本目录用于把“青年传媒中心工作统计与协作小程序”逐步规范为一套系统分析与设计课程案例。文档参考 KADA 项目的 SRS、SDD、STD 组织方式，但不复制其业务名称、角色安排或数据库设计。
+本目录维护青年传媒中心工作统计与协作系统的课程案例。课程 PPT 是建模标准，KADA 的 SRS／SDD／STD 仅作为文档组织参考。当前小程序是可用实现基线，课程目标与实现差异必须明示，不能以图或参考 DDL 代替实际部署。
 
-## 作业阅读入口
+更新日期：2026-10-19。产品功能与运行步骤见 [项目 README](../README.md)。
 
-2026-10-14 新确认与实现见[一键审核、业务附件与计量口径](./implementation/06-one-click-review-and-documents.md)：公众号布置时记录两岗人员，部长一次确认归档；审核合计 2 小时按成员平分。该文件明确课程目标模型与当前排班功能的区别，并附私有导出的聚合检查结果。
+## 完整作业与 A–D 导航
 
-课程目标与真实代码的同步记录见[课程设计与小程序实现对照](./implementation/01-course-runtime-alignment.md)。原对照已逐项映射 20 个分析实体；本轮新增外部需求、公众号排版和审核岗位安排三个实体，数据库模型与当前 `handoffs` 文档结构差异已在数据库设计中说明。[发布与回退](./implementation/02-rollout-and-rollback.md)说明线上核验、数据备份与分批部署。数据库总图仍是规范目标，本轮未迁移线上集合。
+首先阅读 [课程作业合并稿](./course-assignment.md)。合并稿由下列分文件生成，修订分文件后须重新生成。
 
-[数据库设计](./design/01-database-design.md)已加入合并稿第 6 节。主图为[一张完整数据库总图（SVG，可放大）](./diagrams/database/db-overview.svg)，含八个分区、全部表、原分析实体名称及字段旁外键目标；外部需求与公众号排版的承接、审核、归档关系已纳入总图。[高清 PNG](./diagrams/database/db-overview.png)与[完整关系 PlantUML 图源](./diagrams/database/db-overview.puml)一并保存。分析实体逐项对应 55 张规范化基表及 5 个派生视图；表的拆分理由见第 6.3 节。
+| 阶段 | 作业内容与入口 | 当前工件 |
+| --- | --- | --- |
+| A 业务建模 | [愿景](./analysis/01-vision.md)、[业务建模](./analysis/02-business-modeling.md) | 一句话愿景及七项要素；7 个业务用例；现状人工协同与周统计；6 张改进业务序列图 |
+| B 需求 | [系统用例图说明](./diagrams/system-use-case-notes.md)、[系统用例规约](./requirements/system-use-case-specifications.md) | 1 张总图、3 张分业务视图；28 份规约，包含公共登录、外部需求及公众号排版 |
+| C 分析 | [分析模型](./analysis/05-analysis-models.md) | 9 张分析类图、28 张分析序列图、7 张状态机图，共 44 张 |
+| D 设计 | [数据库与三层设计](./design/01-database-design.md) | 建立数据层、精化业务层、精化表示层；分析实体与表、业务操作、代码入口追踪 |
 
-[分析部分（图为主）](./analysis/05-analysis-models.md)已补充分析类图、20 个用例对应的分析序列图和核心对象状态机图，并同步至下方合并稿第 5 节。课程依据、假设与核对记录见[分析评审记录](./analysis/06-analysis-review.md)。
+合并稿图号连续为 1～58：业务图 1～9，系统用例图 10～13，分析图 14～57，数据库总图 58。数据库另有 9 张辅助分视图，不替代一张完整总图。
 
-[课程作业合并稿](./course-assignment.md)包含愿景、业务建模图、系统用例图、用例规约、分析模型与数据库设计。业务决定、待确认事项与框架计划保留在本 README；合并稿由以下分文件内容整理，分文件变更后需同步合并稿。
+常用图形入口：
 
-## 当前课程工件
+- [业务用例图](./diagrams/business-use-case.png) · [PlantUML 图源](./diagrams/business-use-case.puml)
+- [系统用例总图](./diagrams/system-use-case-overview.png) · [SVG](./diagrams/system-use-case-overview.svg) · [PlantUML 图源](./diagrams/system-use-case-overview.puml)
+- [外部需求改进图](./diagrams/improved-business-sequence-external-request.png)
+- [公众号排版改进图](./diagrams/improved-business-sequence-operations-layout.png)
+- [数据库总图 SVG（可放大）](./diagrams/database/db-overview.svg) · [高清 PNG](./diagrams/database/db-overview.png) · [完整关系 PlantUML](./diagrams/database/db-overview.puml)
 
-1. [愿景](./analysis/01-vision.md)：按照课程表格写系统、目标组织、老大、目标、度量指标、对比时间和改进值。
-2. [业务建模](./analysis/02-business-modeling.md)：业务用例、现状业务序列图和改进业务序列图。
-3. [课程工件评审清单](./analysis/03-course-checklist.md)。
-4. [业务用例图源文件](./diagrams/business-use-case.puml) 与 [渲染图](./diagrams/business-use-case.png)。
-5. [现状业务序列图源文件](./diagrams/current-business-sequence-editorial-office.puml) 与 [渲染图](./diagrams/current-business-sequence-editorial-office.png)。
-6. [改进业务序列图：采编办公协同](./diagrams/improved-business-sequence-editorial-office.puml)。
-7. [改进业务序列图：摄制预约](./diagrams/improved-business-sequence-production-booking.puml)。
-8. [系统用例图说明](./diagrams/system-use-case-notes.md) 与 [系统用例图源文件](./diagrams/system-use-case.puml)。
-9. [系统用例规约](./requirements/system-use-case-specifications.md)。
-10. [本轮业务总结与审阅记录](./analysis/04-business-review.md)。
-11. [通用流转改进图](./diagrams/improved-business-sequence-general-workflow.puml)、[人工周统计图](./diagrams/current-business-sequence-weekly-statistics.puml)、[改进周统计图](./diagrams/improved-business-sequence-weekly-statistics.puml)。
-12. 系统用例补充视图：[部门流转](./diagrams/system-use-case-workflow.puml)、[统计与组织支撑](./diagrams/system-use-case-statistics.puml)。
+## 当前业务口径
 
-## 项目口径（放在 README，不放在愿景作业表中）
+- 愿景是减少每周津贴统计的人工整理耗时。访谈基线约 60 分钟／周；人工协同从发布到老师审核约 2 天。两项均为现状估计，不作为已取得的改进效果或课程硬性验收值。
+- 组织为整个青年传媒中心，业务负责人为指导老师；账号角色统一为管理员、部长、普通成员。办公部部长生成和导出中心周报。
+- 兄弟部门可发布外部需求，选择六个承接部门；目标部长接单派发，承接人交付成果，部长／管理员审核归档。外部需求归档不自动结算津贴。
+- 公众号排版派发时指定干事、一审、二审。不同审核人按一审、二审依次通过后归档；两岗同人时一审通过即归档。管理员按实际权限参与，旧任务保留兼容路径。
+- 审核通过不要求另填信息，由服务端记录操作事实；退回修改另行处理。岗位安排与实际审核事件必须区分，不补造没有发生的审核。
+- 已配置的审核贡献按规则合计 2 小时、按不重复成员分摊。摄制制作加急阈值与倍率以保存的规则为依据；公众号加急提醒不自动增加工时倍率。
+- 每项有效自动贡献保存来源、成员和规则依据，事务归档防止重复计量；兼容周汇总仍可按现行权限调整，封存周报尚属课程目标。
 
-- 首要价值是自动形成任务明细、成员周汇总和津贴统计依据；愿景不再把缩短协同周期作为系统主要目标；当前先以减少每周人工整理耗时为改进方向，具体降幅待确认，试运行用于验证。
-- 目标组织是整个青年传媒中心，老大是指导老师；系统角色统一为管理员、部长、普通成员。
-- 2026 年 9 月访谈中的人工采编办公协同为：采编部成员发布任务和稿件材料，办公部成员完成挂网或同步并反馈，指导老师审核后结束。
-- 访谈中从任务发布到指导老师审核完成平均约 2 天；每周人工整理工作量约 1 小时。这些是现状基线，不是系统必须承诺的周期改进值。
-- 每项应计工作形成任务明细；再按成员和周次形成一条周汇总记录。
-- 采编任务保存标题、作品名称、原创或转载类型、投稿平台、可选截止日期、成果说明和成果链接，便于归档和统计。
-- 摄制预约提前不足 2 天时按 1.5 倍率标记加急；发生时间冲突时直接拒绝，不创建预约。
-- 摄制流程为：预约人发起、摄制部部长派发（新增需求还包括已开放任务抢单）、摄制部成员完成、指定办公部成员归档；摄制和归档两类工作都应形成明细。
-- 津贴和工时规则由会议决定，由开发者维护；这属于后续需求和设计的输入，不在本轮愿景表中展开。
+## 数据层与实现对照
 
-## 当前阶段边界
+课程关系模型包含 **55 张基表、5 个派生视图**，以第三范式为设计目标；当前 CloudBase 代码声明 **20 个集合**。`handoffs` 聚合采编协同、摄制预约、外部需求和排版，`workflowType` 区分上下文。规范关系模型的拆表不等于直接增建同名云集合。
 
-当前已从愿景、业务建模和需求推进到分析模型与数据库设计，新增分析类图、分析序列图、分析状态机图及关系数据库总图。SRS、SDD、STD 框架保留为后续骨架，本轮不继续修缮。
+总图按业务分区，使用直线和正交折线、一对多基数、黄色主键钥匙及独立蓝色外键箭头；卡片不展示 Type／Null 列。跨区公共成员／部门引用在字段旁标明目标，完整约束以外键清单和 DDL 为准。
 
-- [SRS 框架](./SRS-framework.md)
-- [SDD 框架](./SDD-framework.md)
-- [STD 框架](./STD-framework.md)
-- [OPMS 功能参考清单](./OPMS-reference-checklist.md)
+- [数据字典](./database/data-dictionary.md)
+- [完整外键关系清单](./database/foreign-key-relations.md)
+- [参考 SQLite DDL](./database/schema.sqlite.sql)（仅本地约束验证）
+- [数据库验证记录](./database/verification.txt)
+- [现行审核、附件与计量说明](./implementation/06-one-click-review-and-documents.md)
+- [课程与实现对照历史](./implementation/01-course-runtime-alignment.md)（第 1～6 节是 2026-10-13／14 基线）
+- [发布与回退](./implementation/02-rollout-and-rollback.md)（按日期理解历史检查点）
 
-## 维护规则
+摄制冲突资源、开放抢单、稿件版本审核、阶段确认和周报封存等设计与实现差距，保留对应说明，不为了消除文字差异而改坏可用流程。新计量字段使用 `snake_case`，旧 API 字段通过映射继续兼容。
 
-- 先稳定愿景和业务责任，再从业务序列图派生系统用例和用例规约。
-- 业务用例图标明主要服务对象；具体业务由各环节唯一责任人处理，跨角色协作由序列图表达。
-- 序列图实线消息命名为接收者执行的动作；虚线仅返回结果。自消息可表达参与者自身责任。
-- 用例规约使用业务语言，不写页面、按钮、组件、数据库或接口调用。
-- 参考项目只用于借鉴文档结构，不直接移植其业务。
+## 建模与同步规则
 
+1. 业务变化同时检查 A 的职责／业务路径、B 的用例与规约、C 的对象操作／状态、D 的数据关系及业务／表示层，再核对实现与测试。
+2. 业务执行者是人群或机构；业务工人与业务实体按课程图例区分。序列图消息写成“接收者执行的动作”，结果使用返回消息。
+3. 系统用例具有明确目标和主要责任角色；内部自动核算步骤保留在规约中，不为连线数量机械添加 `include`／`extend`。
+4. 用例规约表达完整业务输入、验证、处理与结果，不写按钮、组件、数据库或接口调用。
+5. 图源、PNG、SVG 和合并稿一起维护。生命线别名不得重复；审核岗位安排不能与执行者共用生命线。
+6. 课程模型是拟开发设计，已实现内容以代码核对为依据；线上可用性仍需目标环境验证。业务假设、历史决定和待确认项不混入愿景正文。
 
-## 2026-10-08 修订与待补充信息（不放入愿景作业）
+## 重新生成图片
 
-- 愿景已压缩到减少周统计人工耗时，删除价值排序、范围清单和周期缩短承诺；原愿景中的业务决定与口径已归入本 README。
-- 当前愿景改进值先写低于 60 分钟/周；具体降低比例尚未由用户确定，不能当作已达成效果或课程硬性验收要求。
-- 2026-10-09 已补充确认办公部负责津贴统计、办公部部长生成／导出中心周报；不沿用旧图“指导老师亲自整理 Excel”的未经确认假设。
-- 摄制预约还可进一步明确：2 天按 48 小时还是自然日、冲突检查对应的资源范围、1.5 倍率对各类贡献的适用范围。已有阈值、倍率与冲突拒绝决定保持有效。
-- 业务用例图区分外部服务对象与内部业务工人；系统图按主要责任划分核心用例。辅助账号、部门维护等不再拼进一次协同的业务时序。
-- 旧 UC-COL-001 拆为 UC-ED-001～004，旧 UC-COL-002 拆为 UC-PR-001～004；本轮不修缮 SRS/SDD/STD，其旧追踪编号暂不视为最新版。
-- 全部图源使用 PlantUML；course-notation.iuml 用 sprite 重现课程第 87 页的人／非人图例。用本地 PlantUML 1.2024.6 生成 PNG 与 SVG。
+所有图源使用 **UTF-8**。Windows 的 Java 默认编码可能与图源不同，即使源文件中文正常，直接渲染也可能产生乱码。统一脚本通过参数列表显式传入 UTF-8，先在临时目录渲染，再核对可见 SVG 中文标签后写回 PNG／SVG。
 
+在项目根目录执行（Java、PlantUML JAR 及 Microsoft YaHei 等中文字体需可用）：
 
-## 2026-10-09 业务补充与修订
+```powershell
+# 业务、系统用例和分析图，共 57 张
+python -X utf8 docs/tools/render_course_diagrams.py --jar ../tmp/plantuml.jar
 
-详细转录、来源对照及尚未确认的事实见[业务总结与审阅记录](./analysis/04-business-review.md)。本轮共 6 个业务用例、10 张图（1 张业务用例图、6 张序列图、3 张系统用例视图）、20 份系统用例规约（含公共登录）。
+# 9 张数据库辅助分视图
+python -X utf8 docs/tools/render_course_diagrams.py --scope database --jar ../tmp/plantuml.jar
 
-- 纳入办公、摄制、采编、运营、美编、原创六个部门；外部门是业务服务对象。现有常量中的“兄弟部门”不作为确认外部人员可登录的充分证据。
-- 采编需求截止日期改为可选；采编原创贡献与办公同步贡献分开计量；转载不生成原创写作贡献。
-- 摄制保留两天、1.5 倍率、冲突拒绝及指定办公人员归档；补充抢单和派发争用同一任务时的唯一承接约束。先记有效工时，周报结合部门时薪及规则计算津贴，倍率不得重复使用。
-- 办公部部长生成并导出中心周报；指导老师是统计需求方与稿件二审责任人；小程序维护职责另行说明。
-- 通用流转按阶段划分职责，以“美编设计 → 运营推文”作为具体拟开发实例。发起成员编排、部长确认阶段及通用任务最终归集时点均为建模方案，仍需业务评审；不是已确认会议制度或已上线事实。
-- 运营推文的一审后送老师二审由手写图支持；图 6 中审核后发布是拟开发实例的安排，不反过来更改截图中采编协同“同步后老师审核”的已确认顺序。
-- 手写图说明老师审查所有稿件；采编部与原创部的一审岗位和衔接尚未完整说明，不凭运营部情况类推。
-- 尚未收到外部门登录方式和维护管理员审核权限的确认。文档暂按中心成员登记需求、指导老师执行审核描述主要路径，保留真实需求方；这些不是对现有系统权限作出的修改。
-- 原创部名称从手写图辨读并与代码中的部门名称交叉核对；用户尚未单独回复名称确认。
-- 现状图保留 2026 年 9 月访谈的人工流程基线；2026 年 10 月截图为现有小程序流程说明，未执行真实任务验证，不能据此认定所有组织业务已迁入系统。
-- 只更新课程作业及其分文件、图源和渲染图，SRS／SDD／STD 框架待用户确认后再修缮。
+# 一张数据库总图：保留用户确认的紧凑布局
+python -X utf8 docs/tools/render_database_overview.py
+node docs/tools/rasterize_database_overview.cjs
 
-## 2026-10-10 补充系统用例总图
+# 核对全部标准渲染图的可见中文标签
+python -X utf8 docs/tools/render_course_diagrams.py --audit-only --scope all
+```
 
-- 新增[完整系统用例总图](./diagrams/system-use-case-overview.png)、[PlantUML 图源](./diagrams/system-use-case-overview.puml)和[SVG](./diagrams/system-use-case-overview.svg)，放在合并作业第 3.1 节；原三个分业务视图保留，图号顺延。
-- 总图覆盖全部 20 份规约，包含公共登录及微信授权辅执行者；三个账号角色均可发起摄制预约，不以简化图形删去真实参与关系。
-- 参照本次课件 PDF 第 138～141 页的边界、执行者和业务序列图映射，第 142 页的辅执行者含义及第 150 页的命名要求。主执行者指向用例；用例指向需提供帮助的辅执行者；不把自动核算内部步骤拆成孤立用例。
-- 课件来源：`D:/xwechat_files/wxid_5dtr00kf6nc822_1671/temp/RWTemp/2026-09/9e20f478899dc29eb19741386f9343c8/系统分析与设计-精简2026-9(2).pdf`。页码为 PDF 物理页。
-- 当前作业共有 11 张图；原 2026-10-09 的 10 张图数量为当日版本记录。
+`--jar` 替换为本机 JAR 路径，或设置 `PLANTUML_JAR`。总图 SVG／PNG 由同一模型元数据生成，不能用默认 PlantUML 排版覆盖；其结构、外键和直线布局由数据库检查脚本校验。栅格化脚本使用项目外 `../tmp/database-layout-runtime/` 中的 `@resvg/resvg-js`。
 
-## 合并稿更新与校验
+仅在模型本身发生变化时，先运行对应生成器；普通重渲染无需重建模型：
 
-分析图源、PNG 与 SVG 位于 `docs/diagrams/analysis/`。分析部分共 34 张图：9 张类图、20 张序列图、5 张状态机图；合并稿图号为 12～45。类图包含四张领域视图、一个归档职责实例及四张覆盖全部用例的边界／控制职责视图。状态图分别描述采编协同、摄制预约、运营推文阶段、美编设计阶段和流转任务整体。模型中仍未确认的会议细则沿用原有待确认项，不视为新增制度。
+```powershell
+python -X utf8 docs/tools/build_analysis_models.py
+python -X utf8 docs/tools/write_analysis_chapter.py
+# 数据库模型发生变化时才运行；随后重新生成分视图和紧凑总图
+python -X utf8 docs/tools/build_database_design.py
+```
 
-2026-10-13 补齐全部控制类声明、当前送审版本及台账规则关联；归档状态图改为条件核验在迁移前、贡献归集在迁移动作中，拒绝成果分支不再继续计量。分析模型与章节的生成脚本已保存到 `docs/tools/`，可随文档维护。
+## 合并与验证
 
-分析图形语法和渲染命令：
+```powershell
+python -X utf8 docs/tools/build_course_assignment.py
+python -X utf8 docs/tools/check_analysis_models.py
+python -X utf8 docs/tools/check_database_design.py
+npm --prefix cloudfunctions/api test
+git diff --check
+```
 
-    python docs/tools/build_analysis_models.py
-    python docs/tools/write_analysis_chapter.py
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -checkonly "docs/diagrams/analysis/*.puml"
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -tpng "docs/diagrams/analysis/*.puml"
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -tsvg "docs/diagrams/analysis/*.puml"
-    python docs/tools/check_analysis_models.py
+合并工具检查本地链接、规约必备项和用例编号；分析检查验证覆盖、实体接收操作、状态事件和生命线别名；数据库检查验证参考约束和总图。它们不代替逐图目视检查或真实云环境验收。
 
-运行 `python docs/tools/build_course_assignment.py` 可同步合并稿并检查图源、规约编号与本地链接。修改图源后仍需运行下方 PlantUML 渲染命令并目视检查图片。
+## 来源与审阅记录
 
-## 课程核对
+课程依据为用户提供的《系统分析与设计-精简2026-9》PDF：愿景第 33 页；业务图与消息责任第 86～108 页；系统用例第 138～150 页；分析第 280～357 页；数据层第 398～403 页（均为 PDF 物理页）。
 
-数据库设计依据本次课件第 398～403 页，规范化说明见第 6.5 节；[设计评审记录](./design/02-database-review.md)保存未确认细则、计算口径与实现限制，不并入作业主文。
+- [课程工件评审清单](./analysis/03-course-checklist.md)
+- [访谈、手写图与原型业务审阅](./analysis/04-business-review.md)
+- [分析评审记录](./analysis/06-analysis-review.md)
+- [数据库评审记录](./design/02-database-review.md)
+- [历次 README 建模记录](./README-history.md)（历史内容不作为现行功能说明）
 
-数据库附件：[数据字典](./database/data-dictionary.md)、[完整外键清单](./database/foreign-key-relations.md)、[本地参考 DDL](./database/schema.sqlite.sql)、[验证记录](./database/verification.txt)。SQLite 仅用于内存数据库校验；未访问或迁移现有云数据库。九张数据库分视图保留为辅助资料，作业中展示一张总图。
-
-数据库工件再生成：
-
-    python docs/tools/build_database_design.py
-    java -DPLANTUML_LIMIT_SIZE=24000 -jar <工具目录>/plantuml.jar -charset UTF-8 -checkonly "docs/diagrams/database/*.puml"
-    java -DPLANTUML_LIMIT_SIZE=24000 -jar <工具目录>/plantuml.jar -charset UTF-8 -tpng "docs/diagrams/database/*.puml"
-    java -DPLANTUML_LIMIT_SIZE=24000 -jar <工具目录>/plantuml.jar -charset UTF-8 -tsvg "docs/diagrams/database/*.puml"
-    python -X utf8 docs/tools/render_database_overview.py
-    node docs/tools/rasterize_database_overview.cjs
-    python docs/tools/check_database_design.py
-    python docs/tools/build_course_assignment.py
-
-总图已按两份 ERD 示范重新排为横向两排分区，表宽随字段内容调整。主键用黄色钥匙，外键用独立蓝色箭头，箭头后仅显示目标表名；不显示 Type、Null、R 编号及键组合表达式。表外关系以乌鸦脚表示一对多基数，包含外部需求、排版审核和归档等新增关系；跨区公共成员／部门引用只在字段旁标目标表。PlantUML 保留完整模型来源；最终 SVG／PNG 使用同一模型数据生成确定性紧凑版式，因此再生成时必须执行上面的总图布局与栅格化两步。栅格化依赖 `@resvg/resvg-js`，本机已安装在项目外的 `../tmp/database-layout-runtime/`；重装可执行 `npm install --prefix ../tmp/database-layout-runtime --no-audit --no-fund @resvg/resvg-js`。
-
-课件：D:/xwechat_files/wxid_5dtr00kf6nc822_1671/msg/file/2026-09/系统分析与设计-精简2026-9(1).pdf。
-重点核对第 33、86、87、89、108 页（PDF 物理页）；课程要求是本任务的写作依据，参考项目仅用于文档组织方法。
-
-## 图形再生成
-
-在项目根目录执行（本机已有 Java 和 PlantUML）：
-
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -checkonly "docs/diagrams/*.puml"
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -tpng "docs/diagrams/*.puml"
-    java -jar <工具目录>/plantuml.jar -charset UTF-8 -tsvg "docs/diagrams/*.puml"
+SRS、SDD、STD 的后续框架修缮沿用用户此前确定的范围；当前交付入口为 A–D 合并稿，不将框架中的旧用例编号当作现行版本。

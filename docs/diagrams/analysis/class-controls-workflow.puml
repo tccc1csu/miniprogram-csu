@@ -30,9 +30,36 @@ class "一审运营部推文控制" as CUCRV001 <<control>> {
 class "二审稿件控制" as CUCRV002 <<control>> {
   + 二审稿件(业务信息)
 }
+class "发布外部需求控制" as CUCER001 <<control>> {
+  + 发布外部需求(业务信息)
+}
+class "接单派发外部需求控制" as CUCER002 <<control>> {
+  + 接单派发外部需求(业务信息)
+}
+class "提交外部需求成果控制" as CUCER003 <<control>> {
+  + 提交外部需求成果(业务信息)
+}
+class "审核归档外部需求控制" as CUCER004 <<control>> {
+  + 审核归档外部需求(业务信息)
+}
+class "发布公众号排版需求控制" as CUCOL001 <<control>> {
+  + 发布公众号排版需求(业务信息)
+}
+class "接单派发公众号排版控制" as CUCOL002 <<control>> {
+  + 接单派发公众号排版(业务信息)
+}
+class "提交公众号排版成果控制" as CUCOL003 <<control>> {
+  + 提交公众号排版成果(业务信息)
+}
+class "审核公众号排版并归档控制" as CUCOL004 <<control>> {
+  + 审核公众号排版并归档(业务信息)
+}
 class "普通成员接口" as B0 <<boundary>>
 class "部长接口" as B1 <<boundary>>
 class "管理员接口" as B2 <<boundary>>
+class "审核接口" as B3 <<boundary>>
+class "公众号排版任务" as E16 <<entity>>
+class "外部需求" as E15 <<entity>>
 class "成员" as E0 <<entity>>
 class "流转任务" as E13 <<entity>>
 B0 ..> CUCFL001 : UC-FL-001
@@ -53,5 +80,29 @@ CUCRV001 ..> E0 : 委派责任
 B2 ..> CUCRV002 : UC-RV-002
 CUCRV002 ..> E13 : 委派责任
 CUCRV002 ..> E0 : 委派责任
+B0 ..> CUCER001 : UC-ER-001
+CUCER001 ..> E15 : 委派责任
+CUCER001 ..> E0 : 委派责任
+B1 ..> CUCER002 : UC-ER-002
+CUCER002 ..> E15 : 委派责任
+CUCER002 ..> E0 : 委派责任
+B0 ..> CUCER003 : UC-ER-003
+CUCER003 ..> E15 : 委派责任
+CUCER003 ..> E0 : 委派责任
+B3 ..> CUCER004 : UC-ER-004
+CUCER004 ..> E15 : 委派责任
+CUCER004 ..> E0 : 委派责任
+B0 ..> CUCOL001 : UC-OL-001
+CUCOL001 ..> E16 : 委派责任
+CUCOL001 ..> E0 : 委派责任
+B1 ..> CUCOL002 : UC-OL-002
+CUCOL002 ..> E16 : 委派责任
+CUCOL002 ..> E0 : 委派责任
+B0 ..> CUCOL003 : UC-OL-003
+CUCOL003 ..> E16 : 委派责任
+CUCOL003 ..> E0 : 委派责任
+B3 ..> CUCOL004 : UC-OL-004
+CUCOL004 ..> E16 : 委派责任
+CUCOL004 ..> E0 : 委派责任
 note "实体属性与操作详见前四张类图；\n实体间协作详见对应序列图。\n虚线表示职责依赖，不表示业务流转先后。" as Guidance
 @enduml

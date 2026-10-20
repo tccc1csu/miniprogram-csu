@@ -1,0 +1,45 @@
+@startuml
+title UC-ER-001 发布外部需求 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "兄弟部门需求成员" as A
+boundary "接口:普通成员接口" as B
+control "控制:发布外部需求控制" as C
+participant "M:成员" as M
+participant "E:外部需求" as E
+participant "D:部门" as D
+A -> B: 发布外部需求(业务信息)
+activate B
+B -> C: 发布外部需求(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 发布需求(来源成员、目标部门、说明、截止日期、附件)
+activate E
+E -> D: 检查承办资格(目标部门)
+D --> E: 部门有效性
+E --> C: 待接单需求或拒绝原因
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

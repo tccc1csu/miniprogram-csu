@@ -1,6 +1,6 @@
 @startuml
 title
-图 46  青年传媒中心数据库关系总图
+图 58  青年传媒中心数据库关系总图
 分析实体映射 · 55 张基表与 5 个派生视图 · 八个分区共用一个关系模型
 end title
 skinparam defaultFontName Microsoft YaHei

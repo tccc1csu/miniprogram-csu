@@ -63,7 +63,7 @@ db=sqlite3.connect(':memory:');db.executescript((ROOT/'database/schema.sqlite.sq
 view_labels={'v_contribution_detail':'有效贡献工时','v_contribution_money':'贡献津贴','v_member_weekly_summary':'成员周汇总','v_pending_contribution':'待核对贡献','v_report_member_summary':'历史周报成员汇总'}
 source='''@startuml
 title
-图 46  青年传媒中心数据库关系总图
+图 58  青年传媒中心数据库关系总图
 分析实体映射 · 55 张基表与 5 个派生视图 · 八个分区共用一个关系模型
 end title
 skinparam defaultFontName Microsoft YaHei

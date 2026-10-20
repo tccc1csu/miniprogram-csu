@@ -1,0 +1,38 @@
+@startuml
+title 分析状态机图（七）— 公众号排版任务
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide empty description
+skinparam stateBackgroundColor #F5FAFF
+skinparam stateBorderColor #46637F
+
+state "待接单" as Unassigned
+state "待排版" as Working
+state "待一审" as First
+state "待二审" as Second
+state "待修改" as Returned
+state "已归档" as Archived
+[*] --> Unassigned
+Unassigned --> Working : 接单派发()\n[运营部长指定干事与两岗人员]\n/ 建立承接和审核岗位
+Working --> First : 提交排版成果()\n[当前干事且成果完整]\n/ 保存成果与附件
+First --> Returned : 审核归档()\n[一审退回且意见完整]\n/ 记录意见
+Returned --> First : 提交排版成果()\n[修订完整]\n/ 保存新成果
+First --> Second : 审核归档()\n[一审通过且两岗不同]\n/ 进入二审
+First --> Archived : 审核归档()\n[一审通过且两岗相同]\n/ 归档并结算规则工时
+Second --> Returned : 审核归档()\n[二审退回且意见完整]\n/ 记录意见
+Second --> Archived : 审核归档()\n[二审通过]\n/ 归档并结算规则工时
+Archived : 审核归档()\n[重复合法请求]\n/ 返回原结果，不重复结算
+note bottom of Archived
+  审核事件记录真实操作人；未发生的二审不伪造记录。
+  排版审核总工时按规则分摊，报名加急只触发提醒。
+end note
+
+@enduml

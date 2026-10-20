@@ -11,6 +11,7 @@ actor/ "推文需求方\n（中心部门、外部门）" as W
 actor/ "美编需求方\n（各部门及其他人员）" as A
 actor/ "工作量核对方\n（中心成员）" as M
 actor/ "统计需求方\n（指导老师）" as T
+actor/ "兄弟部门需求方\n（中心外需求单位）" as X
 rectangle "宣传服务、工作协作与津贴核算\n（业务责任边界）" {
  usecase/ "BU-01 办理稿件挂网与同步" as B1
  usecase/ "BU-02 提供摄制服务" as B2
@@ -18,6 +19,7 @@ rectangle "宣传服务、工作协作与津贴核算\n（业务责任边界）"
  usecase/ "BU-06 提供美编设计服务" as B6
  usecase/ "BU-03 提供个人工作量核算结果" as B3
  usecase/ "BU-04 提供中心津贴统计依据" as B4
+ usecase/ "BU-07 办理跨部门外部需求" as B7
 }
 E -- B1
 P -- B2
@@ -25,4 +27,5 @@ W -- B5
 A -- B6
 M -- B3
 T -- B4
+X -- B7
 @enduml

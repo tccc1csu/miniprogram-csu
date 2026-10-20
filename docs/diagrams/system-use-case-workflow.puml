@@ -17,6 +17,10 @@ rectangle "青年传媒中心工作统计与协作系统" {
  usecase "UC-FL-004 确认部门阶段完成" as U3
  usecase "UC-RV-001 一审运营部推文" as U4
  usecase "UC-RV-002 二审稿件" as U5
+ usecase "UC-OL-001 发布公众号排版需求" as U6
+ usecase "UC-OL-002 接单派发公众号排版" as U7
+ usecase "UC-OL-003 提交公众号排版成果" as U8
+ usecase "UC-OL-004 审核公众号排版并归档" as U9
 }
 Member --> U0
 Minister --> U1
@@ -24,4 +28,10 @@ Member --> U2
 Minister --> U3
 Minister --> U4
 Admin --> U5
+Member --> U6
+Minister --> U6
+Minister --> U7
+Member --> U8
+Minister --> U9
+Admin --> U9
 @enduml

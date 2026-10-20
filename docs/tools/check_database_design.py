@@ -300,6 +300,6 @@ for p in paths:
                     max(y for x,y in points)-min(y for x,y in points)<0.02),(p.attrib.get('id'),points)
 ok('rendered overview has only straight line segments and polylines (no curved Beziers)',bool(paths))
 result=f'PASS: {len(passed)} scenario/artifact checks; {len(actual)} tables; 5 views; ONE complete overview + {len(index["figures"])} detail views.\n'
-(ROOT/'database/verification.txt').write_text(result+'\n'.join('PASS '+p for p in passed)+'\n\nReference SQLite constraints verified; live cloud database and application behavior were not tested.\n',encoding='utf-8')
+(ROOT/'database/verification.txt').write_text(result+'\n'.join('PASS '+p for p in passed)+'\n\nReference SQLite constraints verified; live cloud database and application behavior were not tested.\n',encoding='utf-8',newline='\n')
 print(result.strip())
 print('Reference database only; no live/cloud database accessed.')

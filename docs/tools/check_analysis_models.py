@@ -18,6 +18,9 @@ control_views='\n'.join((D/(slug+'.puml')).read_text(encoding='utf-8') for slug,
 chapter=(ROOT/'analysis/05-analysis-models.md').read_text(encoding='utf-8')
 for s in m['sequences']:
     text=(D/(s['slug']+'.puml')).read_text(encoding='utf-8')
+    aliases=re.findall(r'^\s*(?:actor|boundary|control|participant)\s+"[^"]+"\s+as\s+(\w+)',text,re.M)
+    if len(aliases)!=len(set(aliases)):
+        errors.append(f'{s["code"]}: duplicate lifeline alias')
     entities=dict((alias,cls) for cls,alias in re.findall(r'participant "[^":]+:([^"]+)" as (\w+)',text))
     for alias,cls in entities.items():
         if cls not in catalog: errors.append(f'{s["code"]}: unknown entity {cls}')

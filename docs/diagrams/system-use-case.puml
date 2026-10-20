@@ -15,6 +15,10 @@ rectangle "青年传媒中心工作统计与协作系统" {
  usecase "UC-ED-002 派发采编同步任务" as U1
  usecase "UC-ED-003 提交采编同步结果" as U2
  usecase "UC-ED-004 审核并归档采编协同" as U3
+ usecase "UC-ER-001 发布外部需求" as U9
+ usecase "UC-ER-002 接单派发外部需求" as U10
+ usecase "UC-ER-003 提交外部需求成果" as U11
+ usecase "UC-ER-004 审核归档外部需求" as U12
  usecase "UC-PR-001 发起摄制预约" as U4
  usecase "UC-PR-002 派发摄制任务" as U5
  usecase "UC-PR-003 提交摄制成果" as U6
@@ -25,6 +29,11 @@ Member --> U0
 Minister --> U1
 Member --> U2
 Admin --> U3
+Member --> U9
+Minister --> U10
+Member --> U11
+Minister --> U12
+Admin --> U12
 Member --> U4
 Minister --> U5
 Member --> U6

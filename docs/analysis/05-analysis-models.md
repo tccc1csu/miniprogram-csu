@@ -14,7 +14,7 @@
 
 ### 5.2.1 组织与稿件协同
 
-![图 12 分析类图（一）— 组织与稿件协同](../diagrams/analysis/class-editorial.png)
+![图 14 分析类图（一）— 组织与稿件协同](../diagrams/analysis/class-editorial.png)
 
 [PlantUML 图源](../diagrams/analysis/class-editorial.puml) · [SVG 矢量图](../diagrams/analysis/class-editorial.svg)
 
@@ -22,7 +22,7 @@
 
 ### 5.2.2 摄制预约
 
-![图 13 分析类图（二）— 摄制预约](../diagrams/analysis/class-production.png)
+![图 15 分析类图（二）— 摄制预约](../diagrams/analysis/class-production.png)
 
 [PlantUML 图源](../diagrams/analysis/class-production.puml) · [SVG 矢量图](../diagrams/analysis/class-production.svg)
 
@@ -30,7 +30,7 @@
 
 ### 5.2.3 部门与跨部门流转
 
-![图 14 分析类图（三）— 部门与跨部门流转](../diagrams/analysis/class-workflow.png)
+![图 16 分析类图（三）— 部门与跨部门流转](../diagrams/analysis/class-workflow.png)
 
 [PlantUML 图源](../diagrams/analysis/class-workflow.puml) · [SVG 矢量图](../diagrams/analysis/class-workflow.svg)
 
@@ -38,7 +38,7 @@
 
 ### 5.2.4 工作贡献与津贴核算
 
-![图 15 分析类图（四）— 工作贡献与津贴核算](../diagrams/analysis/class-accounting.png)
+![图 17 分析类图（四）— 工作贡献与津贴核算](../diagrams/analysis/class-accounting.png)
 
 [PlantUML 图源](../diagrams/analysis/class-accounting.puml) · [SVG 矢量图](../diagrams/analysis/class-accounting.svg)
 
@@ -46,7 +46,7 @@
 
 ### 5.2.5 归档摄制成果的边界、控制与实体职责
 
-![图 16 分析类图（五）— 归档摄制成果的边界、控制与实体职责](../diagrams/analysis/class-responsibilities.png)
+![图 18 分析类图（五）— 归档摄制成果的边界、控制与实体职责](../diagrams/analysis/class-responsibilities.png)
 
 [PlantUML 图源](../diagrams/analysis/class-responsibilities.puml) · [SVG 矢量图](../diagrams/analysis/class-responsibilities.svg)
 
@@ -54,7 +54,7 @@
 
 ### 5.2.6 采编协同用例职责
 
-![图 17 分析类图（六）— 采编协同用例职责](../diagrams/analysis/class-controls-editorial.png)
+![图 19 分析类图（六）— 采编协同用例职责](../diagrams/analysis/class-controls-editorial.png)
 
 [PlantUML 图源](../diagrams/analysis/class-controls-editorial.puml) · [SVG 矢量图](../diagrams/analysis/class-controls-editorial.svg)
 
@@ -62,7 +62,7 @@
 
 ### 5.2.7 摄制预约用例职责
 
-![图 18 分析类图（七）— 摄制预约用例职责](../diagrams/analysis/class-controls-production.png)
+![图 20 分析类图（七）— 摄制预约用例职责](../diagrams/analysis/class-controls-production.png)
 
 [PlantUML 图源](../diagrams/analysis/class-controls-production.puml) · [SVG 矢量图](../diagrams/analysis/class-controls-production.svg)
 
@@ -70,15 +70,15 @@
 
 ### 5.2.8 部门流转与稿件审核用例职责
 
-![图 19 分析类图（八）— 部门流转与稿件审核用例职责](../diagrams/analysis/class-controls-workflow.png)
+![图 21 分析类图（八）— 部门流转与稿件审核用例职责](../diagrams/analysis/class-controls-workflow.png)
 
 [PlantUML 图源](../diagrams/analysis/class-controls-workflow.puml) · [SVG 矢量图](../diagrams/analysis/class-controls-workflow.svg)
 
-流转与稿件审核的六个控制类均先请求流转任务整体，再由整体委托阶段和稿件版本，避免外部控制类绕过任务整体改变内部阶段。
+流转与稿件审核的六个控制类先请求流转任务整体，再由整体委托阶段和稿件版本；外部需求和公众号排版各有四个控制类，分别委托对应任务实体。审核岗位安排与人类执行者使用独立生命线。
 
 ### 5.2.9 登录、统计与组织用例职责
 
-![图 20 分析类图（九）— 登录、统计与组织用例职责](../diagrams/analysis/class-controls-support.png)
+![图 22 分析类图（九）— 登录、统计与组织用例职责](../diagrams/analysis/class-controls-support.png)
 
 [PlantUML 图源](../diagrams/analysis/class-controls-support.puml) · [SVG 矢量图](../diagrams/analysis/class-controls-support.svg)
 
@@ -96,7 +96,7 @@
 
 ### 5.3.1 UC-AUTH-001：登录系统
 
-![图 21 登录系统分析序列图](../diagrams/analysis/seq-uc-auth-001.png)
+![图 23 登录系统分析序列图](../diagrams/analysis/seq-uc-auth-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-auth-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-auth-001.svg)
 
@@ -104,7 +104,7 @@
 
 ### 5.3.2 UC-ED-001：提交采编协同需求
 
-![图 22 提交采编协同需求分析序列图](../diagrams/analysis/seq-uc-ed-001.png)
+![图 24 提交采编协同需求分析序列图](../diagrams/analysis/seq-uc-ed-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-ed-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ed-001.svg)
 
@@ -112,7 +112,7 @@
 
 ### 5.3.3 UC-ED-002：派发采编同步任务
 
-![图 23 派发采编同步任务分析序列图](../diagrams/analysis/seq-uc-ed-002.png)
+![图 25 派发采编同步任务分析序列图](../diagrams/analysis/seq-uc-ed-002.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-ed-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ed-002.svg)
 
@@ -120,7 +120,7 @@
 
 ### 5.3.4 UC-ED-003：提交采编同步结果
 
-![图 24 提交采编同步结果分析序列图](../diagrams/analysis/seq-uc-ed-003.png)
+![图 26 提交采编同步结果分析序列图](../diagrams/analysis/seq-uc-ed-003.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-ed-003.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ed-003.svg)
 
@@ -128,141 +128,205 @@
 
 ### 5.3.5 UC-ED-004：审核并归档采编协同
 
-![图 25 审核并归档采编协同分析序列图](../diagrams/analysis/seq-uc-ed-004.png)
+![图 27 审核并归档采编协同分析序列图](../diagrams/analysis/seq-uc-ed-004.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-ed-004.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ed-004.svg)
 
 通过时分别归集原创采编和办公同步贡献；转载不产生原创写作贡献。退回不计量，重复合法归档返回原结果。归档与明细归集作为一致的业务结果完成；失败不留下半份有效结果。
 
-### 5.3.6 UC-PR-001：发起摄制预约
+### 5.3.6 UC-ER-001：发布外部需求
 
-![图 26 发起摄制预约分析序列图](../diagrams/analysis/seq-uc-pr-001.png)
+![图 28 发布外部需求分析序列图](../diagrams/analysis/seq-uc-er-001.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-er-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-er-001.svg)
+
+外部需求保存兄弟部门来源、目标承接部门和附件证据，发布本身不产生津贴。
+
+### 5.3.7 UC-ER-002：接单派发外部需求
+
+![图 29 接单派发外部需求分析序列图](../diagrams/analysis/seq-uc-er-002.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-er-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-er-002.svg)
+
+目标部门部长建立唯一承接责任并通知承接成员。
+
+### 5.3.8 UC-ER-003：提交外部需求成果
+
+![图 30 提交外部需求成果分析序列图](../diagrams/analysis/seq-uc-er-003.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-er-003.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-er-003.svg)
+
+外部需求成果保存附件与链接，提交后交目标部门部长或管理员审核。
+
+### 5.3.9 UC-ER-004：审核归档外部需求
+
+![图 31 审核归档外部需求分析序列图](../diagrams/analysis/seq-uc-er-004.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-er-004.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-er-004.svg)
+
+外部需求审核记录实际审核人、时间和结论；通过归档不自动结算津贴。
+
+### 5.3.10 UC-OL-001：发布公众号排版需求
+
+![图 32 发布公众号排版需求分析序列图](../diagrams/analysis/seq-uc-ol-001.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-ol-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ol-001.svg)
+
+排版需求保存素材和期限；一审、二审岗位在派发时指定。
+
+### 5.3.11 UC-OL-002：接单派发公众号排版
+
+![图 33 接单派发公众号排版分析序列图](../diagrams/analysis/seq-uc-ol-002.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-ol-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ol-002.svg)
+
+运营部部长在接单时一次指定排版干事及两岗审核人员。
+
+### 5.3.12 UC-OL-003：提交公众号排版成果
+
+![图 34 提交公众号排版成果分析序列图](../diagrams/analysis/seq-uc-ol-003.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-ol-003.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ol-003.svg)
+
+排版成果提交后进入指定一审，保留成果附件和链接。
+
+### 5.3.13 UC-OL-004：审核公众号排版并归档
+
+![图 35 审核公众号排版并归档分析序列图](../diagrams/analysis/seq-uc-ol-004.png)
+
+[PlantUML 图源](../diagrams/analysis/seq-uc-ol-004.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-ol-004.svg)
+
+排版按指定岗位顺序审核；同一人两岗时一审通过直接归档，审核贡献总量按规则分摊且不重复计量。
+
+### 5.3.14 UC-PR-001：发起摄制预约
+
+![图 36 发起摄制预约分析序列图](../diagrams/analysis/seq-uc-pr-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-pr-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-pr-001.svg)
 
 摄制日程负责受理并委托摄制约定判断冲突和加急；冲突分支没有预约对象。两天与 1.5 倍率作为约定依据保留，未明确的冲突资源范围不在分析中擅自定死。
 
-### 5.3.7 UC-PR-002：派发摄制任务
+### 5.3.15 UC-PR-002：派发摄制任务
 
-![图 27 派发摄制任务分析序列图](../diagrams/analysis/seq-uc-pr-002.png)
+![图 37 派发摄制任务分析序列图](../diagrams/analysis/seq-uc-pr-002.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-pr-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-pr-002.svg)
 
 派发与抢单都请求摄制预约的确定承接操作，由同一对象保护唯一承接关系。
 
-### 5.3.8 UC-PR-003：提交摄制成果
+### 5.3.16 UC-PR-003：提交摄制成果
 
-![图 28 提交摄制成果分析序列图](../diagrams/analysis/seq-uc-pr-003.png)
+![图 38 提交摄制成果分析序列图](../diagrams/analysis/seq-uc-pr-003.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-pr-003.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-pr-003.svg)
 
 预约核验当前承接人，成果与办公成员分别承担完整性及归属验证；沿用归档偏好不能替代本次责任确认。
 
-### 5.3.9 UC-PR-004：归档摄制成果
+### 5.3.17 UC-PR-004：归档摄制成果
 
-![图 29 归档摄制成果分析序列图](../diagrams/analysis/seq-uc-pr-004.png)
+![图 39 归档摄制成果分析序列图](../diagrams/analysis/seq-uc-pr-004.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-pr-004.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-pr-004.svg)
 
 指定办公成员归档后形成摄制、归档两项贡献。加急是否适用于某类贡献由生效标准决定，不能直接把两类工时都乘 1.5；重复请求不再增加工时。
 
-### 5.3.10 UC-PR-005：抢接摄制任务
+### 5.3.18 UC-PR-005：抢接摄制任务
 
-![图 30 抢接摄制任务分析序列图](../diagrams/analysis/seq-uc-pr-005.png)
+![图 40 抢接摄制任务分析序列图](../diagrams/analysis/seq-uc-pr-005.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-pr-005.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-pr-005.svg)
 
 抢单与派发冲突时只有一个当前承接结果；抢单成功本身不计工时。
 
-### 5.3.11 UC-FL-001：登记部门与跨部门任务
+### 5.3.19 UC-FL-001：登记部门与跨部门任务
 
-![图 31 登记部门与跨部门任务分析序列图](../diagrams/analysis/seq-uc-fl-001.png)
+![图 41 登记部门与跨部门任务分析序列图](../diagrams/analysis/seq-uc-fl-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-fl-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-fl-001.svg)
 
 发起人登记的部门和阶段由任务整体组织；需求来源可以是外部门，登记人仍按当前规约描述为中心成员。
 
-### 5.3.12 UC-FL-002：派发部门阶段任务
+### 5.3.20 UC-FL-002：派发部门阶段任务
 
-![图 32 派发部门阶段任务分析序列图](../diagrams/analysis/seq-uc-fl-002.png)
+![图 42 派发部门阶段任务分析序列图](../diagrams/analysis/seq-uc-fl-002.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-fl-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-fl-002.svg)
 
 控制类先请求流转任务整体，再由任务委托阶段。前序未完成时阶段拒绝派发，排班仅作为部长安排依据。
 
-### 5.3.13 UC-FL-003：提交部门阶段成果
+### 5.3.21 UC-FL-003：提交部门阶段成果
 
-![图 33 提交部门阶段成果分析序列图](../diagrams/analysis/seq-uc-fl-003.png)
+![图 43 提交部门阶段成果分析序列图](../diagrams/analysis/seq-uc-fl-003.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-fl-003.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-fl-003.svg)
 
 阶段根据成果性质决定后续责任。稿件内容变更需重新审查；已审稿件仅补充发布链接时进入完成确认，不把链接补充误当新一版稿件。
 
-### 5.3.14 UC-FL-004：确认部门阶段完成
+### 5.3.22 UC-FL-004：确认部门阶段完成
 
-![图 34 确认部门阶段完成分析序列图](../diagrams/analysis/seq-uc-fl-004.png)
+![图 44 确认部门阶段完成分析序列图](../diagrams/analysis/seq-uc-fl-004.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-fl-004.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-fl-004.svg)
 
 完成确认先由阶段验证稿件审核与成果条件。任务最后一阶段完成后归集贡献，依据不足的项标为待核对；专门流程已计入的相同实际贡献不能重复计量。
 
-### 5.3.15 UC-RV-001：一审运营部推文
+### 5.3.23 UC-RV-001：一审运营部推文
 
-![图 35 一审运营部推文分析序列图](../diagrams/analysis/seq-uc-rv-001.png)
+![图 45 一审运营部推文分析序列图](../diagrams/analysis/seq-uc-rv-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-rv-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-rv-001.svg)
 
 运营部长一审通过后转老师二审；稿件版本持有该版审查依据，不能以旧版本通过结论处理修改后的稿件。采编专门流程由 UC-ED-004 处理。
 
-### 5.3.16 UC-RV-002：二审稿件
+### 5.3.24 UC-RV-002：二审稿件
 
-![图 36 二审稿件分析序列图](../diagrams/analysis/seq-uc-rv-002.png)
+![图 46 二审稿件分析序列图](../diagrams/analysis/seq-uc-rv-002.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-rv-002.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-rv-002.svg)
 
 老师二审检查适用的前序结论；稿件版本持有该版审查依据，不能以旧版本通过结论处理修改后的稿件。采编专门流程由 UC-ED-004 处理。
 
-### 5.3.17 UC-REC-001：核对部门任务明细与周汇总
+### 5.3.25 UC-REC-001：核对部门任务明细与周汇总
 
-![图 37 核对部门任务明细与周汇总分析序列图](../diagrams/analysis/seq-uc-rec-001.png)
+![图 47 核对部门任务明细与周汇总分析序列图](../diagrams/analysis/seq-uc-rec-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-rec-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-rec-001.svg)
 
 核对只比较有效明细及周汇总并标明差异，不能在查询期间悄悄补造贡献。
 
-### 5.3.18 UC-STAT-001：生成并导出中心周报
+### 5.3.26 UC-STAT-001：生成并导出中心周报
 
-![图 38 生成并导出中心周报分析序列图](../diagrams/analysis/seq-uc-stat-001.png)
+![图 48 生成并导出中心周报分析序列图](../diagrams/analysis/seq-uc-stat-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-stat-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-stat-001.svg)
 
 台账组织汇总，成员周汇总委托各项贡献核算，贡献按关联标准计算津贴。控制类不自行计算工时或时薪；周报生成不新增工作贡献。
 
-### 5.3.19 UC-ORG-001：管理组织与人员
+### 5.3.27 UC-ORG-001：管理组织与人员
 
-![图 39 管理组织与人员分析序列图](../diagrams/analysis/seq-uc-org-001.png)
+![图 49 管理组织与人员分析序列图](../diagrams/analysis/seq-uc-org-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-org-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-org-001.svg)
 
 中心组织维护有效部门和成员关系；历史贡献保留计量时部门与规则依据，人员调整不改写既有统计。
 
-### 5.3.20 UC-VIEW-001：查看个人工作记录
+### 5.3.28 UC-VIEW-001：查看个人工作记录
 
-![图 40 查看个人工作记录分析序列图](../diagrams/analysis/seq-uc-view-001.png)
+![图 50 查看个人工作记录分析序列图](../diagrams/analysis/seq-uc-view-001.png)
 
 [PlantUML 图源](../diagrams/analysis/seq-uc-view-001.puml) · [SVG 矢量图](../diagrams/analysis/seq-uc-view-001.svg)
 
 个人查询返回本人明细、周汇总及异常；系统内部的台账和汇总对象不是外部执行者。
 
-上述图完整对应 20 个现有用例的主要责任协作。共用输入过滤和无效权限分支不重复细化为独立用例；具体扩展条件仍以对应规约为准。派发成功后的“交付任务”、成果提交后的“待审核责任”在本章表示责任结果，不额外承诺尚未确定的外部消息服务。
+上述图完整对应 28 个现有用例的主要责任协作。共用输入过滤和无效权限分支不重复细化为独立用例；具体扩展条件仍以对应规约为准。派发成功后的“交付任务”、成果提交后的“待审核责任”在本章表示责任结果，不额外承诺尚未确定的外部消息服务。
 
 ## 5.4 分析状态机图
 
-为采编协同、摄制预约、任务阶段和流转任务建模；任务阶段分别展示运营推文与美编设计实例。初始节点表示对象建立后默认所处状态，不表示整个组织流程开始。已归档对象仍需支持查询及重复请求，因此保留为可响应对象，不以最终节点表示生命周期结束。
+为采编协同、摄制预约、任务阶段、流转任务、外部需求和公众号排版任务建模；任务阶段分别展示运营推文与美编设计实例。初始节点表示对象建立后默认所处状态，不表示整个组织流程开始。已归档对象仍需支持查询及重复请求，因此保留为可响应对象，不以最终节点表示生命周期结束。
 
 ### 5.4.1 采编协同
 
-![图 41 分析状态机图（一）— 采编协同](../diagrams/analysis/state-editorial.png)
+![图 51 分析状态机图（一）— 采编协同](../diagrams/analysis/state-editorial.png)
 
 [PlantUML 图源](../diagrams/analysis/state-editorial.puml) · [SVG 矢量图](../diagrams/analysis/state-editorial.svg)
 
@@ -270,7 +334,7 @@
 
 ### 5.4.2 摄制预约
 
-![图 42 分析状态机图（二）— 摄制预约](../diagrams/analysis/state-production.png)
+![图 52 分析状态机图（二）— 摄制预约](../diagrams/analysis/state-production.png)
 
 [PlantUML 图源](../diagrams/analysis/state-production.puml) · [SVG 矢量图](../diagrams/analysis/state-production.svg)
 
@@ -278,7 +342,7 @@
 
 ### 5.4.3 任务阶段
 
-![图 43 分析状态机图（三）— 任务阶段（运营推文实例）](../diagrams/analysis/state-stage.png)
+![图 53 分析状态机图（三）— 任务阶段（运营推文实例）](../diagrams/analysis/state-stage.png)
 
 [PlantUML 图源](../diagrams/analysis/state-stage.puml) · [SVG 矢量图](../diagrams/analysis/state-stage.svg)
 
@@ -286,7 +350,7 @@
 
 ### 5.4.4 任务阶段
 
-![图 44 分析状态机图（四）— 任务阶段（美编设计实例）](../diagrams/analysis/state-stage-design.png)
+![图 54 分析状态机图（四）— 任务阶段（美编设计实例）](../diagrams/analysis/state-stage-design.png)
 
 [PlantUML 图源](../diagrams/analysis/state-stage-design.puml) · [SVG 矢量图](../diagrams/analysis/state-stage-design.svg)
 
@@ -294,11 +358,27 @@
 
 ### 5.4.5 流转任务
 
-![图 45 分析状态机图（五）— 流转任务](../diagrams/analysis/state-workflow.png)
+![图 55 分析状态机图（五）— 流转任务](../diagrams/analysis/state-workflow.png)
 
 [PlantUML 图源](../diagrams/analysis/state-workflow.puml) · [SVG 矢量图](../diagrams/analysis/state-workflow.svg)
 
 整体任务只在全部阶段完成后结束；规则或贡献依据缺失时保留待核对项，不把任务完成等同于津贴已核实。
+
+### 5.4.6 外部需求
+
+![图 56 分析状态机图（六）— 外部需求](../diagrams/analysis/state-external-request.png)
+
+[PlantUML 图源](../diagrams/analysis/state-external-request.puml) · [SVG 矢量图](../diagrams/analysis/state-external-request.svg)
+
+外部需求由兄弟部门发布、目标部门部长派发，承接成员提交成果后由部长或管理员审核；归档不自动结算津贴。
+
+### 5.4.7 公众号排版任务
+
+![图 57 分析状态机图（七）— 公众号排版任务](../diagrams/analysis/state-operations-layout.png)
+
+[PlantUML 图源](../diagrams/analysis/state-operations-layout.puml) · [SVG 矢量图](../diagrams/analysis/state-operations-layout.svg)
+
+排版任务在派发时指定干事、一审和二审；按状态逐级审核，同一人承担两岗时一审通过直接归档并计量。
 
 运营推文实例不能直接套用于一审岗位尚未确定的其他部门；美编设计实例只适用于不涉及稿件内容审查的成果。阶段图描述局部责任，流转任务图描述整体完成条件。状态机图里的合法事件需要同时满足调用者资格与警戒条件；不满足时反馈拒绝并保留当前业务结果。
 

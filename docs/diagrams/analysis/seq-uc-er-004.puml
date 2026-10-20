@@ -1,0 +1,55 @@
+@startuml
+title UC-ER-004 审核归档外部需求 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "目标部门部长或管理员" as A
+boundary "接口:审核接口" as B
+control "控制:审核归档外部需求控制" as C
+participant "M:成员" as M
+participant "E:外部需求" as E
+participant "O:成果" as O
+participant "R:审核结论" as R
+A -> B: 审核归档外部需求(业务信息)
+activate B
+B -> C: 审核归档外部需求(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 审核归档(审核人、结论、意见)
+activate E
+E -> O: 验证完整性(成果材料)
+O --> E: 完整性结论
+alt 退回
+  E -> R: 验证适用版本(当前成果)
+  R --> E: 可退回
+  E --> C: 退回意见及补正责任
+else 通过
+  E -> R: 验证适用版本(当前成果)
+  R --> E: 审核资格与版本成立
+  E -> E: 审核归档()
+  E --> C: 归档结果，不产生津贴
+end
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

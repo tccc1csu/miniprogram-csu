@@ -213,7 +213,7 @@ def fk_icon(x,y,**attrs):
 emit(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">')
 emit('''<style>.relation {stroke:#526579;stroke-width:1.7;fill:none} .edge:hover .relation {stroke:#1b67af;stroke-width:3} .card:hover rect {stroke:#245e95;stroke-width:1.8}</style>''')
 emit(f'<rect width="{W}" height="{H}" fill="#fff"/>')
-txt(48,42,'图 46  青年传媒中心 · 数据库关系总图',30,weight='bold')
+txt(48,42,'图 58  青年传媒中心 · 数据库关系总图',30,weight='bold')
 txt(48,75,'55 张基表 / 5 个派生视图 · 完整业务关联与基数 · 黄色钥匙标主键 / 蓝色箭头标外键目标表',17,color='#526579')
 for z in zones:
     emit(f'<g id="region-{z["id"]}"><rect x="{z["x"]}" y="{z["y"]}" width="{z["w"]}" height="{z["h"]}" rx="0" fill="{z["color"]}" stroke="#bac6d2"/>')
@@ -297,8 +297,8 @@ txt(48,legendy+57,'乌鸦脚：|| 恰好一；○| 零或一；○< 零到多。
 txt(48,legendy+85,'全部业务表之间的外键均绘制连线；跨区的共享成员／部门引用仅在字段旁标注。绿色卡片为视图。',15)
 txt(48,legendy+113,'复合外键组成、目标列、唯一约束、类型与空值规则详见数据字典及参考 DDL。',15)
 emit('</svg>')
-(D/'db-overview.svg').write_text('\n'.join(svg),encoding='utf-8')
+(D/'db-overview.svg').write_text('\n'.join(svg),encoding='utf-8',newline='\n')
 geometry=dict(width=W,height=H,card_width=CW,zones=zones,cards=cards,routes=routes,
               omitted_shared_references=omitted,old_dimensions=[8193,3542],renderer='render_database_overview.py')
-(D/'overview-layout.json').write_text(json.dumps(geometry,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+(D/'overview-layout.json').write_text(json.dumps(geometry,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
 print(f'Compact SVG: {W} x {H}; {len(cards)} cards; all {len(rels)} FK targets in fields; {len(routes)} business/shared-local relationships with cardinality.')

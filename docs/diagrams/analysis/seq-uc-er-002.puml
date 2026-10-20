@@ -1,0 +1,45 @@
+@startuml
+title UC-ER-002 接单派发外部需求 — 分析序列图
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F5FAFF
+skinparam classBorderColor #46637F
+skinparam ArrowColor #334155
+skinparam nodesep 35
+skinparam ranksep 45
+hide footbox
+autonumber
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBackgroundColor white
+actor "目标部门部长" as A
+boundary "接口:部长接口" as B
+control "控制:接单派发外部需求控制" as C
+participant "M:成员" as M
+participant "E:外部需求" as E
+participant "N:成员" as N
+A -> B: 接单派发外部需求(业务信息)
+activate B
+B -> C: 接单派发外部需求(业务信息)
+activate C
+C -> M: 验证业务资格(操作人、部门与职责)
+M --> C: 资格结论
+break 无权执行
+  C --> B: 拒绝结果及原因
+  B --> A: 拒绝结果及原因
+end
+
+C -> E: 接单派发(目标部门、承接成员、派发说明)
+activate E
+E -> N: 验证归属(目标承接部门)
+N --> E: 成员资格
+E --> C: 唯一承接结果或拒绝原因
+deactivate E
+
+C --> B: 业务结果或拒绝原因
+deactivate C
+B --> A: 业务结果或拒绝原因
+deactivate B
+@enduml

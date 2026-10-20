@@ -106,6 +106,116 @@
       "boundary": "管理员接口"
     },
     {
+      "code": "UC-ER-001",
+      "slug": "seq-uc-er-001",
+      "title": "发布外部需求",
+      "description": "外部需求保存兄弟部门来源、目标承接部门和附件证据，发布本身不产生津贴。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "ExternalRequest",
+        "D": "Department"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-ER-002",
+      "slug": "seq-uc-er-002",
+      "title": "接单派发外部需求",
+      "description": "目标部门部长建立唯一承接责任并通知承接成员。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "ExternalRequest",
+        "N": "Member"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-ER-003",
+      "slug": "seq-uc-er-003",
+      "title": "提交外部需求成果",
+      "description": "外部需求成果保存附件与链接，提交后交目标部门部长或管理员审核。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "ExternalRequest",
+        "O": "Outcome"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-ER-004",
+      "slug": "seq-uc-er-004",
+      "title": "审核归档外部需求",
+      "description": "外部需求审核记录实际审核人、时间和结论；通过归档不自动结算津贴。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "E": "ExternalRequest",
+        "O": "Outcome",
+        "R": "Review"
+      },
+      "boundary": "审核接口"
+    },
+    {
+      "code": "UC-OL-001",
+      "slug": "seq-uc-ol-001",
+      "title": "发布公众号排版需求",
+      "description": "排版需求保存素材和期限；一审、二审岗位在派发时指定。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "OperationsLayout",
+        "RA": "ReviewAssignment"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-OL-002",
+      "slug": "seq-uc-ol-002",
+      "title": "接单派发公众号排版",
+      "description": "运营部部长在接单时一次指定排版干事及两岗审核人员。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "OperationsLayout",
+        "RA": "ReviewAssignment",
+        "N": "Member"
+      },
+      "boundary": "部长接口"
+    },
+    {
+      "code": "UC-OL-003",
+      "slug": "seq-uc-ol-003",
+      "title": "提交公众号排版成果",
+      "description": "排版成果提交后进入指定一审，保留成果附件和链接。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "OperationsLayout",
+        "O": "Outcome"
+      },
+      "boundary": "普通成员接口"
+    },
+    {
+      "code": "UC-OL-004",
+      "slug": "seq-uc-ol-004",
+      "title": "审核公众号排版并归档",
+      "description": "排版按指定岗位顺序审核；同一人两岗时一审通过直接归档，审核贡献总量按规则分摊且不重复计量。",
+      "coverage": "基本路径及简单扩展",
+      "entities": {
+        "M": "Member",
+        "L": "OperationsLayout",
+        "RA": "ReviewAssignment",
+        "O": "Outcome",
+        "R": "Review",
+        "G": "Ledger",
+        "W": "Weekly"
+      },
+      "boundary": "审核接口"
+    },
+    {
       "code": "UC-PR-001",
       "slug": "seq-uc-pr-001",
       "title": "发起摄制预约",
@@ -349,6 +459,18 @@
       "title": "分析状态机图（五）— 流转任务",
       "owner": "Workflow",
       "description": "整体任务只在全部阶段完成后结束；规则或贡献依据缺失时保留待核对项，不把任务完成等同于津贴已核实。"
+    },
+    {
+      "slug": "state-external-request",
+      "title": "分析状态机图（六）— 外部需求",
+      "owner": "ExternalRequest",
+      "description": "外部需求由兄弟部门发布、目标部门部长派发，承接成员提交成果后由部长或管理员审核；归档不自动结算津贴。"
+    },
+    {
+      "slug": "state-operations-layout",
+      "title": "分析状态机图（七）— 公众号排版任务",
+      "owner": "OperationsLayout",
+      "description": "排版任务在派发时指定干事、一审和二审；按状态逐级审核，同一人承担两岗时一审通过直接归档并计量。"
     }
   ],
   "catalog": {

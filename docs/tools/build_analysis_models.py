@@ -51,7 +51,7 @@ classes=[]
 def class_view(slug,title,keys,relations,note):
     text='@startuml\ntitle '+title+'\n'+STYLE+'hide empty members\n'
     text+=''.join(cls(k) for k in keys)+relations+'\nnote "'+note.replace('\n','\\n')+'" as Guidance\n@enduml\n'
-    (D/(slug+'.puml')).write_text(text,encoding='utf-8')
+    (D/(slug+'.puml')).write_text(text,encoding='utf-8',newline='\n')
     classes.append((slug,title))
 
 class_view('class-editorial','分析类图（一）— 组织与稿件协同',
@@ -142,11 +142,16 @@ seqs=[]
 roles={
 'UC-AUTH-001':('登录用户','普通成员接口'),
 'UC-ED-001':('采编成员','普通成员接口'),'UC-ED-002':('办公部部长','部长接口'),'UC-ED-003':('办公承接成员','普通成员接口'),'UC-ED-004':('指导老师','管理员接口'),
+'UC-ER-001':('兄弟部门需求成员','普通成员接口'),'UC-ER-002':('目标部门部长','部长接口'),'UC-ER-003':('外部需求承接成员','普通成员接口'),'UC-ER-004':('目标部门部长或管理员','审核接口'),
+'UC-OL-001':('兄弟部门成员或运营部部长','普通成员接口'),'UC-OL-002':('运营部部长','部长接口'),'UC-OL-003':('排版干事','普通成员接口'),'UC-OL-004':('指定审核人或管理员','审核接口'),
 'UC-PR-001':('中心预约成员','普通成员接口'),'UC-PR-002':('摄制部部长','部长接口'),'UC-PR-003':('摄制承接成员','普通成员接口'),'UC-PR-004':('指定办公归档成员','普通成员接口'),'UC-PR-005':('摄制成员','普通成员接口'),
 'UC-FL-001':('任务发起成员','普通成员接口'),'UC-FL-002':('阶段所属部长','部长接口'),'UC-FL-003':('阶段承接成员','普通成员接口'),'UC-FL-004':('阶段所属部长','部长接口'),
 'UC-RV-001':('运营部部长','部长接口'),'UC-RV-002':('指导老师','管理员接口'),
 'UC-REC-001':('部门部长','部长接口'),'UC-STAT-001':('办公部部长','部长接口'),'UC-ORG-001':('维护管理员','管理员接口'),'UC-VIEW-001':('普通成员','普通成员接口')}
 def sequence(code,entities,body,desc,coverage='基本路径及简单扩展',auth=True):
+    # A/B/C are reserved for actor, boundary and control lifelines.
+    if set(entities) & {'A', 'B', 'C'}:
+        raise ValueError(f'{code}: entity alias collides with actor/boundary/control')
     slug='seq-'+code.lower()
     actor,boundary=roles[code]
     s='@startuml\ntitle '+code+' '+T[code]+' — 分析序列图\n'+STYLE+'''hide footbox
@@ -180,7 +185,7 @@ B --> A: 业务结果或拒绝原因
 deactivate B
 @enduml
 '''
-    (D/(slug+'.puml')).write_text(s,encoding='utf-8')
+    (D/(slug+'.puml')).write_text(s,encoding='utf-8',newline='\n')
     seqs.append(dict(code=code,slug=slug,title=T[code],description=desc,coverage=coverage,entities=entities,boundary=boundary))
 
 sequence('UC-AUTH-001',{'M':'Member','S':'Session'},'''
@@ -260,6 +265,99 @@ else 合法通过结论
 end
 deactivate E
 ''','通过时分别归集原创采编和办公同步贡献；转载不产生原创写作贡献。退回不计量，重复合法归档返回原结果。归档与明细归集作为一致的业务结果完成；失败不留下半份有效结果。')
+
+sequence('UC-ER-001',{'M':'Member','E':'ExternalRequest','D':'Department'},'''
+C -> E: 发布需求(来源成员、目标部门、说明、截止日期、附件)
+activate E
+E -> D: 检查承办资格(目标部门)
+D --> E: 部门有效性
+E --> C: 待接单需求或拒绝原因
+deactivate E
+''','外部需求保存兄弟部门来源、目标承接部门和附件证据，发布本身不产生津贴。')
+sequence('UC-ER-002',{'M':'Member','E':'ExternalRequest','N':'Member'},'''
+C -> E: 接单派发(目标部门、承接成员、派发说明)
+activate E
+E -> N: 验证归属(目标承接部门)
+N --> E: 成员资格
+E --> C: 唯一承接结果或拒绝原因
+deactivate E
+''','目标部门部长建立唯一承接责任并通知承接成员。')
+sequence('UC-ER-003',{'M':'Member','E':'ExternalRequest','O':'Outcome'},'''
+C -> E: 提交成果(承接人、完成说明、链接、附件)
+activate E
+E -> O: 验证完整性(外部需求成果)
+O --> E: 完整性结论
+E --> C: 待审核结果或拒绝原因
+deactivate E
+''','外部需求成果保存附件与链接，提交后交目标部门部长或管理员审核。')
+sequence('UC-ER-004',{'M':'Member','E':'ExternalRequest','O':'Outcome','R':'Review'},'''
+C -> E: 审核归档(审核人、结论、意见)
+activate E
+E -> O: 验证完整性(成果材料)
+O --> E: 完整性结论
+alt 退回
+  E -> R: 验证适用版本(当前成果)
+  R --> E: 可退回
+  E --> C: 退回意见及补正责任
+else 通过
+  E -> R: 验证适用版本(当前成果)
+  R --> E: 审核资格与版本成立
+  E -> E: 审核归档()
+  E --> C: 归档结果，不产生津贴
+end
+deactivate E
+''','外部需求审核记录实际审核人、时间和结论；通过归档不自动结算津贴。')
+
+sequence('UC-OL-001',{'M':'Member','L':'OperationsLayout','RA':'ReviewAssignment'},'''
+C -> L: 发布排版需求(标题、类型、截止日期、说明、附件)
+activate L
+L -> RA: 核验审核资格(待派发排版任务)
+RA --> L: 岗位安排可在派发时指定
+L --> C: 待接单或待派发排版任务
+deactivate L
+''','排版需求保存素材和期限；一审、二审岗位在派发时指定。')
+sequence('UC-OL-002',{'M':'Member','L':'OperationsLayout','RA':'ReviewAssignment','N':'Member'},'''
+C -> L: 接单派发(排版干事、一审、二审)
+activate L
+L -> RA: 核验审核资格(两岗人员)
+RA --> L: 岗位资格
+L -> N: 验证归属(运营部排版干事)
+N --> L: 成员资格
+L --> C: 派发结果
+deactivate L
+''','运营部部长在接单时一次指定排版干事及两岗审核人员。')
+sequence('UC-OL-003',{'M':'Member','L':'OperationsLayout','O':'Outcome'},'''
+C -> L: 提交排版成果(排版干事、说明、链接、附件)
+activate L
+L -> O: 验证完整性(排版成果)
+O --> L: 完整性结论
+L --> C: 待一审结果或拒绝原因
+deactivate L
+''','排版成果提交后进入指定一审，保留成果附件和链接。')
+sequence('UC-OL-004',{'M':'Member','L':'OperationsLayout','RA':'ReviewAssignment','O':'Outcome','R':'Review','G':'Ledger','W':'Weekly'},'''
+C -> L: 审核归档(审核层次、结论、意见、成果版次)
+activate L
+L -> RA: 核验审核资格(当前岗位)
+RA --> L: 当前审核人资格
+L -> O: 验证完整性(当前成果)
+O --> L: 完整性结论
+L -> R: 验证适用版本(当前审核版次)
+R --> L: 版本结论
+alt 退回
+  L --> C: 退回意见及修改责任
+else 一审通过且两岗不同
+  L --> C: 待二审并通知二审人员
+else 二审通过或两岗同人一审通过
+  L -> L: 审核归档()
+  L -> G: 归集贡献(排版与审核贡献)
+  G -> G: 识别未计入贡献(来源、类型、成员)
+  G -> W: 按明细汇总(本周有效贡献)
+  W --> G: 成员周汇总
+  G --> L: 2小时审核规则与排版计量结果
+  L --> C: 归档结果
+end
+deactivate L
+''','排版按指定岗位顺序审核；同一人两岗时一审通过直接归档，审核贡献总量按规则分摊且不重复计量。')
 
 sequence('UC-PR-001',{'M':'Member','S':'Schedule','R':'BookingTerms'},'''
 C -> S: 受理预约(预约人、时段、地点、联系方式)
@@ -517,7 +615,7 @@ note bottom of CT
 end note
 @enduml
 '''
-(D/'class-responsibilities.puml').write_text(view,encoding='utf-8')
+(D/'class-responsibilities.puml').write_text(view,encoding='utf-8',newline='\n')
 classes.append(('class-responsibilities','分析类图（五）— 归档摄制成果的边界、控制与实体职责'))
 
 # All per-use-case controls are declared, with only their directly contacted entities.
@@ -525,7 +623,7 @@ classes.append(('class-responsibilities','分析类图（五）— 归档摄制�
 groups=[
  ('class-controls-editorial','分析类图（六）— 采编协同用例职责',['UC-ED-001','UC-ED-002','UC-ED-003','UC-ED-004']),
  ('class-controls-production','分析类图（七）— 摄制预约用例职责',['UC-PR-001','UC-PR-002','UC-PR-003','UC-PR-004','UC-PR-005']),
- ('class-controls-workflow','分析类图（八）— 部门流转与稿件审核用例职责',['UC-FL-001','UC-FL-002','UC-FL-003','UC-FL-004','UC-RV-001','UC-RV-002']),
+ ('class-controls-workflow','分析类图（八）— 部门流转与稿件审核用例职责',['UC-FL-001','UC-FL-002','UC-FL-003','UC-FL-004','UC-RV-001','UC-RV-002','UC-ER-001','UC-ER-002','UC-ER-003','UC-ER-004','UC-OL-001','UC-OL-002','UC-OL-003','UC-OL-004']),
  ('class-controls-support','分析类图（九）— 登录、统计与组织用例职责',['UC-AUTH-001','UC-REC-001','UC-STAT-001','UC-ORG-001','UC-VIEW-001'])
 ]
 for slug,title,codes in groups:
@@ -551,7 +649,7 @@ for slug,title,codes in groups:
     if 'UC-AUTH-001' in codes:
         s+='class "微信授权服务接口" as WX <<boundary>>\nCUCAUTH001 ..> WX : 请求身份验证\n'
     s+='\n'.join(links)+'\nnote "实体属性与操作详见前四张类图；\\n实体间协作详见对应序列图。\\n虚线表示职责依赖，不表示业务流转先后。" as Guidance\n@enduml\n'
-    (D/(slug+'.puml')).write_text(s,encoding='utf-8');classes.append((slug,title))
+    (D/(slug+'.puml')).write_text(s,encoding='utf-8',newline='\n');classes.append((slug,title))
 
 states=[]
 def state(slug,title,owner,body,desc):
@@ -560,7 +658,7 @@ def state(slug,title,owner,body,desc):
 skinparam stateBackgroundColor #F5FAFF
 skinparam stateBorderColor #46637F
 '''+body+'\n@enduml\n'
-    (D/(slug+'.puml')).write_text(s,encoding='utf-8')
+    (D/(slug+'.puml')).write_text(s,encoding='utf-8',newline='\n')
     states.append(dict(slug=slug,title=title,owner=owner,description=desc))
 
 state('state-editorial','分析状态机图（一）— 采编协同','Editorial','''
@@ -680,6 +778,48 @@ note bottom of Completed
 end note
 ''','整体任务只在全部阶段完成后结束；规则或贡献依据缺失时保留待核对项，不把任务完成等同于津贴已核实。')
 
+state('state-external-request','分析状态机图（六）— 外部需求','ExternalRequest','''
+state "待接单" as Unassigned
+state "待完成" as Assigned
+state "待审核" as Submitted
+state "待补正" as Returned
+state "已归档" as Archived
+[*] --> Unassigned
+Unassigned --> Assigned : 接单派发() [目标部门部长有权且承接成员有效] / 确立唯一承接责任
+Assigned --> Submitted : 提交成果() [当前承接人且成果完整] / 保存成果与附件
+Submitted --> Returned : 审核归档() [审核退回且意见完整] / 保留补正责任
+Returned --> Submitted : 提交成果() [当前承接人且修订完整] / 保存新成果
+Submitted --> Archived : 审核归档() [目标部门部长或管理员通过且成果齐备] / 保存归档事实
+Archived : 审核归档() [重复合法请求] / 返回原结果，不改变状态
+note bottom of Archived
+  外部需求归档是协作完成事实，
+  不自动形成津贴贡献。
+end note
+''','外部需求由兄弟部门发布、目标部门部长派发，承接成员提交成果后由部长或管理员审核；归档不自动结算津贴。')
+
+state('state-operations-layout','分析状态机图（七）— 公众号排版任务','OperationsLayout','''
+state "待接单" as Unassigned
+state "待排版" as Working
+state "待一审" as First
+state "待二审" as Second
+state "待修改" as Returned
+state "已归档" as Archived
+[*] --> Unassigned
+Unassigned --> Working : 接单派发() [运营部长指定干事与两岗人员] / 建立承接和审核岗位
+Working --> First : 提交排版成果() [当前干事且成果完整] / 保存成果与附件
+First --> Returned : 审核归档() [一审退回且意见完整] / 记录意见
+Returned --> First : 提交排版成果() [修订完整] / 保存新成果
+First --> Second : 审核归档() [一审通过且两岗不同] / 进入二审
+First --> Archived : 审核归档() [一审通过且两岗相同] / 归档并结算规则工时
+Second --> Returned : 审核归档() [二审退回且意见完整] / 记录意见
+Second --> Archived : 审核归档() [二审通过] / 归档并结算规则工时
+Archived : 审核归档() [重复合法请求] / 返回原结果，不重复结算
+note bottom of Archived
+  审核事件记录真实操作人；未发生的二审不伪造记录。
+  排版审核总工时按规则分摊，报名加急只触发提醒。
+end note
+''','排版任务在派发时指定干事、一审和二审；按状态逐级审核，同一人承担两岗时一审通过直接归档并计量。')
+
 manifest=dict(classes=classes,sequences=seqs,states=states,catalog=catalog)
-(D/'model-index.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+(D/'model-index.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
 print(f'Created {len(classes)} class views, {len(seqs)} analysis sequences, {len(states)} state machines.')
