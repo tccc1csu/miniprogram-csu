@@ -34,7 +34,7 @@
 - [x] T017 [US4] 创建 deployment/mini-unification.md、页面去留表与环境迁移/回退步骤。
 - [x] T018 [US4] 执行 tests/mobile-unification.mjs、既有测试及构建，开发者工具编译截图并验证云网关、附件与跨端记录。
 - [x] T019 [US4] 部署新增 workbenchGateway，更新 miniprogram/config.js，核实旧函数和旧文档库未被改动。
-- [ ] T020 [US4] 扫描 Git 暂存内容，提交并推送 GitHub feat/unified-cloud-workbench；保存 specs/007-mini-unification/validation.md。
+- [x] T020 [US4] 扫描 Git 暂存内容，提交并推送 GitHub feat/unified-cloud-workbench；保存 specs/007-mini-unification/validation.md。
 
 ## Dependencies
 T001→T003/T004→T005→US1→US2→US3→US4；部署前先本地验证，推送前检查秘密排除。

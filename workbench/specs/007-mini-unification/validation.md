@@ -38,4 +38,8 @@
 
 白名单包含小程序活动页面、固定网关、网页/API、迁移、规格、测试及部署文档。原小程序未提交的课程/个人资料没有整体带入；旧历史代码以明确标识保留用于追溯。`.env`、`.data`、验收密码、密钥、运行库、私有开发者配置和 node_modules 不交付；本机临时登录参数文件已移除。
 
-暂存差异与本机已知生产凭据逐值扫描通过：私有文件未入暂存，凭据未出现在新增/修改内容，活动手机页面与已编译源文件一致，旧运行代码无改动。GitHub 推送待本次交付提交完成后更新。旧接入环境试用期 2026-12-11 到期，需续期或迁移网关。微信机器人/订阅消息未配置，站内消息可用。部署、页面去留与回退详见 [mini-unification.md](../../deployment/mini-unification.md)。
+暂存差异与本机已知生产凭据逐值扫描通过：245 个新增/修改文件未包含私有文件或已知运行凭据；活动手机页面与已编译源文件一致，旧运行代码无改动。`git diff --cached --check` 通过。
+
+实现提交 **d23790c** 已成功推送至 [GitHub 分支 feat/unified-cloud-workbench](https://github.com/tccc1csu/miniprogram-csu/tree/feat/unified-cloud-workbench)，保留原仓库历史，未合并 main。本次作者复用仓库最近 6 个提交一致的 `tccc1csu` GitHub noreply 身份，仅设置本地仓库配置，未改全局配置。全部 T001–T020 完成。
+
+旧接入环境试用期 2026-12-11 到期，需续期或迁移网关。微信机器人/订阅消息未配置，站内消息可用。部署、页面去留与回退详见 [mini-unification.md](../../deployment/mini-unification.md)。
