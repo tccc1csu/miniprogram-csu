@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "envId": "cloud1-d2gd4994t925d1435",
+  "functionRoot": "cloudfunctions",
+  "functions": [{
+    "name": "workbenchGateway",
+    "runtime": "Nodejs24.11",
+    "handler": "index.main",
+    "timeout": 60,
+    "memorySize": 256,
+    "installDependency": false,
+    "description": "Shared workbench API transport; no legacy database access"
+  }]
+}

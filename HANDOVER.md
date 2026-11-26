@@ -1,3 +1,5 @@
+> 历史资料：当前统一版本请先阅读仓库根 README.md 和 workbench/deployment/mini-unification.md；本页旧角色、数据库与部署说明不代表当前实现。
+
 # 交接说明（HANDOVER）
 
 > **2026-10-13 状态更正：** 本文早期“公开脱敏版／恢复配置”的假设已不适用于当前工作副本；真实配置已由先前提交恢复，接手时先核验 Git 状态，不再次恢复或重写 Git 历史。当前本地 api 声明 20 个集合（原 16 个＋4 个计量集合），线上版本尚未核验。最新入口是 [课程与实现对照](docs/implementation/01-course-runtime-alignment.md)及[发布与回退](docs/implementation/02-rollout-and-rollback.md)，其现状结论优先于下文旧说明。

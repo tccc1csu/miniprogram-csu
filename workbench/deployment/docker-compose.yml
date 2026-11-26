@@ -1,0 +1,41 @@
+# Historical TCP/CVM deployment only. Current production uses CloudBase HTTPS;
+# follow deployment/README.md instead of running this compose configuration.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: workbench
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请先在 deployment/.env 里设置 POSTGRES_PASSWORD}
+      POSTGRES_DB: workbench
+      TZ: Asia/Shanghai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workbench -d workbench"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8080
+      DATABASE_URL: postgresql://workbench:${POSTGRES_PASSWORD}@db:5432/workbench
+      DATABASE_SCHEMA: youth_workbench
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-workbench-admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?请先在 deployment/.env 里设置 BOOTSTRAP_ADMIN_PASSWORD}
+      TZ: Asia/Shanghai
+    ports:
+      - "80:8080"
+
+volumes:
+  pgdata:

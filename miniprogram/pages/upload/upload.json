@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "上传工作量",
-  "usingComponents": {
-    "document-attachments": "/components/documentAttachments/index"
-  }
-}

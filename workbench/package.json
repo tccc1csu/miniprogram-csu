@@ -1,0 +1,40 @@
+{
+  "name": "youth-media-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"node --watch server/index.js\" \"vite --host 0.0.0.0\"",
+    "dev:api": "node --watch server/index.js",
+    "start": "node server/index.js",
+    "db:seed": "node server/seed.js",
+    "db:seed:acceptance": "node deployment/seed-cloud-acceptance.mjs",
+    "db:check": "node deployment/check-db.mjs",
+    "build": "vite build",
+    "test": "node --test --test-concurrency=1 tests/workflow.test.js tests/center.test.js && node tests/mobile-unification.mjs",
+    "test:mobile": "node tests/mobile-unification.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:cloud:acceptance": "node tests/cloud-acceptance.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "dotenv": "^17.2.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "htmlparser2": "^10.1.0",
+    "lucide-react": "^0.468.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sanitize-html": "^2.18.2",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^9.2.0",
+    "playwright": "^1.56.0",
+    "supertest": "^7.1.4",
+    "vite": "^7.1.0"
+  }
+}

@@ -31,3 +31,19 @@ server/data/*.db-*
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Unified workbench runtime and private acceptance material
+**/.data/
+**/dist/
+**/artifacts/
+**/coverage/
+**/project.private.config.json
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.pem
+*.key
+tmp/
+.codebuddy/
+.workbuddy-ai/

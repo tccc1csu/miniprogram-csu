@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "采编办公协同",
-  "usingComponents": {
-    "document-attachments": "/components/documentAttachments/index"
-  }
-}

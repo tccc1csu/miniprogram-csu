@@ -1,0 +1,83 @@
+<view class="container">
+  <view class="empty" wx:if="{{loading}}">正在加载任务…</view>
+  <block wx:if="{{task}}">
+    <view class="hero"><view class="hero-title">{{task.title}}</view><view class="hero-meta">{{task.kindLabel}} · {{task.number}} · {{task.stateLabel}}</view></view>
+    <view class="error" wx:if="{{error}}">{{error}}</view>
+
+    <block wx:if="{{publicOnly}}">
+      <view class="card"><view class="card-title">组织报名</view><view class="subtle">截止 {{task.timeLabel}}</view><view class="detail-text">{{task.notes}}</view><view class="note" wx:if="{{task.registered}}">你已提交报名，请勿重复提交。</view><textarea wx:else placeholder="报名说明" maxlength="10000" value="{{form.body}}" data-field="body" bindinput="input"/><button class="mini" wx:if="{{!task.registered}}" bindtap="chooseFiles">选择报名材料</button><view class="selected-files" wx:for="{{pendingFiles}}" wx:key="path">{{item.name}}</view><button type="primary" wx:if="{{!task.registered}}" loading="{{busy}}" disabled="{{busy}}" bindtap="register">提交报名</button></view>
+    </block>
+
+    <block wx:else>
+      <view class="card">
+        <view class="card-title">任务概况</view>
+        <view class="row"><text class="subtle">当前环节</text><text>{{task.stateLabel}}</text></view>
+        <view class="row"><text class="subtle">承接人</text><text>{{task.assignee_name || '待安排'}}</text></view>
+        <view class="row"><text class="subtle">截止时间</text><text>{{task.timeLabel}}</text></view>
+        <view class="row" wx:if="{{task.teacher1_name}}"><text class="subtle">指导老师</text><text>一审 {{task.teacher1_name}} · 二审 {{task.teacher2_name}}</text></view>
+        <view class="detail-text" wx:if="{{task.notes}}">{{task.notes}}</view>
+        <view class="detail-text" wx:if="{{task.publication_url}}">发布链接：{{task.publication_url}}</view>
+        <view class="detail-text" wx:if="{{task.sourceFeedback}}">采编反馈：{{task.sourceFeedback}}</view>
+        <button class="mini" bindtap="openWeb">打开网页任务</button>
+      </view>
+
+      <view class="card" wx:if="{{booking}}"><view class="card-title">拍摄安排</view><view class="row"><text class="subtle">地点</text><text>{{booking.location}}</text></view><view class="row"><text class="subtle">联系人</text><text>{{booking.contact}}</text></view></view>
+
+      <view class="card" wx:if="{{lines.length}}"><view class="card-title">挂网稿件</view><view class="line-box" wx:for="{{lines}}" wx:key="id"><view class="task-title">{{item.title}}</view><view class="subtle">{{item.site}} · {{item.original?'原创':'转载'}}{{item.author_name?' · '+item.author_name:''}}</view></view></view>
+      <view class="card" wx:if="{{entry}}"><view class="card-title">工作登记</view><view class="row"><text class="subtle">登记成员</text><text>{{entry.name}}</text></view><view class="row"><text class="subtle">周次</text><text>第 {{entry.week}} 周</text></view><view class="row"><text class="subtle">登记工时</text><text>{{entry.hours}} h</text></view></view>
+
+      <view class="card" wx:if="{{capabilities.source || capabilities.submit}}">
+        <view class="card-title">提交供稿或成果</view>
+        <textarea placeholder="填写正文、交付说明或修改内容" maxlength="100000" value="{{form.body}}" data-field="body" bindinput="input"/>
+        <button class="mini" bindtap="chooseFiles">选择新附件</button>
+        <view class="selected-files" wx:for="{{pendingFiles}}" wx:key="path">待上传：{{item.name}}</view>
+        <view class="existing-files" wx:if="{{files.length}}"><view class="subtle">也可以引用本任务已有附件</view><view class="select-line" wx:for="{{files}}" wx:key="id" data-id="{{item.id}}" bindtap="toggleFile"><text>{{item.selected?'☑':'□'}}</text><text>{{item.name}}</text></view></view>
+        <view class="actions"><button type="primary" disabled="{{busy}}" wx:if="{{capabilities.source}}" bindtap="submitSource">提交供稿</button><button type="primary" disabled="{{busy}}" wx:if="{{capabilities.submit}}" bindtap="submitVersion">提交成果</button></view>
+      </view>
+
+      <view class="card" wx:if="{{capabilities.assign}}">
+        <view class="card-title">安排承接</view>
+        <picker mode="selector" range="{{assignees}}" range-key="name" value="{{assigneeIndex}}" bindchange="pickAssignee"><view class="picker">{{assignees[assigneeIndex].name || '选择承接人'}}</view></picker>
+        <view class="select-line" bindtap="toggleRemember"><text>{{form.remember?'☑':'□'}}</text><text>设为这个流程的默认承接人</text></view>
+        <block wx:if="{{task.kind==='publication'}}">
+          <view class="field"><view class="label">运营部内审（任选两位）</view><view class="select-line" wx:for="{{reviewers}}" wx:key="id" data-id="{{item.id}}" bindtap="toggleReviewer"><text>{{item.checked?'☑':'□'}}</text><text>{{item.name}}</text></view></view>
+          <view class="field"><view class="label">指导老师两审（须为不同老师）</view>
+            <picker mode="selector" range="{{teachers}}" range-key="name" value="{{teacher1Index}}" bindchange="pickTeacher1"><view class="picker">一审：{{teachers[teacher1Index].name || '选择老师'}}</view></picker>
+            <picker mode="selector" range="{{teachers}}" range-key="name" value="{{teacher2Index}}" bindchange="pickTeacher2"><view class="picker">二审：{{teachers[teacher2Index].name || '选择老师'}}</view></picker>
+          </view>
+          <view class="select-line" bindtap="toggleRememberReviewers"><text>{{form.rememberReviewers?'☑':'□'}}</text><text>将这两位运营部长设为默认内审组合</text></view>
+        </block>
+        <button type="primary" disabled="{{busy}}" bindtap="assign">确认安排</button>
+      </view>
+
+      <view class="card" wx:if="{{capabilities.teachers}}"><view class="card-title">调整指导老师</view>
+        <picker mode="selector" range="{{teachers}}" range-key="name" value="{{teacher1Index}}" disabled="{{task.state==='teacher2'}}" bindchange="pickTeacher1"><view class="picker">一审：{{teachers[teacher1Index].name || '选择老师'}}{{task.state==='teacher2'?'（一审已完成）':''}}</view></picker>
+        <picker mode="selector" range="{{teachers}}" range-key="name" value="{{teacher2Index}}" bindchange="pickTeacher2"><view class="picker">二审：{{teachers[teacher2Index].name || '选择老师'}}</view></picker>
+        <button class="mini" disabled="{{busy}}" bindtap="setTeachers">保存审校安排</button>
+      </view>
+
+      <view class="card" wx:if="{{capabilities.claim}}"><view class="card-title">摄制轮转</view><view class="subtle">按任务进入轮转的先后顺序承接。</view><button type="primary" disabled="{{busy}}" bindtap="claim">承接此任务</button></view>
+
+      <view class="card" wx:if="{{capabilities.review || capabilities.publish}}"><view class="card-title">当前办理</view>
+        <textarea wx:if="{{capabilities.review}}" placeholder="审核意见；退回时必须填写" maxlength="5000" value="{{form.reason}}" data-field="reason" bindinput="input"/>
+        <view class="actions"><button class="mini" wx:if="{{capabilities.review}}" data-stage="{{task.state}}" disabled="{{busy}}" bindtap="reviewApprove">通过</button><button class="mini danger" wx:if="{{capabilities.review}}" data-stage="{{task.state}}" disabled="{{busy}}" bindtap="reviewReject">退回</button></view>
+        <input wx:if="{{capabilities.publish}}" placeholder="发布链接" value="{{form.url}}" data-field="url" bindinput="input"/><button type="primary" wx:if="{{capabilities.publish}}" disabled="{{busy}}" bindtap="publish">确认发布并归档</button>
+      </view>
+
+      <view class="card" wx:if="{{capabilities.upload}}"><view class="card-title">补交任务附件</view><button class="mini" bindtap="chooseFiles">选择附件</button><view class="selected-files" wx:for="{{pendingFiles}}" wx:key="path">{{item.name}}</view><button type="primary" disabled="{{busy || !pendingFiles.length}}" bindtap="supplement">上传并保留在任务材料</button></view>
+
+      <view class="card"><view class="card-title">任务备注</view><textarea wx:if="{{capabilities.note}}" placeholder="说明核定工时与规则工时不一致的原因" maxlength="2000" value="{{form.reportNote}}" data-field="reportNote" bindinput="input"/><view class="detail-text" wx:else>{{task.report_note || '暂无备注'}}</view><button class="mini" wx:if="{{capabilities.note}}" disabled="{{busy}}" bindtap="saveNote">保存备注</button></view>
+
+      <view class="card" wx:if="{{capabilities.force}}"><view class="card-title">异常处理</view><view class="subtle">强制归档不会自动生成工时，请填写原因。</view><textarea placeholder="强制归档原因" maxlength="5000" value="{{form.reason}}" data-field="reason" bindinput="input"/><button class="mini danger" disabled="{{busy}}" data-action="force-archive" bindtap="action">强制归档</button></view>
+
+      <view class="card" wx:if="{{files.length}}"><view class="card-title">任务材料（{{files.length}}）</view><view class="file" wx:for="{{files}}" wx:key="id" data-id="{{item.id}}" bindtap="openFile">{{item.name}} · {{item.size}} bytes</view></view>
+      <view class="card" wx:if="{{versions.length}}"><view class="card-title">版本记录</view><view wx:for="{{versions}}" wx:key="id" class="note"><view>第 {{item.number}} 版 · {{item.phase}} · {{item.author_name}}</view><view class="detail-text">{{item.body || '此版本以附件交付'}}</view><view class="file" wx:for="{{item.files}}" wx:for-item="versionFile" wx:key="id" data-id="{{versionFile.id}}" bindtap="openFile">{{versionFile.name}}</view></view></view>
+      <view class="card" wx:if="{{reviews.length}}"><view class="card-title">审校记录</view><view wx:for="{{reviews}}" wx:key="id" class="timeline"><view class="timeline-title">{{item.stage}} · {{item.decision==='approve'?'通过':'退回'}} · {{item.actor_name}}</view><view class="detail-text">{{item.reason || '无附加意见'}}</view></view></view>
+      <view class="card" wx:if="{{annotations.length}}"><view class="card-title">文中批注</view><view wx:for="{{annotations}}" wx:key="id" class="note"><view class="subtle">{{item.stage}} · {{item.actor_name}} · {{item.created_at}}</view><view>“{{item.quote}}”</view><view class="detail-text">{{item.body}}</view></view></view>
+      <view class="card" wx:if="{{events.length}}"><view class="card-title">流转记录</view><view wx:for="{{events}}" wx:key="id" class="timeline"><view class="timeline-title">{{item.action}} · {{item.actor_name}}</view><view class="subtle">{{item.created_at}}</view><view class="detail-text">{{item.detail}}</view></view></view>
+      <view class="card" wx:if="{{registrations.length}}"><view class="card-title">报名记录</view><view wx:for="{{registrations}}" wx:key="id" class="note">{{item.name}} · {{item.created_at}}<view class="detail-text">{{item.notes}}</view></view></view>
+      <view class="card" wx:if="{{linked.length || capabilities.link}}"><view class="card-title">关联任务</view><view class="file" wx:for="{{linked}}" wx:key="id" data-id="{{item.id}}" bindtap="openLinked">{{item.number}} · {{item.title}}</view><view class="file" wx:for="{{linkedFiles}}" wx:key="id" data-id="{{item.id}}" bindtap="openFile">前序材料 · {{item.name}}</view><button type="primary" wx:if="{{capabilities.link}}" bindtap="createLinked">创建关联推文排版</button></view>
+      <view class="card" wx:if="{{contributions.length}}"><view class="card-title">工时记录</view><view wx:for="{{contributions}}" wx:key="id" class="note">{{item.name}} · {{item.rule_name}} · 规则 {{item.base_units/10000}} h · 核定 {{item.effective_units/10000}} h</view></view>
+    </block>
+  </block>
+</view>

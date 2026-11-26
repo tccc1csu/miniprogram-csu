@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "成员详情",
-  "usingComponents": {
-    "document-attachments": "/components/documentAttachments/index"
-  }
-}

@@ -1,0 +1,5 @@
+/* Shared mobile card styles are defined in app.wxss. */
+.line-box{padding:18rpx 0;border-bottom:1rpx solid #edf0f5}
+.line-box:last-child{border-bottom:0}
+.existing-files{margin-top:18rpx}
+.existing-files .select-line{gap:14rpx}
