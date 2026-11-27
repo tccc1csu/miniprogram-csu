@@ -1,52 +1,36 @@
 @startuml
-title UC-AUTH-001 登录系统 — 分析序列图
 skinparam defaultFontName Microsoft YaHei
-skinparam defaultFontSize 14
 skinparam shadowing false
-skinparam backgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F5FAFF
-skinparam classBorderColor #46637F
-skinparam ArrowColor #334155
-skinparam nodesep 35
-skinparam ranksep 45
-hide footbox
-autonumber
-skinparam sequenceMessageAlign center
-skinparam sequenceGroupBackgroundColor white
-actor "登录用户" as A
-boundary "接口:普通成员接口" as B
-control "控制:登录系统控制" as C
-participant "M:成员" as M
-participant "S:登录会话" as S
-A -> B: 登录系统(业务信息)
-activate B
-B -> C: 登录系统(业务信息)
-activate C
+hide empty members
+title UC-AUTH-001 登录工作台的分析序列
+actor "使用者" as actor
+boundary "网页与手机页面" as page
+control "身份控制" as ctl
+entity "账号与会话" as model
+actor -> page : 提交账号和密码
+page -> ctl : 协调业务请求(UC-AUTH-001)
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+账号有效且启用
+end note
+alt 业务条件满足
+ctl -> model : 登录工作台()
+model -> model : 验证密码与启用状态()
+model -> model : 建立有时限的可信会话()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+note over ctl,model
+成功后保留：会话令牌摘要与失效时刻。
+持久化及事务实现于D章精化。
+end note
 
-alt 微信授权凭据
-  boundary "授权接口:微信授权服务接口" as W
-  actor "微信授权服务" as X
-  C -> W: 验证授权凭据(凭据)
-  W -> X: 验证授权凭据(凭据)
-  X --> W: 授权身份或失败
-  W --> C: 授权身份或失败
-else 账号登录凭据
-  note right of C: 账号凭据直接交给成员验证。
-end
-break 授权凭据验证失败
-  C --> B: 登录失败
-  B --> A: 登录失败
-end
-C -> M: 验证身份(凭据或授权身份)
-M --> C: 身份、有效职责及会话依据，或拒绝原因
-opt 身份有效且账号角色关系合法
-  C -> S: 建立会话(成员、有效职责、有效期)
-  S --> C: 有效会话
-end
-
-C --> B: 业务结果或拒绝原因
-deactivate C
-B --> A: 业务结果或拒绝原因
-deactivate B
 @enduml

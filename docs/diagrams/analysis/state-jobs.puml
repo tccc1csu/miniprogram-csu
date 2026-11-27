@@ -1,0 +1,35 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title C 部门任务状态机
+
+[*] --> Waiting
+state "等待承接" as Waiting
+state "等待交付" as Delivery
+state "内容待老师审核" as Content
+state "等待最终交付" as Final
+state "等待验收" as Acceptance
+state "正常归档" as Archived
+state "强制关闭" as Forced
+Waiting --> Delivery : 手动／默认／轮转安排或摄影领取
+Delivery --> Content : 指定内容老师的采编稿件提交内容
+Content --> Delivery : 内容退回
+Content --> Final : 内容通过
+Final --> Acceptance : 承接人提交最终交付
+Delivery --> Acceptance : 不需要内容审核的任务提交交付
+Acceptance --> Delivery : 验收退回
+Acceptance --> Archived : 验收通过／归档计时同事务
+Waiting --> Forced : 管理者说明原因
+Delivery --> Forced : 管理者说明原因
+Archived --> [*]
+Forced --> [*]
+note bottom of Forced
+任意未归档阶段可强制关闭，不自动计时。
+工作登记直接产生登记与工时，不使用本状态机。
+end note
+
+@enduml

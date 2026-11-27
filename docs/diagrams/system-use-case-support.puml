@@ -1,0 +1,30 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title 公共访问与配置
+left to right direction
+actor "使用者" as a0
+actor "部门管理人员" as a1
+actor "内部成员" as a2
+actor "任务相关人员" as a3
+rectangle "青年传媒中心统一工作台" {
+usecase "UC-AUTH-001\n登录工作台" as u0
+usecase "UC-AUTH-002\n退出工作台" as u1
+usecase "UC-TASK-001\n查看任务与办理进度" as u2
+usecase "UC-CFG-001\n配置教师与承接规则" as u3
+usecase "UC-VIEW-001\n查看个人工作与工时" as u4
+usecase "UC-MSG-001\n查看任务通知" as u5
+usecase "UC-NOTE-001\n维护任务报表备注" as u6
+}
+a0 -- u0
+a0 -- u1
+a0 -- u2
+a1 -- u3
+a2 -- u4
+a0 -- u5
+a3 -- u6
+@enduml

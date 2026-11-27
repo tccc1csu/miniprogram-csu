@@ -1,0 +1,40 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title 部门协作与交付
+left to right direction
+actor "采编人员" as a0
+actor "摄制需求人" as a1
+actor "需求方" as a2
+actor "设计需求人" as a3
+actor "目标部门部长" as a4
+actor "摄制干事" as a5
+actor "任务承接人" as a6
+actor "指定内容老师" as a7
+rectangle "青年传媒中心统一工作台" {
+usecase "UC-ED-001\n建立采编办公稿件任务" as u0
+usecase "UC-PR-001\n提出摄制预约" as u1
+usecase "UC-ER-001\n提出部门需求" as u2
+usecase "UC-DS-001\n提出设计任务" as u3
+usecase "UC-JOB-001\n安排部门任务" as u4
+usecase "UC-JOB-002\n领取摄制任务" as u5
+usecase "UC-JOB-003\n提交部门交付物" as u6
+usecase "UC-JOB-004\n审阅采编内容" as u7
+usecase "UC-JOB-005\n验收并归档部门任务" as u8
+usecase "UC-JOB-006\n强制关闭异常任务" as u9
+}
+a0 -- u0
+a1 -- u1
+a2 -- u2
+a3 -- u3
+a4 -- u4
+a5 -- u5
+a6 -- u6
+a7 -- u7
+a4 -- u8
+a4 -- u9
+@enduml

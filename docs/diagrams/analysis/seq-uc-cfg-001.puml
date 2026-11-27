@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title UC-CFG-001 配置教师与承接规则的分析序列
+actor "部门管理人员" as actor
+boundary "网页与手机页面" as page
+control "公共访问控制" as ctl
+entity "账号与会话" as identity
+entity "承接与政策配置" as model
+actor -> page : 选择配置范围
+page -> ctl : 协调业务请求(UC-CFG-001)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+有对应部门的配置权限
+end note
+alt 业务条件满足
+ctl -> model : 配置教师与承接规则()
+model -> model : 核验配置部门与教师互异()
+model -> model : 保存后续任务默认配置()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+note over ctl,model
+成功后保留：教师路由、默认承接或轮转配置。
+持久化及事务实现于D章精化。
+end note
+
+@enduml

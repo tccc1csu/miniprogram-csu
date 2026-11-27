@@ -1,0 +1,83 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title C 领域分析类及职责
+
+class "账号" as User <<entity>> {
+账号编号
+角色
+部门
+计酬资格
+核验活动身份()
+}
+class "任务" as Task <<entity>> {
+任务编号
+业务类型
+期限
+报表备注
+推导当前办理状态()
+核验安排和归档()
+}
+class "承接安排" as Assignment <<entity>> {
+承接人
+安排人
+自动安排标记
+}
+class "稿件版本" as Version <<entity>> {
+版本号
+阶段
+正文与清洗预览
+保留历史版本()
+}
+class "审核事件" as Review <<entity>> {
+阶段
+结论
+原因
+实际审核人
+}
+class "选区批注" as Annotation <<entity>> {
+起止偏移
+引文
+意见
+校验精确选区()
+}
+class "归档事实" as Archive <<entity>> {
+完成版本
+强制原因
+}
+class "工时贡献" as Worklog <<entity>> {
+规则值
+核定值
+倍率
+费率
+来源键
+}
+class "核定审计" as Adjustment <<entity>> {
+原值
+新值
+原因与操作者
+}
+class "封存行" as SealRow <<entity>> {
+来源工时编号
+不可变JSON快照
+}
+User "1" -- "0..*" Task : 发起
+Task "1" -- "0..1" Assignment
+Task "1" -- "0..*" Version
+Version "1" -- "0..*" Review
+Version "1" -- "0..*" Annotation
+User "1" -- "0..*" Review : 实际审核
+Task "1" -- "0..1" Archive
+Task "1" -- "0..*" Worklog
+Worklog "1" -- "0..*" Adjustment
+Worklog "1" -- "0..*" SealRow
+note bottom of Review
+两位运营审校岗位安排与实际审核事件分离。
+任一确认可送教师，不能伪造另一人的点击。
+end note
+
+@enduml

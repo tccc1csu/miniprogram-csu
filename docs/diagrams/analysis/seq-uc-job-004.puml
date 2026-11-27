@@ -1,0 +1,40 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title UC-JOB-004 审阅采编内容的分析序列
+actor "指定内容老师" as actor
+boundary "网页与手机页面" as page
+control "部门协作控制" as ctl
+entity "账号与会话" as identity
+entity "部门任务簿" as model
+actor -> page : 阅读内容版本
+page -> ctl : 协调业务请求(UC-JOB-004)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+当前采编任务已配置本人为内容老师且有待审内容版本
+end note
+alt 业务条件满足
+ctl -> model : 审阅采编内容()
+model -> model : 核验指定内容老师与版本()
+model -> model : 记录内容结论及后续状态()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+note over ctl,model
+成功后保留：指定老师的内容审核事件。
+通过才开放下一环节；退回留原因，不生成完成贡献。
+持久化及事务实现于D章精化。
+end note
+
+@enduml

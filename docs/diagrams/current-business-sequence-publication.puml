@@ -1,0 +1,28 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title A 现状业务序列：推文协作
+
+actor "需求方" as D
+participant "部长" as M
+participant "排版干事" as W
+participant "一审老师" as T1
+participant "二审老师" as T2
+D -> M : 在群里说明需求并发送素材
+M -> W : 转述需求并安排排版
+W -> M : 发送排版链接与附件
+M -> T1 : 向一审群转发稿件
+T1 -> W : 在群聊中说明修改要求
+W -> T2 : 修改后转二审群
+T2 -> W : 在另一群确认或要求修改
+W -> M : 发出发布结果
+note over M,T2
+意见散落多个群，难以定位具体版本；
+完成材料与后续工时表需再次人工关联。
+end note
+
+@enduml

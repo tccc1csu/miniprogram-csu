@@ -1,0 +1,26 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title B 改进业务序列：采编办公对接
+
+participant "采编人员" as E
+participant "办公承接人" as O
+participant "指定内容老师" as T
+participant "验收管理者" as M
+participant "统一工作台" as S
+E -> S : 提交稿件站点与原创作者清单
+S -> O : 按默认承接或任务轮转分配
+opt 配置了内容老师
+O -> S : 提交内容版本
+T -> S : 完成内容审核
+end
+O -> S : 提交最终交付版本
+M -> S : 验收稿件交付
+S -> S : 归档并按行记录创作和对接贡献
+E -> S : 另行提出关联该归档稿件的推文任务
+
+@enduml

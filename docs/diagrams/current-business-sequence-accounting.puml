@@ -1,0 +1,21 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title A 现状业务序列：周期统计
+
+participant "各部门干事" as W
+participant "部门部长" as M
+participant "办公统计人员" as O
+W -> M : 报送本周工作记录
+M -> O : 汇总部门工作表
+O -> M : 询问重复项、缺失项及工时差异
+M -> W : 核实实际贡献
+W --> O : 提供补充说明
+O -> O : 人工合并表格并核算金额
+O --> M : 提交结算汇总供核对
+
+@enduml

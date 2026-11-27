@@ -1,6 +1,6 @@
 """Render course PlantUML with explicit UTF-8 and check visible SVG labels.
 
-The database overview has its own compact layout; this tool never overwrites it.
+Includes the current database overview and all maintained partition diagrams.
 """
 from pathlib import Path
 import argparse
@@ -22,7 +22,7 @@ def source_labels(path):
     for line in text.splitlines():
         if line.startswith('title '):
             labels.append(line[6:].strip())
-        match = re.match(r'\s*(?:actor|boundary|control|participant|class|usecase|state|rectangle)\s+"([^"]+)"', line)
+        match = re.match(r'\s*(?:actor|boundary|control|entity|participant|class|usecase|state|rectangle|package)\s+"([^"]+)"', line)
         if match:
             label = re.sub(r'<[^>]*>', '', match[1])
             labels.extend(part.strip() for part in label.split(r'\n') if part.strip())
@@ -49,7 +49,7 @@ def main():
     if args.scope in ['course', 'all']:
         sources += sorted(DIAGRAMS.glob('*.puml')) + sorted((DIAGRAMS / 'analysis').glob('*.puml'))
     if args.scope in ['database', 'all']:
-        sources += sorted(p for p in (DIAGRAMS / 'database').glob('*.puml') if p.stem != 'db-overview')
+        sources += sorted((DIAGRAMS / 'database').glob('*.puml'))
     if args.audit_only:
         for source in sources:
             verify_svg(source, source.with_suffix('.svg'))

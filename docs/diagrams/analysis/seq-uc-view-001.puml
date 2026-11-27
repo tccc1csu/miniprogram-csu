@@ -1,45 +1,35 @@
 @startuml
-title UC-VIEW-001 查看个人工作记录 — 分析序列图
 skinparam defaultFontName Microsoft YaHei
-skinparam defaultFontSize 14
 skinparam shadowing false
-skinparam backgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F5FAFF
-skinparam classBorderColor #46637F
-skinparam ArrowColor #334155
-skinparam nodesep 35
-skinparam ranksep 45
-hide footbox
-autonumber
-skinparam sequenceMessageAlign center
-skinparam sequenceGroupBackgroundColor white
-actor "普通成员" as A
-boundary "接口:普通成员接口" as B
-control "控制:查看个人工作记录控制" as C
-participant "M:成员" as M
-participant "L:工作量台账" as L
-participant "W:成员周汇总" as W
-A -> B: 查看个人工作记录(业务信息)
-activate B
-B -> C: 查看个人工作记录(业务信息)
-activate C
-C -> M: 验证业务资格(操作人、部门与职责)
-M --> C: 资格结论
-break 无权执行
-  C --> B: 拒绝结果及原因
-  B --> A: 拒绝结果及原因
+hide empty members
+title UC-VIEW-001 查看个人工作与工时的分析序列
+actor "内部成员" as actor
+boundary "网页与手机页面" as page
+control "公共访问控制" as ctl
+entity "账号与会话" as identity
+entity "任务工作簿" as model
+actor -> page : 提出个人查询
+page -> ctl : 协调业务请求(UC-VIEW-001)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+已登录
+end note
+alt 业务条件满足
+ctl -> model : 查看个人工作与工时()
+model -> model : 限定本人任务与计酬范围()
+model -> model : 汇总个人工作和贡献()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
 end
 
-C -> L: 查询个人工作量(本人、周次范围)
-activate L
-L -> W: 核对一致性(本人有效明细)
-W --> L: 汇总、明细与异常
-L --> C: 本人可访问工作记录
-deactivate L
-
-C --> B: 业务结果或拒绝原因
-deactivate C
-B --> A: 业务结果或拒绝原因
-deactivate B
 @enduml

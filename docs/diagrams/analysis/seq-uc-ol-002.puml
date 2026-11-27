@@ -1,48 +1,39 @@
 @startuml
-title UC-OL-002 接单派发公众号排版 — 分析序列图
 skinparam defaultFontName Microsoft YaHei
-skinparam defaultFontSize 14
 skinparam shadowing false
-skinparam backgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F5FAFF
-skinparam classBorderColor #46637F
-skinparam ArrowColor #334155
-skinparam nodesep 35
-skinparam ranksep 45
-hide footbox
-autonumber
-skinparam sequenceMessageAlign center
-skinparam sequenceGroupBackgroundColor white
-actor "运营部部长" as A
-boundary "接口:部长接口" as B
-control "控制:接单派发公众号排版控制" as C
-participant "M:成员" as M
-participant "L:公众号排版任务" as L
-participant "RA:审核岗位安排" as RA
-participant "N:成员" as N
-A -> B: 接单派发公众号排版(业务信息)
-activate B
-B -> C: 接单派发公众号排版(业务信息)
-activate C
-C -> M: 验证业务资格(操作人、部门与职责)
-M --> C: 资格结论
-break 无权执行
-  C --> B: 拒绝结果及原因
-  B --> A: 拒绝结果及原因
+hide empty members
+title UC-OL-002 提交或修订源稿的分析序列
+actor "外部来稿人" as actor
+boundary "网页与手机页面" as page
+control "推文控制" as ctl
+entity "账号与会话" as identity
+entity "推文协作簿" as model
+actor -> page : 提交完整稿件和本人材料
+page -> ctl : 协调业务请求(UC-OL-002)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+本人推文需要源稿且未归档
+end note
+alt 业务条件满足
+ctl -> model : 提交或修订源稿()
+model -> model : 验证本人材料归属()
+model -> model : 追加源稿版本并保留历史()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
 end
+note over ctl,model
+成功后保留：源稿版本及材料关联。
+持久化及事务实现于D章精化。
+end note
 
-C -> L: 接单派发(排版干事、一审、二审)
-activate L
-L -> RA: 核验审核资格(两岗人员)
-RA --> L: 岗位资格
-L -> N: 验证归属(运营部排版干事)
-N --> L: 成员资格
-L --> C: 派发结果
-deactivate L
-
-C --> B: 业务结果或拒绝原因
-deactivate C
-B --> A: 业务结果或拒绝原因
-deactivate B
 @enduml

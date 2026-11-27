@@ -1,45 +1,39 @@
 @startuml
-title UC-ER-001 发布外部需求 — 分析序列图
 skinparam defaultFontName Microsoft YaHei
-skinparam defaultFontSize 14
 skinparam shadowing false
-skinparam backgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F5FAFF
-skinparam classBorderColor #46637F
-skinparam ArrowColor #334155
-skinparam nodesep 35
-skinparam ranksep 45
-hide footbox
-autonumber
-skinparam sequenceMessageAlign center
-skinparam sequenceGroupBackgroundColor white
-actor "兄弟部门需求成员" as A
-boundary "接口:普通成员接口" as B
-control "控制:发布外部需求控制" as C
-participant "M:成员" as M
-participant "E:外部需求" as E
-participant "D:部门" as D
-A -> B: 发布外部需求(业务信息)
-activate B
-B -> C: 发布外部需求(业务信息)
-activate C
-C -> M: 验证业务资格(操作人、部门与职责)
-M --> C: 资格结论
-break 无权执行
-  C --> B: 拒绝结果及原因
-  B --> A: 拒绝结果及原因
+hide empty members
+title UC-ER-001 提出部门需求的分析序列
+actor "需求方" as actor
+boundary "网页与手机页面" as page
+control "部门协作控制" as ctl
+entity "账号与会话" as identity
+entity "部门任务簿" as model
+actor -> page : 提交目标部门及工作说明
+page -> ctl : 协调业务请求(UC-ER-001)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+外部组织或管理员；原创部长可提本部门需求
+end note
+alt 业务条件满足
+ctl -> model : 提出部门需求()
+model -> model : 核验目标部门与规则()
+model -> model : 建立部门需求及来源()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
 end
+note over ctl,model
+成功后保留：目标部门任务及需求资料。
+持久化及事务实现于D章精化。
+end note
 
-C -> E: 发布需求(来源成员、目标部门、说明、截止日期、附件)
-activate E
-E -> D: 检查承办资格(目标部门)
-D --> E: 部门有效性
-E --> C: 待接单需求或拒绝原因
-deactivate E
-
-C --> B: 业务结果或拒绝原因
-deactivate C
-B --> A: 业务结果或拒绝原因
-deactivate B
 @enduml

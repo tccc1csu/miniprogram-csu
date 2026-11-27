@@ -1,0 +1,29 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title B 改进业务序列：部门协作
+
+actor "需求方" as D
+participant "目标部门部长" as M
+participant "承接干事" as W
+participant "统一工作台" as S
+D -> S : 提交摄影预约、设计或部门需求
+alt 摄影任务公开领取
+W -> S : 领取未来且未分配任务
+else 部门安排
+M -> S : 安排或采用默认承接／轮转
+end
+W -> S : 提交完整交付物
+M -> S : 验收或说明退回原因
+alt 正常验收通过
+S -> S : 同事务归档并生成一次工时
+else 强制关闭
+M -> S : 说明强制关闭原因
+S -> S : 保留关闭事实且不自动计时
+end
+
+@enduml

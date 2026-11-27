@@ -1,0 +1,35 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title UC-TASK-001 查看任务与办理进度的分析序列
+actor "使用者" as actor
+boundary "网页与手机页面" as page
+control "公共访问控制" as ctl
+entity "账号与会话" as identity
+entity "任务工作簿" as model
+actor -> page : 提出任务查询条件
+page -> ctl : 协调业务请求(UC-TASK-001)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+已登录
+end note
+alt 业务条件满足
+ctl -> model : 查看任务与办理进度()
+model -> model : 限制可见任务范围()
+model -> model : 汇集版本审核与归档事实()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+
+@enduml

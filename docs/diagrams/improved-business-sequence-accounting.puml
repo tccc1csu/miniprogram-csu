@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title B 改进业务序列：工时结算
+
+participant "内部成员" as W
+participant "部门部长" as M
+participant "办公部长" as O
+participant "统一工作台" as S
+S -> S : 正常任务完成后生成规则贡献
+W -> S : 登记例外工作或查询个人明细
+M -> S : 提交核定值及原因
+S -> S : 保留原值、新值、操作者和时间
+O -> S : 按日期与人员筛选结算明细
+S --> O : 导出含任务备注和调整原因的Excel
+O -> S : 确认结算范围并封存
+S -> S : 保存不可变行快照
+note over O,S
+后续实时工时可调整，已封存快照不变。
+教师与外部只保留业务记录，不进入计酬明细。
+end note
+
+@enduml

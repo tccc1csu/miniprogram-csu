@@ -23,6 +23,10 @@ credentials*.json
 # Node dependencies
 **/node_modules/
 
+# Documentation tooling
+__pycache__/
+*.pyc
+
 # Local database files
 server/data/*.db
 server/data/*.db-*

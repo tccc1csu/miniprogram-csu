@@ -1,0 +1,28 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title C 工时核定与封存生命周期
+
+state "工时及结算的并行生命周期" as Accounting {
+[*] --> Live
+state "实时工时" as Live
+state "调整后的实时工时" as Adjusted
+Live --> Adjusted : 有权限核定／记录原值新值原因
+Adjusted --> Adjusted : 再次核定／追加审计
+--
+[*] --> Unsealed
+state "尚未生成本批次快照" as Unsealed
+state "封存行快照" as Snapshot
+Unsealed --> Snapshot : 办公部长或管理员封存／复制当时实时行
+Snapshot --> Snapshot : 导出原快照
+}
+note bottom of Accounting
+实时工时后续可调整，封存行保持当时值。
+封存是复制快照，不是冻结整个业务库。
+end note
+
+@enduml

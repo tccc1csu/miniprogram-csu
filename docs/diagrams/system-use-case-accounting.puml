@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title 工时统计与结算
+left to right direction
+actor "内部计酬成员" as a0
+actor "工时管理人员" as a1
+actor "内部成员" as a2
+actor "办公部长" as a3
+actor "管理员" as a4
+rectangle "青年传媒中心统一工作台" {
+usecase "UC-REC-001\n登记例外工作量" as u0
+usecase "UC-REC-002\n核定特殊工时" as u1
+usecase "UC-STAT-001\n筛选并导出工时报表" as u2
+usecase "UC-STAT-002\n封存结算报表" as u3
+usecase "UC-CFG-002\n维护工时规则版本" as u4
+}
+a0 -- u0
+a1 -- u1
+a2 -- u2
+a3 -- u3
+a4 -- u4
+@enduml

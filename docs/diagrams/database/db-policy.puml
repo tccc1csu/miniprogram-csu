@@ -1,0 +1,81 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title D 数据层：政策与默认值
+left to right direction
+entity "政策版本\nworkflow_policy" as workflow_policy {
+  * version : integer <<PK>>
+  * rate_cents : integer
+  * urgent_factor : integer
+  * photo_window : integer
+  * publication_window : integer
+  updated_by : text <<FK>>
+  * reason : text
+  * created_at : timestamp with time zone
+}
+entity "工时规则\nlabor_rules" as labor_rules {
+  * id : integer <<PK>>
+  * department_id : text
+  * name : text
+  * participant : text
+  * unit : text
+  * units : integer
+  * review : boolean
+  * source : text
+}
+entity "规则修订\nrule_revisions" as rule_revisions {
+  * policy_version : integer <<PK FK>>
+  * rule_id : integer <<PK FK>>
+  * units : integer
+}
+entity "推文默认配置\npublication_defaults" as publication_defaults {
+  * singleton : boolean <<PK>>
+  * initialized : boolean
+  teacher1_id : text <<FK>>
+  teacher2_id : text <<FK>>
+  reviewer1_id : text <<FK>>
+  reviewer2_id : text <<FK>>
+}
+entity "教师通知路由\nteacher_delivery" as teacher_delivery {
+  * teacher_id : text <<PK FK>>
+  * channel : text
+  * mention : text
+}
+entity "默认承接\nflow_defaults" as flow_defaults {
+  * department_id : text <<PK FK>>
+  * kind : text <<PK>>
+  * assignee_id : text <<FK>>
+  * updated_by : text <<FK>>
+  * updated_at : timestamp with time zone
+}
+entity "账号\nusers" as users {
+  * id : text <<PK>>
+  * username : text
+  * name : text
+  * password_hash : text
+  * role : text
+  department_id : text <<FK>>
+  * payable : boolean
+  * active : boolean
+}
+flow_defaults --> users : (assignee_id)
+flow_defaults --> users : (updated_by)
+publication_defaults --> users : (reviewer1_id)
+publication_defaults --> users : (reviewer2_id)
+publication_defaults --> users : (teacher1_id)
+publication_defaults --> users : (teacher2_id)
+rule_revisions --> workflow_policy : (policy_version)
+rule_revisions --> labor_rules : (rule_id)
+teacher_delivery --> users : (teacher_id)
+workflow_policy --> users : (updated_by)
+legend bottom
+箭头为外键依赖（指向被引用表），不是流程。
+* 非空；PK主键；FK外键。完整唯一与检查约束见数据字典。
+跨分区外键未全部显示，完整外键表列出所有79项。
+endlegend
+
+@enduml

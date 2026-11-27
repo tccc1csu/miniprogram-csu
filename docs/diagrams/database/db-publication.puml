@@ -1,0 +1,96 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title D 数据层：推文闭环
+left to right direction
+entity "任务\ntasks" as tasks {
+  * id : text <<PK>>
+  * number : text
+  * title : text
+  * creator_id : text <<FK>>
+  * department_id : text <<FK>>
+  layout_type : text
+  deadline : timestamp with time zone
+  * notes : text
+  * open_registration : boolean
+  * urgent : boolean
+  * created_at : timestamp with time zone
+  * kind : text
+  linked_task_id : text <<FK>>
+  * config_version : integer <<FK>>
+  reminder_hours : numeric(8,2)
+  * report_note : text
+}
+entity "审校岗位安排\ntask_reviewers" as task_reviewers {
+  * task_id : text <<PK FK>>
+  * user_id : text <<PK FK>>
+}
+entity "承接安排\nassignments" as assignments {
+  * task_id : text <<PK FK>>
+  * assignee_id : text <<FK>>
+  * actor_id : text <<FK>>
+  * created_at : timestamp with time zone
+  * automatic : boolean
+}
+entity "稿件版本\nversions" as versions {
+  * id : text <<PK>>
+  * task_id : text <<FK>>
+  * number : integer
+  * body : text
+  * preview_url : text
+  * author_id : text <<FK>>
+  * created_at : timestamp with time zone
+  * phase : text
+  * preview_html : text
+}
+entity "审核事件\nreviews" as reviews {
+  * id : text <<PK>>
+  * task_id : text <<FK>>
+  * version_id : text <<FK>>
+  * stage : text
+  * decision : text
+  * reason : text
+  * actor_id : text <<FK>>
+  * created_at : timestamp with time zone
+}
+entity "发布事实\npublications" as publications {
+  * task_id : text <<PK FK>>
+  * version_id : text <<FK>>
+  * url : text
+  * actor_id : text <<FK>>
+  * created_at : timestamp with time zone
+}
+entity "归档事实\narchives" as archives {
+  * id : text <<PK>>
+  * task_id : text <<FK>>
+  version_id : text <<FK>>
+  * created_at : timestamp with time zone
+  reason : text
+}
+entity "推文教师路由\npublication_routing" as publication_routing {
+  * task_id : text <<PK FK>>
+  * source_required : boolean
+  teacher1_id : text <<FK>>
+  teacher2_id : text <<FK>>
+}
+archives --> tasks : (task_id)
+archives --> versions : (task_id, version_id)
+assignments --> tasks : (task_id)
+publication_routing --> tasks : (task_id)
+publications --> tasks : (task_id)
+publications --> versions : (task_id, version_id)
+reviews --> versions : (task_id, version_id)
+task_reviewers --> tasks : (task_id)
+tasks --> tasks : (linked_task_id)
+versions --> tasks : (task_id)
+legend bottom
+箭头为外键依赖（指向被引用表），不是流程。
+* 非空；PK主键；FK外键。完整唯一与检查约束见数据字典。
+跨分区外键未全部显示，完整外键表列出所有79项。
+endlegend
+
+@enduml

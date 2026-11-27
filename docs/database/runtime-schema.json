@@ -1,0 +1,4021 @@
+{
+  "source": "workbench/server/migrations/001.sql–005.sql",
+  "generated": "2026-11-27",
+  "migrationSha256": {
+    "001.sql": "4eec1bcc7ad755555c92192b49a0048ea02c790a8e76c2802313b692cc3e6419",
+    "002.sql": "f30cf87edece72f29a234240126e0fa5bb08b83d2b4b48be3683a8de2577c703",
+    "003.sql": "40d29144a4ef780ca1c3e8e4c3e852eb3b2904f3e92759951bbda49f551ea5d6",
+    "004.sql": "44918ff1bec29828ef230e5b64e465de3e4886bfcc4ae3ea10fb63e18e98a7bb",
+    "005.sql": "12dc9e05228f7de9999f8969f144831138df15a2172ca7238b60da87ea32a3f4"
+  },
+  "tables": [
+    {
+      "name": "adjustments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "log_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "old_units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "new_units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "adjustments_new_units_check",
+          "type": "c",
+          "definition": "CHECK ((new_units > 0))",
+          "target": null
+        },
+        {
+          "name": "adjustments_reason_check",
+          "type": "c",
+          "definition": "CHECK ((length(TRIM(BOTH FROM reason)) > 0))",
+          "target": null
+        },
+        {
+          "name": "adjustments_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "adjustments_log_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (log_id) REFERENCES worklogs(id)",
+          "target": "worklogs"
+        },
+        {
+          "name": "adjustments_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "adjustments_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "adjustments_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "adjustments_log_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL log_id",
+          "target": null
+        },
+        {
+          "name": "adjustments_new_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL new_units",
+          "target": null
+        },
+        {
+          "name": "adjustments_old_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL old_units",
+          "target": null
+        },
+        {
+          "name": "adjustments_reason_not_null",
+          "type": "n",
+          "definition": "NOT NULL reason",
+          "target": null
+        },
+        {
+          "name": "adjustments_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "adjustments_pkey",
+          "definition": "CREATE UNIQUE INDEX adjustments_pkey ON public.adjustments USING btree (id)"
+        },
+        {
+          "name": "idx_adjustments_log_latest",
+          "definition": "CREATE INDEX idx_adjustments_log_latest ON public.adjustments USING btree (log_id, created_at DESC, id DESC)"
+        }
+      ]
+    },
+    {
+      "name": "archives",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "version_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "archives_check",
+          "type": "c",
+          "definition": "CHECK ((((reason IS NULL) AND (version_id IS NOT NULL)) OR (length(TRIM(BOTH FROM reason)) > 0)))",
+          "target": null
+        },
+        {
+          "name": "archives_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "archives_task_id_version_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+          "target": "versions"
+        },
+        {
+          "name": "archives_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "archives_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "archives_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "archives_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "archives_task_id_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "archives_pkey",
+          "definition": "CREATE UNIQUE INDEX archives_pkey ON public.archives USING btree (id)"
+        },
+        {
+          "name": "archives_task_id_key",
+          "definition": "CREATE UNIQUE INDEX archives_task_id_key ON public.archives USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "article_lines",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "site",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "original",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "author_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "article_lines_check",
+          "type": "c",
+          "definition": "CHECK (((NOT original) OR (author_id IS NOT NULL)))",
+          "target": null
+        },
+        {
+          "name": "article_lines_position_check",
+          "type": "c",
+          "definition": "CHECK ((\"position\" > 0))",
+          "target": null
+        },
+        {
+          "name": "article_lines_author_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (author_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "article_lines_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "article_lines_original_not_null",
+          "type": "n",
+          "definition": "NOT NULL original",
+          "target": null
+        },
+        {
+          "name": "article_lines_position_not_null",
+          "type": "n",
+          "definition": "NOT NULL \"position\"",
+          "target": null
+        },
+        {
+          "name": "article_lines_site_not_null",
+          "type": "n",
+          "definition": "NOT NULL site",
+          "target": null
+        },
+        {
+          "name": "article_lines_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "article_lines_title_not_null",
+          "type": "n",
+          "definition": "NOT NULL title",
+          "target": null
+        },
+        {
+          "name": "article_lines_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id, \"position\")",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "article_lines_pkey",
+          "definition": "CREATE UNIQUE INDEX article_lines_pkey ON public.article_lines USING btree (task_id, \"position\")"
+        }
+      ]
+    },
+    {
+      "name": "assignments",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "assignee_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "automatic",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "assignments_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "assignments_assignee_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (assignee_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "assignments_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "assignments_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "assignments_assignee_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL assignee_id",
+          "target": null
+        },
+        {
+          "name": "assignments_automatic_not_null",
+          "type": "n",
+          "definition": "NOT NULL automatic",
+          "target": null
+        },
+        {
+          "name": "assignments_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "assignments_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "assignments_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "assignments_pkey",
+          "definition": "CREATE UNIQUE INDEX assignments_pkey ON public.assignments USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "bookings",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "location",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "contact",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bookings_contact_check",
+          "type": "c",
+          "definition": "CHECK ((length(TRIM(BOTH FROM contact)) > 0))",
+          "target": null
+        },
+        {
+          "name": "bookings_location_check",
+          "type": "c",
+          "definition": "CHECK ((length(TRIM(BOTH FROM location)) > 0))",
+          "target": null
+        },
+        {
+          "name": "bookings_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "bookings_contact_not_null",
+          "type": "n",
+          "definition": "NOT NULL contact",
+          "target": null
+        },
+        {
+          "name": "bookings_location_not_null",
+          "type": "n",
+          "definition": "NOT NULL location",
+          "target": null
+        },
+        {
+          "name": "bookings_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "bookings_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bookings_pkey",
+          "definition": "CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "departments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "departments_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "departments_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "departments_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "departments_name_key",
+          "type": "u",
+          "definition": "UNIQUE (name)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "departments_name_key",
+          "definition": "CREATE UNIQUE INDEX departments_name_key ON public.departments USING btree (name)"
+        },
+        {
+          "name": "departments_pkey",
+          "definition": "CREATE UNIQUE INDEX departments_pkey ON public.departments USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "duty_rotation",
+      "columns": [
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "last_user_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "updated_by",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "duty_rotation_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "duty_rotation_last_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (last_user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "duty_rotation_updated_by_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "duty_rotation_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_updated_by_not_null",
+          "type": "n",
+          "definition": "NOT NULL updated_by",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (department_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "duty_rotation_pkey",
+          "definition": "CREATE UNIQUE INDEX duty_rotation_pkey ON public.duty_rotation USING btree (department_id)"
+        }
+      ]
+    },
+    {
+      "name": "duty_rotation_members",
+      "columns": [
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "duty_rotation_members_position_check",
+          "type": "c",
+          "definition": "CHECK ((\"position\" > 0))",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_members_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES duty_rotation(department_id) ON DELETE CASCADE",
+          "target": "duty_rotation"
+        },
+        {
+          "name": "duty_rotation_members_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "duty_rotation_members_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_members_position_not_null",
+          "type": "n",
+          "definition": "NOT NULL \"position\"",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_members_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_members_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (department_id, user_id)",
+          "target": null
+        },
+        {
+          "name": "duty_rotation_members_department_id_position_key",
+          "type": "u",
+          "definition": "UNIQUE (department_id, \"position\")",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "duty_rotation_members_department_id_position_key",
+          "definition": "CREATE UNIQUE INDEX duty_rotation_members_department_id_position_key ON public.duty_rotation_members USING btree (department_id, \"position\")"
+        },
+        {
+          "name": "duty_rotation_members_pkey",
+          "definition": "CREATE UNIQUE INDEX duty_rotation_members_pkey ON public.duty_rotation_members USING btree (department_id, user_id)"
+        }
+      ]
+    },
+    {
+      "name": "duty_slots",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "start_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "duty_slots_check",
+          "type": "c",
+          "definition": "CHECK ((start_at < end_at))",
+          "target": null
+        },
+        {
+          "name": "duty_slots_created_by_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (created_by) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "duty_slots_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "duty_slots_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "duty_slots_created_by_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_by",
+          "target": null
+        },
+        {
+          "name": "duty_slots_end_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL end_at",
+          "target": null
+        },
+        {
+          "name": "duty_slots_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "duty_slots_start_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL start_at",
+          "target": null
+        },
+        {
+          "name": "duty_slots_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "duty_slots_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "duty_slots_pkey",
+          "definition": "CREATE UNIQUE INDEX duty_slots_pkey ON public.duty_slots USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "events",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "detail",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "events_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "events_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "events_action_not_null",
+          "type": "n",
+          "definition": "NOT NULL action",
+          "target": null
+        },
+        {
+          "name": "events_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "events_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "events_detail_not_null",
+          "type": "n",
+          "definition": "NOT NULL detail",
+          "target": null
+        },
+        {
+          "name": "events_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "events_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "events_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "events_pkey",
+          "definition": "CREATE UNIQUE INDEX events_pkey ON public.events USING btree (id)"
+        },
+        {
+          "name": "idx_events_task",
+          "definition": "CREATE INDEX idx_events_task ON public.events USING btree (task_id, created_at)"
+        }
+      ]
+    },
+    {
+      "name": "file_payloads",
+      "columns": [
+        {
+          "name": "file_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "content",
+          "type": "bytea",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "file_payloads_content_check",
+          "type": "c",
+          "definition": "CHECK (((octet_length(content) >= 1) AND (octet_length(content) <= 12582912)))",
+          "target": null
+        },
+        {
+          "name": "file_payloads_file_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE",
+          "target": "files"
+        },
+        {
+          "name": "file_payloads_content_not_null",
+          "type": "n",
+          "definition": "NOT NULL content",
+          "target": null
+        },
+        {
+          "name": "file_payloads_file_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL file_id",
+          "target": null
+        },
+        {
+          "name": "file_payloads_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (file_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "file_payloads_pkey",
+          "definition": "CREATE UNIQUE INDEX file_payloads_pkey ON public.file_payloads USING btree (file_id)"
+        }
+      ]
+    },
+    {
+      "name": "files",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "owner_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "storage_name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "sha256",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "files_owner_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (owner_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "files_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "files_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "files_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "files_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "files_owner_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL owner_id",
+          "target": null
+        },
+        {
+          "name": "files_sha256_not_null",
+          "type": "n",
+          "definition": "NOT NULL sha256",
+          "target": null
+        },
+        {
+          "name": "files_size_not_null",
+          "type": "n",
+          "definition": "NOT NULL size",
+          "target": null
+        },
+        {
+          "name": "files_storage_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL storage_name",
+          "target": null
+        },
+        {
+          "name": "files_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "files_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "files_pkey",
+          "definition": "CREATE UNIQUE INDEX files_pkey ON public.files USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "flow_defaults",
+      "columns": [
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "assignee_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "updated_by",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "flow_defaults_kind_check",
+          "type": "c",
+          "definition": "CHECK ((kind = ANY (ARRAY['publication'::text, 'web_article'::text, 'photo'::text, 'request'::text, 'design'::text])))",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_assignee_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (assignee_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "flow_defaults_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "flow_defaults_updated_by_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "flow_defaults_assignee_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL assignee_id",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_kind_not_null",
+          "type": "n",
+          "definition": "NOT NULL kind",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_updated_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL updated_at",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_updated_by_not_null",
+          "type": "n",
+          "definition": "NOT NULL updated_by",
+          "target": null
+        },
+        {
+          "name": "flow_defaults_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (department_id, kind)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "flow_defaults_pkey",
+          "definition": "CREATE UNIQUE INDEX flow_defaults_pkey ON public.flow_defaults USING btree (department_id, kind)"
+        }
+      ]
+    },
+    {
+      "name": "jobs",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "review_mode",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "rule_id",
+          "type": "integer",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "complexity",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "source_department",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "teacher_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "urgent_reason",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "jobs_complexity_check",
+          "type": "c",
+          "definition": "CHECK ((complexity = ANY (ARRAY['basic'::text, 'complex'::text, 'large'::text])))",
+          "target": null
+        },
+        {
+          "name": "jobs_rule_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+          "target": "labor_rules"
+        },
+        {
+          "name": "jobs_source_department_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (source_department) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "jobs_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "jobs_teacher_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "jobs_review_mode_not_null",
+          "type": "n",
+          "definition": "NOT NULL review_mode",
+          "target": null
+        },
+        {
+          "name": "jobs_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "jobs_urgent_reason_not_null",
+          "type": "n",
+          "definition": "NOT NULL urgent_reason",
+          "target": null
+        },
+        {
+          "name": "jobs_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "jobs_pkey",
+          "definition": "CREATE UNIQUE INDEX jobs_pkey ON public.jobs USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "labor_rules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "participant",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "review",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "not_null": true,
+          "default_value": "'BIZ-RULES-FULL.md §4'::text"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "labor_rules_units_check",
+          "type": "c",
+          "definition": "CHECK ((units > 0))",
+          "target": null
+        },
+        {
+          "name": "labor_rules_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "labor_rules_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "labor_rules_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "labor_rules_participant_not_null",
+          "type": "n",
+          "definition": "NOT NULL participant",
+          "target": null
+        },
+        {
+          "name": "labor_rules_review_not_null",
+          "type": "n",
+          "definition": "NOT NULL review",
+          "target": null
+        },
+        {
+          "name": "labor_rules_source_not_null",
+          "type": "n",
+          "definition": "NOT NULL source",
+          "target": null
+        },
+        {
+          "name": "labor_rules_unit_not_null",
+          "type": "n",
+          "definition": "NOT NULL unit",
+          "target": null
+        },
+        {
+          "name": "labor_rules_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL units",
+          "target": null
+        },
+        {
+          "name": "labor_rules_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "labor_rules_pkey",
+          "definition": "CREATE UNIQUE INDEX labor_rules_pkey ON public.labor_rules USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "outbox",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "event",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "recipient_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true,
+          "default_value": "'unconfigured'::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "attempts",
+          "type": "integer",
+          "not_null": true,
+          "default_value": "0"
+        },
+        {
+          "name": "next_attempt",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "outbox_recipient_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (recipient_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "outbox_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "outbox_attempts_not_null",
+          "type": "n",
+          "definition": "NOT NULL attempts",
+          "target": null
+        },
+        {
+          "name": "outbox_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "outbox_event_not_null",
+          "type": "n",
+          "definition": "NOT NULL event",
+          "target": null
+        },
+        {
+          "name": "outbox_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "outbox_next_attempt_not_null",
+          "type": "n",
+          "definition": "NOT NULL next_attempt",
+          "target": null
+        },
+        {
+          "name": "outbox_payload_not_null",
+          "type": "n",
+          "definition": "NOT NULL payload",
+          "target": null
+        },
+        {
+          "name": "outbox_recipient_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL recipient_id",
+          "target": null
+        },
+        {
+          "name": "outbox_status_not_null",
+          "type": "n",
+          "definition": "NOT NULL status",
+          "target": null
+        },
+        {
+          "name": "outbox_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "outbox_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "outbox_task_id_event_recipient_id_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id, event, recipient_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_outbox_retry",
+          "definition": "CREATE INDEX idx_outbox_retry ON public.outbox USING btree (next_attempt) WHERE (status = ANY (ARRAY['pending'::text, 'failed'::text, 'unconfigured'::text]))"
+        },
+        {
+          "name": "outbox_pkey",
+          "definition": "CREATE UNIQUE INDEX outbox_pkey ON public.outbox USING btree (id)"
+        },
+        {
+          "name": "outbox_task_id_event_recipient_id_key",
+          "definition": "CREATE UNIQUE INDEX outbox_task_id_event_recipient_id_key ON public.outbox USING btree (task_id, event, recipient_id)"
+        }
+      ]
+    },
+    {
+      "name": "publication_defaults",
+      "columns": [
+        {
+          "name": "singleton",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "true"
+        },
+        {
+          "name": "initialized",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "teacher1_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "teacher2_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "reviewer1_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "reviewer2_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "publication_defaults_check",
+          "type": "c",
+          "definition": "CHECK ((teacher1_id <> teacher2_id))",
+          "target": null
+        },
+        {
+          "name": "publication_defaults_check1",
+          "type": "c",
+          "definition": "CHECK ((reviewer1_id <> reviewer2_id))",
+          "target": null
+        },
+        {
+          "name": "publication_defaults_singleton_check",
+          "type": "c",
+          "definition": "CHECK (singleton)",
+          "target": null
+        },
+        {
+          "name": "publication_defaults_reviewer1_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (reviewer1_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_defaults_reviewer2_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (reviewer2_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_defaults_teacher1_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher1_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_defaults_teacher2_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher2_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_defaults_initialized_not_null",
+          "type": "n",
+          "definition": "NOT NULL initialized",
+          "target": null
+        },
+        {
+          "name": "publication_defaults_singleton_not_null",
+          "type": "n",
+          "definition": "NOT NULL singleton",
+          "target": null
+        },
+        {
+          "name": "publication_defaults_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (singleton)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "publication_defaults_pkey",
+          "definition": "CREATE UNIQUE INDEX publication_defaults_pkey ON public.publication_defaults USING btree (singleton)"
+        }
+      ]
+    },
+    {
+      "name": "publication_routing",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "source_required",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "teacher1_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "teacher2_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "publication_routing_check",
+          "type": "c",
+          "definition": "CHECK (((teacher1_id IS NULL) OR (teacher2_id IS NULL) OR (teacher1_id <> teacher2_id)))",
+          "target": null
+        },
+        {
+          "name": "publication_routing_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "publication_routing_teacher1_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher1_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_routing_teacher2_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher2_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publication_routing_source_required_not_null",
+          "type": "n",
+          "definition": "NOT NULL source_required",
+          "target": null
+        },
+        {
+          "name": "publication_routing_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "publication_routing_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "publication_routing_pkey",
+          "definition": "CREATE UNIQUE INDEX publication_routing_pkey ON public.publication_routing USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "publications",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "version_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "url",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "publications_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "publications_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "publications_task_id_version_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+          "target": "versions"
+        },
+        {
+          "name": "publications_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "publications_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "publications_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "publications_url_not_null",
+          "type": "n",
+          "definition": "NOT NULL url",
+          "target": null
+        },
+        {
+          "name": "publications_version_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL version_id",
+          "target": null
+        },
+        {
+          "name": "publications_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "publications_pkey",
+          "definition": "CREATE UNIQUE INDEX publications_pkey ON public.publications USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "registration_files",
+      "columns": [
+        {
+          "name": "registration_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "file_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "registration_files_file_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (file_id) REFERENCES files(id)",
+          "target": "files"
+        },
+        {
+          "name": "registration_files_registration_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (registration_id) REFERENCES registrations(id)",
+          "target": "registrations"
+        },
+        {
+          "name": "registration_files_file_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL file_id",
+          "target": null
+        },
+        {
+          "name": "registration_files_registration_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL registration_id",
+          "target": null
+        },
+        {
+          "name": "registration_files_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (registration_id, file_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "registration_files_pkey",
+          "definition": "CREATE UNIQUE INDEX registration_files_pkey ON public.registration_files USING btree (registration_id, file_id)"
+        }
+      ]
+    },
+    {
+      "name": "registrations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "registrations_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "registrations_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "registrations_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "registrations_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "registrations_notes_not_null",
+          "type": "n",
+          "definition": "NOT NULL notes",
+          "target": null
+        },
+        {
+          "name": "registrations_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "registrations_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "registrations_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "registrations_task_id_user_id_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id, user_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "registrations_pkey",
+          "definition": "CREATE UNIQUE INDEX registrations_pkey ON public.registrations USING btree (id)"
+        },
+        {
+          "name": "registrations_task_id_user_id_key",
+          "definition": "CREATE UNIQUE INDEX registrations_task_id_user_id_key ON public.registrations USING btree (task_id, user_id)"
+        }
+      ]
+    },
+    {
+      "name": "reminders",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "reminders_kind_check",
+          "type": "c",
+          "definition": "CHECK ((kind = ANY (ARRAY['due'::text, 'overdue'::text])))",
+          "target": null
+        },
+        {
+          "name": "reminders_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "reminders_kind_not_null",
+          "type": "n",
+          "definition": "NOT NULL kind",
+          "target": null
+        },
+        {
+          "name": "reminders_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "reminders_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id, kind)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "reminders_pkey",
+          "definition": "CREATE UNIQUE INDEX reminders_pkey ON public.reminders USING btree (task_id, kind)"
+        }
+      ]
+    },
+    {
+      "name": "report_seals",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "end_date",
+          "type": "date",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "report_seals_check",
+          "type": "c",
+          "definition": "CHECK ((end_date >= start_date))",
+          "target": null
+        },
+        {
+          "name": "report_seals_created_by_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (created_by) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "report_seals_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "report_seals_created_by_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_by",
+          "target": null
+        },
+        {
+          "name": "report_seals_end_date_not_null",
+          "type": "n",
+          "definition": "NOT NULL end_date",
+          "target": null
+        },
+        {
+          "name": "report_seals_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "report_seals_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "report_seals_start_date_not_null",
+          "type": "n",
+          "definition": "NOT NULL start_date",
+          "target": null
+        },
+        {
+          "name": "report_seals_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "report_seals_pkey",
+          "definition": "CREATE UNIQUE INDEX report_seals_pkey ON public.report_seals USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "reviews",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "version_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "stage",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "decision",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "reviews_check",
+          "type": "c",
+          "definition": "CHECK (((decision <> 'reject'::text) OR (length(TRIM(BOTH FROM reason)) > 0)))",
+          "target": null
+        },
+        {
+          "name": "reviews_decision_check",
+          "type": "c",
+          "definition": "CHECK ((decision = ANY (ARRAY['approve'::text, 'reject'::text])))",
+          "target": null
+        },
+        {
+          "name": "reviews_stage_check",
+          "type": "c",
+          "definition": "CHECK ((stage = ANY (ARRAY['internal'::text, 'teacher1'::text, 'teacher2'::text, 'content'::text, 'acceptance'::text, 'editorial'::text])))",
+          "target": null
+        },
+        {
+          "name": "reviews_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "reviews_task_id_version_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+          "target": "versions"
+        },
+        {
+          "name": "reviews_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "reviews_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "reviews_decision_not_null",
+          "type": "n",
+          "definition": "NOT NULL decision",
+          "target": null
+        },
+        {
+          "name": "reviews_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "reviews_reason_not_null",
+          "type": "n",
+          "definition": "NOT NULL reason",
+          "target": null
+        },
+        {
+          "name": "reviews_stage_not_null",
+          "type": "n",
+          "definition": "NOT NULL stage",
+          "target": null
+        },
+        {
+          "name": "reviews_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "reviews_version_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL version_id",
+          "target": null
+        },
+        {
+          "name": "reviews_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "reviews_version_id_stage_key",
+          "type": "u",
+          "definition": "UNIQUE (version_id, stage)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "reviews_pkey",
+          "definition": "CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id)"
+        },
+        {
+          "name": "reviews_version_id_stage_key",
+          "definition": "CREATE UNIQUE INDEX reviews_version_id_stage_key ON public.reviews USING btree (version_id, stage)"
+        }
+      ]
+    },
+    {
+      "name": "rule_revisions",
+      "columns": [
+        {
+          "name": "policy_version",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "rule_id",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "rule_revisions_units_check",
+          "type": "c",
+          "definition": "CHECK ((units > 0))",
+          "target": null
+        },
+        {
+          "name": "rule_revisions_policy_version_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (policy_version) REFERENCES workflow_policy(version)",
+          "target": "workflow_policy"
+        },
+        {
+          "name": "rule_revisions_rule_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+          "target": "labor_rules"
+        },
+        {
+          "name": "rule_revisions_policy_version_not_null",
+          "type": "n",
+          "definition": "NOT NULL policy_version",
+          "target": null
+        },
+        {
+          "name": "rule_revisions_rule_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL rule_id",
+          "target": null
+        },
+        {
+          "name": "rule_revisions_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL units",
+          "target": null
+        },
+        {
+          "name": "rule_revisions_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (policy_version, rule_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "rule_revisions_pkey",
+          "definition": "CREATE UNIQUE INDEX rule_revisions_pkey ON public.rule_revisions USING btree (policy_version, rule_id)"
+        }
+      ]
+    },
+    {
+      "name": "saved_views",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "config",
+          "type": "jsonb",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "saved_views_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "saved_views_config_not_null",
+          "type": "n",
+          "definition": "NOT NULL config",
+          "target": null
+        },
+        {
+          "name": "saved_views_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "saved_views_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "saved_views_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "saved_views_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "saved_views_user_id_name_key",
+          "type": "u",
+          "definition": "UNIQUE (user_id, name)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "saved_views_pkey",
+          "definition": "CREATE UNIQUE INDEX saved_views_pkey ON public.saved_views USING btree (id)"
+        },
+        {
+          "name": "saved_views_user_id_name_key",
+          "definition": "CREATE UNIQUE INDEX saved_views_user_id_name_key ON public.saved_views USING btree (user_id, name)"
+        }
+      ]
+    },
+    {
+      "name": "seal_rows",
+      "columns": [
+        {
+          "name": "seal_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "source_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "data",
+          "type": "jsonb",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "seal_rows_seal_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (seal_id) REFERENCES report_seals(id)",
+          "target": "report_seals"
+        },
+        {
+          "name": "seal_rows_source_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (source_id) REFERENCES worklogs(id)",
+          "target": "worklogs"
+        },
+        {
+          "name": "seal_rows_data_not_null",
+          "type": "n",
+          "definition": "NOT NULL data",
+          "target": null
+        },
+        {
+          "name": "seal_rows_seal_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL seal_id",
+          "target": null
+        },
+        {
+          "name": "seal_rows_source_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL source_id",
+          "target": null
+        },
+        {
+          "name": "seal_rows_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (seal_id, source_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "seal_rows_pkey",
+          "definition": "CREATE UNIQUE INDEX seal_rows_pkey ON public.seal_rows USING btree (seal_id, source_id)"
+        }
+      ]
+    },
+    {
+      "name": "sessions",
+      "columns": [
+        {
+          "name": "token_hash",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "sessions_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "sessions_expires_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL expires_at",
+          "target": null
+        },
+        {
+          "name": "sessions_token_hash_not_null",
+          "type": "n",
+          "definition": "NOT NULL token_hash",
+          "target": null
+        },
+        {
+          "name": "sessions_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "sessions_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (token_hash)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sessions_pkey",
+          "definition": "CREATE UNIQUE INDEX sessions_pkey ON public.sessions USING btree (token_hash)"
+        }
+      ]
+    },
+    {
+      "name": "task_reviewers",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "task_reviewers_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "task_reviewers_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "task_reviewers_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "task_reviewers_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "task_reviewers_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id, user_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "task_reviewers_pkey",
+          "definition": "CREATE UNIQUE INDEX task_reviewers_pkey ON public.task_reviewers USING btree (task_id, user_id)"
+        }
+      ]
+    },
+    {
+      "name": "tasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "number",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "creator_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "layout_type",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "deadline",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "open_registration",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "urgent",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "not_null": true,
+          "default_value": "'publication'::text"
+        },
+        {
+          "name": "linked_task_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "config_version",
+          "type": "integer",
+          "not_null": true,
+          "default_value": "1"
+        },
+        {
+          "name": "reminder_hours",
+          "type": "numeric(8,2)",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "report_note",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "tasks_kind_check",
+          "type": "c",
+          "definition": "CHECK ((kind = ANY (ARRAY['publication'::text, 'web_article'::text, 'photo'::text, 'request'::text, 'design'::text, 'work_entry'::text])))",
+          "target": null
+        },
+        {
+          "name": "tasks_layout_type_check",
+          "type": "c",
+          "definition": "CHECK ((layout_type = ANY (ARRAY['basic'::text, 'photo'::text, 'repost'::text])))",
+          "target": null
+        },
+        {
+          "name": "tasks_reminder_hours_check",
+          "type": "c",
+          "definition": "CHECK ((reminder_hours >= (0)::numeric))",
+          "target": null
+        },
+        {
+          "name": "tasks_config_version_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (config_version) REFERENCES workflow_policy(version)",
+          "target": "workflow_policy"
+        },
+        {
+          "name": "tasks_creator_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (creator_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "tasks_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "tasks_linked_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (linked_task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "tasks_config_version_not_null",
+          "type": "n",
+          "definition": "NOT NULL config_version",
+          "target": null
+        },
+        {
+          "name": "tasks_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "tasks_creator_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL creator_id",
+          "target": null
+        },
+        {
+          "name": "tasks_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "tasks_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "tasks_kind_not_null",
+          "type": "n",
+          "definition": "NOT NULL kind",
+          "target": null
+        },
+        {
+          "name": "tasks_notes_not_null",
+          "type": "n",
+          "definition": "NOT NULL notes",
+          "target": null
+        },
+        {
+          "name": "tasks_number_not_null",
+          "type": "n",
+          "definition": "NOT NULL number",
+          "target": null
+        },
+        {
+          "name": "tasks_open_registration_not_null",
+          "type": "n",
+          "definition": "NOT NULL open_registration",
+          "target": null
+        },
+        {
+          "name": "tasks_report_note_not_null",
+          "type": "n",
+          "definition": "NOT NULL report_note",
+          "target": null
+        },
+        {
+          "name": "tasks_title_not_null",
+          "type": "n",
+          "definition": "NOT NULL title",
+          "target": null
+        },
+        {
+          "name": "tasks_urgent_not_null",
+          "type": "n",
+          "definition": "NOT NULL urgent",
+          "target": null
+        },
+        {
+          "name": "tasks_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "tasks_number_key",
+          "type": "u",
+          "definition": "UNIQUE (number)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_reminder_deadline",
+          "definition": "CREATE INDEX idx_reminder_deadline ON public.tasks USING btree (deadline) WHERE (deadline IS NOT NULL)"
+        },
+        {
+          "name": "tasks_number_key",
+          "definition": "CREATE UNIQUE INDEX tasks_number_key ON public.tasks USING btree (number)"
+        },
+        {
+          "name": "tasks_pkey",
+          "definition": "CREATE UNIQUE INDEX tasks_pkey ON public.tasks USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "teacher_delivery",
+      "columns": [
+        {
+          "name": "teacher_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "channel",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "mention",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "teacher_delivery_teacher_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (teacher_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "teacher_delivery_channel_not_null",
+          "type": "n",
+          "definition": "NOT NULL channel",
+          "target": null
+        },
+        {
+          "name": "teacher_delivery_mention_not_null",
+          "type": "n",
+          "definition": "NOT NULL mention",
+          "target": null
+        },
+        {
+          "name": "teacher_delivery_teacher_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL teacher_id",
+          "target": null
+        },
+        {
+          "name": "teacher_delivery_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (teacher_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "teacher_delivery_pkey",
+          "definition": "CREATE UNIQUE INDEX teacher_delivery_pkey ON public.teacher_delivery USING btree (teacher_id)"
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "password_hash",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "payable",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "true"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "users_check",
+          "type": "c",
+          "definition": "CHECK (((NOT payable) OR ((role = ANY (ARRAY['member'::text, 'minister'::text])) AND (department_id IS NOT NULL))))",
+          "target": null
+        },
+        {
+          "name": "users_role_check",
+          "type": "c",
+          "definition": "CHECK ((role = ANY (ARRAY['member'::text, 'minister'::text, 'teacher'::text, 'admin'::text, 'external'::text])))",
+          "target": null
+        },
+        {
+          "name": "users_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "users_active_not_null",
+          "type": "n",
+          "definition": "NOT NULL active",
+          "target": null
+        },
+        {
+          "name": "users_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "users_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL name",
+          "target": null
+        },
+        {
+          "name": "users_password_hash_not_null",
+          "type": "n",
+          "definition": "NOT NULL password_hash",
+          "target": null
+        },
+        {
+          "name": "users_payable_not_null",
+          "type": "n",
+          "definition": "NOT NULL payable",
+          "target": null
+        },
+        {
+          "name": "users_role_not_null",
+          "type": "n",
+          "definition": "NOT NULL role",
+          "target": null
+        },
+        {
+          "name": "users_username_not_null",
+          "type": "n",
+          "definition": "NOT NULL username",
+          "target": null
+        },
+        {
+          "name": "users_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "users_username_key",
+          "type": "u",
+          "definition": "UNIQUE (username)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "users_pkey",
+          "definition": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+        },
+        {
+          "name": "users_username_key",
+          "definition": "CREATE UNIQUE INDEX users_username_key ON public.users USING btree (username)"
+        }
+      ]
+    },
+    {
+      "name": "version_annotations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "version_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "stage",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "actor_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "start_offset",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "end_offset",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "quote",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "version_annotations_check",
+          "type": "c",
+          "definition": "CHECK (((start_offset >= 0) AND (end_offset > start_offset)))",
+          "target": null
+        },
+        {
+          "name": "version_annotations_stage_check",
+          "type": "c",
+          "definition": "CHECK ((stage = ANY (ARRAY['editorial'::text, 'internal'::text, 'teacher1'::text, 'teacher2'::text])))",
+          "target": null
+        },
+        {
+          "name": "version_annotations_actor_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "version_annotations_task_id_version_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+          "target": "versions"
+        },
+        {
+          "name": "version_annotations_actor_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL actor_id",
+          "target": null
+        },
+        {
+          "name": "version_annotations_body_not_null",
+          "type": "n",
+          "definition": "NOT NULL body",
+          "target": null
+        },
+        {
+          "name": "version_annotations_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "version_annotations_end_offset_not_null",
+          "type": "n",
+          "definition": "NOT NULL end_offset",
+          "target": null
+        },
+        {
+          "name": "version_annotations_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "version_annotations_quote_not_null",
+          "type": "n",
+          "definition": "NOT NULL quote",
+          "target": null
+        },
+        {
+          "name": "version_annotations_stage_not_null",
+          "type": "n",
+          "definition": "NOT NULL stage",
+          "target": null
+        },
+        {
+          "name": "version_annotations_start_offset_not_null",
+          "type": "n",
+          "definition": "NOT NULL start_offset",
+          "target": null
+        },
+        {
+          "name": "version_annotations_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "version_annotations_version_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL version_id",
+          "target": null
+        },
+        {
+          "name": "version_annotations_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "version_annotations_pkey",
+          "definition": "CREATE UNIQUE INDEX version_annotations_pkey ON public.version_annotations USING btree (id)"
+        },
+        {
+          "name": "version_annotations_version_idx",
+          "definition": "CREATE INDEX version_annotations_version_idx ON public.version_annotations USING btree (version_id, created_at)"
+        }
+      ]
+    },
+    {
+      "name": "version_files",
+      "columns": [
+        {
+          "name": "version_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "file_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "version_files_file_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (file_id) REFERENCES files(id)",
+          "target": "files"
+        },
+        {
+          "name": "version_files_version_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (version_id) REFERENCES versions(id)",
+          "target": "versions"
+        },
+        {
+          "name": "version_files_file_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL file_id",
+          "target": null
+        },
+        {
+          "name": "version_files_version_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL version_id",
+          "target": null
+        },
+        {
+          "name": "version_files_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (version_id, file_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "version_files_pkey",
+          "definition": "CREATE UNIQUE INDEX version_files_pkey ON public.version_files USING btree (version_id, file_id)"
+        }
+      ]
+    },
+    {
+      "name": "versions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "number",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "preview_url",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "author_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "phase",
+          "type": "text",
+          "not_null": true,
+          "default_value": "'delivery'::text"
+        },
+        {
+          "name": "preview_html",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "versions_phase_check",
+          "type": "c",
+          "definition": "CHECK ((phase = ANY (ARRAY['content'::text, 'delivery'::text, 'source'::text])))",
+          "target": null
+        },
+        {
+          "name": "versions_author_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (author_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "versions_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "versions_author_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL author_id",
+          "target": null
+        },
+        {
+          "name": "versions_body_not_null",
+          "type": "n",
+          "definition": "NOT NULL body",
+          "target": null
+        },
+        {
+          "name": "versions_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "versions_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "versions_number_not_null",
+          "type": "n",
+          "definition": "NOT NULL number",
+          "target": null
+        },
+        {
+          "name": "versions_phase_not_null",
+          "type": "n",
+          "definition": "NOT NULL phase",
+          "target": null
+        },
+        {
+          "name": "versions_preview_html_not_null",
+          "type": "n",
+          "definition": "NOT NULL preview_html",
+          "target": null
+        },
+        {
+          "name": "versions_preview_url_not_null",
+          "type": "n",
+          "definition": "NOT NULL preview_url",
+          "target": null
+        },
+        {
+          "name": "versions_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "versions_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "versions_task_id_id_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id, id)",
+          "target": null
+        },
+        {
+          "name": "versions_task_id_number_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id, number)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_versions_task",
+          "definition": "CREATE INDEX idx_versions_task ON public.versions USING btree (task_id, number DESC)"
+        },
+        {
+          "name": "versions_pkey",
+          "definition": "CREATE UNIQUE INDEX versions_pkey ON public.versions USING btree (id)"
+        },
+        {
+          "name": "versions_task_id_id_key",
+          "definition": "CREATE UNIQUE INDEX versions_task_id_id_key ON public.versions USING btree (task_id, id)"
+        },
+        {
+          "name": "versions_task_id_number_key",
+          "definition": "CREATE UNIQUE INDEX versions_task_id_number_key ON public.versions USING btree (task_id, number)"
+        }
+      ]
+    },
+    {
+      "name": "work_entries",
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "person_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "week",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "rule_id",
+          "type": "integer",
+          "not_null": false,
+          "default_value": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "work_entries_week_check",
+          "type": "c",
+          "definition": "CHECK (((week >= 1) AND (week <= 53)))",
+          "target": null
+        },
+        {
+          "name": "work_entries_person_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (person_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "work_entries_rule_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+          "target": "labor_rules"
+        },
+        {
+          "name": "work_entries_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "work_entries_person_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL person_id",
+          "target": null
+        },
+        {
+          "name": "work_entries_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "work_entries_week_not_null",
+          "type": "n",
+          "definition": "NOT NULL week",
+          "target": null
+        },
+        {
+          "name": "work_entries_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (task_id)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "work_entries_pkey",
+          "definition": "CREATE UNIQUE INDEX work_entries_pkey ON public.work_entries USING btree (task_id)"
+        }
+      ]
+    },
+    {
+      "name": "workflow_policy",
+      "columns": [
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "rate_cents",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "urgent_factor",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "photo_window",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "publication_window",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "updated_by",
+          "type": "text",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "workflow_policy_photo_window_check",
+          "type": "c",
+          "definition": "CHECK ((photo_window > 0))",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_publication_window_check",
+          "type": "c",
+          "definition": "CHECK ((publication_window > 0))",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_rate_cents_check",
+          "type": "c",
+          "definition": "CHECK ((rate_cents > 0))",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_urgent_factor_check",
+          "type": "c",
+          "definition": "CHECK ((urgent_factor >= 10000))",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_updated_by_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "workflow_policy_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_photo_window_not_null",
+          "type": "n",
+          "definition": "NOT NULL photo_window",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_publication_window_not_null",
+          "type": "n",
+          "definition": "NOT NULL publication_window",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_rate_cents_not_null",
+          "type": "n",
+          "definition": "NOT NULL rate_cents",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_reason_not_null",
+          "type": "n",
+          "definition": "NOT NULL reason",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_urgent_factor_not_null",
+          "type": "n",
+          "definition": "NOT NULL urgent_factor",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_version_not_null",
+          "type": "n",
+          "definition": "NOT NULL version",
+          "target": null
+        },
+        {
+          "name": "workflow_policy_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (version)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "workflow_policy_pkey",
+          "definition": "CREATE UNIQUE INDEX workflow_policy_pkey ON public.workflow_policy USING btree (version)"
+        }
+      ]
+    },
+    {
+      "name": "worklogs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "task_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "department_id",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "rule_name",
+          "type": "text",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "base_units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "effective_units",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "rate_cents",
+          "type": "integer",
+          "not_null": true,
+          "default_value": null
+        },
+        {
+          "name": "confirmed",
+          "type": "boolean",
+          "not_null": true,
+          "default_value": "false"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default_value": "now()"
+        },
+        {
+          "name": "source_key",
+          "type": "text",
+          "not_null": true,
+          "default_value": "''::text"
+        },
+        {
+          "name": "rule_id",
+          "type": "integer",
+          "not_null": false,
+          "default_value": null
+        },
+        {
+          "name": "rule_version",
+          "type": "integer",
+          "not_null": true,
+          "default_value": "1"
+        },
+        {
+          "name": "multiplier",
+          "type": "integer",
+          "not_null": true,
+          "default_value": "10000"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "worklogs_base_units_check",
+          "type": "c",
+          "definition": "CHECK ((base_units > 0))",
+          "target": null
+        },
+        {
+          "name": "worklogs_effective_units_check",
+          "type": "c",
+          "definition": "CHECK ((effective_units > 0))",
+          "target": null
+        },
+        {
+          "name": "worklogs_multiplier_check",
+          "type": "c",
+          "definition": "CHECK ((multiplier > 0))",
+          "target": null
+        },
+        {
+          "name": "worklogs_rate_cents_check",
+          "type": "c",
+          "definition": "CHECK ((rate_cents > 0))",
+          "target": null
+        },
+        {
+          "name": "worklogs_department_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+          "target": "departments"
+        },
+        {
+          "name": "worklogs_rule_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+          "target": "labor_rules"
+        },
+        {
+          "name": "worklogs_rule_version_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (rule_version) REFERENCES workflow_policy(version)",
+          "target": "workflow_policy"
+        },
+        {
+          "name": "worklogs_task_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+          "target": "tasks"
+        },
+        {
+          "name": "worklogs_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "target": "users"
+        },
+        {
+          "name": "worklogs_base_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL base_units",
+          "target": null
+        },
+        {
+          "name": "worklogs_confirmed_not_null",
+          "type": "n",
+          "definition": "NOT NULL confirmed",
+          "target": null
+        },
+        {
+          "name": "worklogs_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at",
+          "target": null
+        },
+        {
+          "name": "worklogs_department_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL department_id",
+          "target": null
+        },
+        {
+          "name": "worklogs_effective_units_not_null",
+          "type": "n",
+          "definition": "NOT NULL effective_units",
+          "target": null
+        },
+        {
+          "name": "worklogs_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id",
+          "target": null
+        },
+        {
+          "name": "worklogs_kind_not_null",
+          "type": "n",
+          "definition": "NOT NULL kind",
+          "target": null
+        },
+        {
+          "name": "worklogs_multiplier_not_null",
+          "type": "n",
+          "definition": "NOT NULL multiplier",
+          "target": null
+        },
+        {
+          "name": "worklogs_rate_cents_not_null",
+          "type": "n",
+          "definition": "NOT NULL rate_cents",
+          "target": null
+        },
+        {
+          "name": "worklogs_rule_name_not_null",
+          "type": "n",
+          "definition": "NOT NULL rule_name",
+          "target": null
+        },
+        {
+          "name": "worklogs_rule_version_not_null",
+          "type": "n",
+          "definition": "NOT NULL rule_version",
+          "target": null
+        },
+        {
+          "name": "worklogs_source_key_not_null",
+          "type": "n",
+          "definition": "NOT NULL source_key",
+          "target": null
+        },
+        {
+          "name": "worklogs_task_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL task_id",
+          "target": null
+        },
+        {
+          "name": "worklogs_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id",
+          "target": null
+        },
+        {
+          "name": "worklogs_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)",
+          "target": null
+        },
+        {
+          "name": "worklogs_task_id_user_id_kind_source_key_key",
+          "type": "u",
+          "definition": "UNIQUE (task_id, user_id, kind, source_key)",
+          "target": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_worklogs_user",
+          "definition": "CREATE INDEX idx_worklogs_user ON public.worklogs USING btree (user_id, created_at)"
+        },
+        {
+          "name": "worklogs_pkey",
+          "definition": "CREATE UNIQUE INDEX worklogs_pkey ON public.worklogs USING btree (id)"
+        },
+        {
+          "name": "worklogs_task_id_user_id_kind_source_key_key",
+          "definition": "CREATE UNIQUE INDEX worklogs_task_id_user_id_kind_source_key_key ON public.worklogs USING btree (task_id, user_id, kind, source_key)"
+        }
+      ]
+    }
+  ]
+}

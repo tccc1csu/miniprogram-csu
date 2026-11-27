@@ -1,651 +1,1092 @@
-# 数据库数据字典
+# 当前PostgreSQL数据字典
 
-由 `schema.sqlite.sql` 的实际声明生成。SQLite INTEGER 主键在本参考稿中使用 64 位整数；部署时可映射为 BIGINT／UUID。TEXT 时间列在部署 RDBMS 中映射为 DATE／TIMESTAMP 类型；本地稿以 Asia/Shanghai 的固定格式时间校验。只保存单一事实，不保存数组、逗号分隔外键或重复汇总值。
+版本2.0；从应用迁移001–005构建隔离空库后读取pg_catalog。无业务数据、账号密码或连接串。38张业务表、214字段、79外键；不含迁移记录和云适配辅助表。
 
-PK 是主键；FK 是外键；UQ 是候选键／唯一约束；NULL 可空；NN 非空。所有外键采用删除限制，历史业务与规则不可级联删除。复合主键所有组成列均显式非空。
-
-## 1. 中心组织（organization）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| organization_id | INTEGER | NN | PK1 | 中心组织标识 |
-| name | TEXT | NN | UQ | 业务名称／姓名，不充当稳定主键 |
-
-唯一组合：name。
-
-## 2. 部门（department）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| department_id | INTEGER | NN | PK1 | 部门标识；贡献表中表示计量时的历史归属 |
-| organization_id | INTEGER | NN | FK → organization.organization_id | 中心组织标识 |
-| name | TEXT | NN | — | 业务名称／姓名，不充当稳定主键 |
-| enabled | INTEGER | NN | — | 0 停用，1 启用；停用不删除历史 |
-
-唯一组合：organization_id, name。
-
-## 3. 成员与账号（member）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| member_id | INTEGER | NN | PK1 | 成员标识 |
-| name | TEXT | NN | — | 业务名称／姓名，不充当稳定主键 |
-| login_name | TEXT | NN | UQ | 唯一登录账号；姓名允许重名 |
-| password_hash | TEXT | NULL | — | 密码散列；仅外部身份登录时可空 |
-| account_role | TEXT | NN | — | ADMIN 管理员／MINISTER 部长／MEMBER 普通成员 |
-| department_id | INTEGER | NULL | FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-| enabled | INTEGER | NN | — | 0 停用，1 启用；停用不删除历史 |
-
-唯一组合：login_name。
-
-## 4. 外部身份绑定（external_identity）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| identity_id | INTEGER | NN | PK1 | 身份绑定标识 |
-| member_id | INTEGER | NN | FK → member.member_id | 成员标识 |
-| provider | TEXT | NN | — | 身份提供方 |
-| app_scope | TEXT | NN | — | 身份发行应用范围 |
-| subject | TEXT | NN | — | 该提供方和应用范围内的外部主体标识 |
-
-唯一组合：member_id, provider, app_scope；provider, app_scope, subject。
-
-## 5. 登录会话（login_session）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| session_id | INTEGER | NN | PK1 | 会话标识 |
-| member_id | INTEGER | NN | FK → member.member_id | 成员标识 |
-| token_hash | TEXT | NN | UQ | 会话令牌散列，不保存明文令牌 |
-| issued_at | TEXT | NN | — | 会话建立时刻 |
-| expires_at | TEXT | NN | — | 失效时刻，晚于建立时刻 |
-| terminated_at | TEXT | NULL | — | 提前终止时刻；未终止为空 |
-
-唯一组合：token_hash。
-
-## 6. 归档人偏好（archive_preference）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| production_member_id | INTEGER | NN | PK1；FK → member.member_id | 摄制成员 |
-| office_member_id | INTEGER | NN | FK → member.member_id | 指定或偏好的办公成员，使用时重新核验资格 |
-
-唯一组合：除主键外无额外候选键。
-
-## 7. 发布平台（platform）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| platform_id | INTEGER | NN | PK1 | 平台标识 |
-| name | TEXT | NN | UQ | 业务名称／姓名，不充当稳定主键 |
-
-唯一组合：name。
-
-## 8. 作品（work）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| work_id | INTEGER | NN | PK1 | 作品标识 |
-| name | TEXT | NN | — | 业务名称／姓名，不充当稳定主键 |
-| origin_kind | TEXT | NN | — | ORIGINAL 原创／REPRINT 转载 |
-
-唯一组合：除主键外无额外候选键。
-
-## 9. 稿件版本（manuscript_version）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| version_id | INTEGER | NN | PK1 | 不可改写的稿件版本标识 |
-| work_id | INTEGER | NN | FK → work.work_id | 作品标识 |
-| revision_no | INTEGER | NN | — | 同一作品内从 1 起的版次 |
-| content | TEXT | NN | — | 本版本的完整稿件内容 |
-| submitted_by | INTEGER | NN | FK → member.member_id | 本次提交成员 |
-| submitted_at | TEXT | NN | — | 提交时刻 |
-
-唯一组合：work_id, revision_no。
-
-## 10. 采编协同（editorial）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_id | INTEGER | NN | PK1 | 采编协同标识 |
-| initiator_id | INTEGER | NN | FK → member.member_id | 中心登记／发起成员 |
-| title | TEXT | NN | — | 业务标题 |
-| submitted_at | TEXT | NN | — | 提交时刻 |
-| deadline_at | TEXT | NULL | — | 可选期限；未提供为 NULL |
-
-唯一组合：除主键外无额外候选键。
-
-## 11. 协同作品（editorial_work）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_id | INTEGER | NN | PK1；FK → editorial.editorial_id | 采编协同标识 |
-| work_id | INTEGER | NN | PK2；FK → work.work_id | 作品标识 |
-
-唯一组合：editorial_id, work_id。
-
-## 12. 作品目标平台（editorial_target）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_id | INTEGER | NN | PK1；FK → editorial_work.editorial_id | 采编协同标识 |
-| work_id | INTEGER | NN | PK2；FK → editorial_work.editorial_id | 作品标识 |
-| platform_id | INTEGER | NN | PK3；FK → platform.platform_id | 平台标识 |
-
-唯一组合：editorial_id, work_id, platform_id。
-
-## 13. 办公承接责任（editorial_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_id | INTEGER | NN | PK1；FK → editorial.editorial_id | 采编协同标识 |
-| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 14. 摄制日程（production_schedule）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| schedule_id | INTEGER | NN | PK1 | 摄制日程标识 |
-| department_id | INTEGER | NN | FK → department.department_id；UQ | 部门标识；贡献表中表示计量时的历史归属 |
-
-唯一组合：department_id。
-
-## 15. 摄制约定版本（booking_terms）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| terms_id | INTEGER | NN | PK1 | 摄制约定的不可变版本标识 |
-| schedule_id | INTEGER | NN | FK → production_schedule.schedule_id | 摄制日程标识 |
-| version_no | INTEGER | NN | — | 同一规则适用范围内的版本号 |
-| effective_from | TEXT | NN | — | 规则版本生效起点；后续版本确定后继生效边界 |
-| urgent_threshold_days | INTEGER | NN | — | 会议阈值天数；已知为 2 |
-| day_basis | TEXT | NN | — | HOURS_24／CALENDAR_DAY／UNCONFIRMED；待确认不得用于自动判定 |
-| urgent_factor_bp | INTEGER | NN | — | 倍率万分位整数；1.5 保存为 15000 |
-| conflict_scope_note | TEXT | NN | — | 会议确定的冲突资源范围说明，未确定不得编造 |
-
-唯一组合：schedule_id, effective_from；schedule_id, version_no。
-
-## 16. 摄制预约（production_booking）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| booking_id | INTEGER | NN | PK1 | 摄制预约标识 |
-| requester_id | INTEGER | NN | FK → member.member_id | 外部需求发布成员 |
-| terms_id | INTEGER | NN | FK → booking_terms.terms_id | 摄制约定的不可变版本标识 |
-| title | TEXT | NN | — | 业务标题 |
-| starts_at | TEXT | NN | — | 预约开始 |
-| ends_at | TEXT | NN | — | 预约结束，区间采用 [开始,结束) |
-| location | TEXT | NN | — | 地点 |
-| contact | TEXT | NN | — | 业务联系信息 |
-| submitted_at | TEXT | NN | — | 提交时刻 |
-| urgent_decision | INTEGER | NN | — | 受理时实际加急判定事实 0／1；不复制倍率 |
-| claim_open | INTEGER | NN | — | 是否允许抢单 0／1 |
-
-唯一组合：除主键外无额外候选键。
-
-## 17. 摄制承接责任（production_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| booking_id | INTEGER | NN | PK1；FK → production_booking.booking_id | 摄制预约标识 |
-| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| method | TEXT | NN | — | ASSIGN 部长派发／CLAIM 本人抢单 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 18. 指定办公归档责任（production_archive_responsibility）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| booking_id | INTEGER | NN | PK1；FK → production_booking.booking_id | 摄制预约标识 |
-| office_member_id | INTEGER | NN | FK → member.member_id | 指定或偏好的办公成员，使用时重新核验资格 |
-| specified_by | INTEGER | NN | FK → member.member_id | 确定归档责任的摄制承接成员 |
-| specified_at | TEXT | NN | — | 归档责任确定时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 19. 流转任务（workflow）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| workflow_id | INTEGER | NN | PK1 | 整体流转任务标识 |
-| initiator_id | INTEGER | NN | FK → member.member_id | 中心登记／发起成员 |
-| name | TEXT | NN | — | 业务名称／姓名，不充当稳定主键 |
-| request_origin | TEXT | NN | — | 真实业务需求来源描述，区别于登录发起成员 |
-| objective | TEXT | NN | — | 工作目标 |
-| created_at | TEXT | NN | — | 建立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 20. 外部需求（external_request）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| request_id | INTEGER | NN | PK1 | 外部需求标识 |
-| requester_id | INTEGER | NN | FK → member.member_id | 外部需求发布成员 |
-| target_department_id | INTEGER | NN | FK → department.department_id | 任意指定承接部门 |
-| title | TEXT | NN | — | 业务标题 |
-| request_note | TEXT | NN | — | 需求补充说明 |
-| deadline_at | TEXT | NULL | — | 可选期限；未提供为 NULL |
-| submitted_at | TEXT | NN | — | 提交时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 21. 外部需求承接责任（external_request_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| request_id | INTEGER | NN | PK1；FK → external_request.request_id | 外部需求标识 |
-| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 22. 公众号排版任务（operations_layout_task）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| layout_task_id | INTEGER | NN | PK1 | 公众号排版任务标识 |
-| title | TEXT | NN | — | 业务标题 |
-| layout_kind | TEXT | NN | — | BASIC 基础／PHOTO 影像志／REPRINT 转载 |
-| deadline_at | TEXT | NN | — | 可选期限；未提供为 NULL |
-| created_by | INTEGER | NN | FK → member.member_id | 建立该公众号排版任务的部长或管理员 |
-| created_at | TEXT | NN | — | 建立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 23. 排版承接责任（operations_layout_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| layout_task_id | INTEGER | NN | PK1；FK → operations_layout_task.layout_task_id | 公众号排版任务标识 |
-| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 24. 任务阶段（task_stage）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1 | 任务阶段标识 |
-| workflow_id | INTEGER | NN | FK → workflow.workflow_id | 整体流转任务标识 |
-| department_id | INTEGER | NN | FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-| sequence_no | INTEGER | NN | — | 阶段在任务中的顺序号 |
-| result_requirement | TEXT | NN | — | 阶段要求提交的成果类型或数量说明 |
-| review_policy | TEXT | NN | — | 阶段采用的审核策略代码 |
-| deadline_at | TEXT | NULL | — | 可选期限；未提供为 NULL |
-
-唯一组合：workflow_id, sequence_no。
-
-## 25. 阶段承接责任（stage_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
-| assignee_id | INTEGER | NN | FK → member.member_id | 唯一当前承接成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-| roster_basis | TEXT | NULL | — | 阶段承接成员的来源或分工说明 |
-
-唯一组合：除主键外无额外候选键。
-
-## 26. 唯一业务来源（business_source）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| source_id | INTEGER | NN | PK1 | 跨流程共同引用的实际业务来源标识 |
-| editorial_id | INTEGER | NULL | FK → editorial.editorial_id；UQ | 采编协同标识 |
-| booking_id | INTEGER | NULL | FK → production_booking.booking_id；UQ | 摄制预约标识 |
-| stage_id | INTEGER | NULL | FK → task_stage.stage_id；UQ | 任务阶段标识 |
-| external_request_id | INTEGER | NULL | FK → external_request.request_id；UQ | 外部需求来源标识，与其他业务来源互斥 |
-| operations_layout_task_id | INTEGER | NULL | FK → operations_layout_task.layout_task_id；UQ | 公众号排版来源标识，与其他业务来源互斥 |
-
-唯一组合：operations_layout_task_id；external_request_id；stage_id；booking_id；editorial_id。
-
-## 27. 业务来源附件（source_attachment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| attachment_id | INTEGER | NN | PK1 | 附件标识 |
-| source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| file_name | TEXT | NN | — | 附件展示名 |
-| storage_ref | TEXT | NN | — | 文件存储引用；文件内容存对象存储 |
-| uploaded_by | INTEGER | NN | FK → member.member_id | 实际上传成员 |
-| uploaded_at | TEXT | NN | — | 登记上传时刻 |
-
-唯一组合：source_id, storage_ref。
-
-## 28. 阶段来源映射（stage_source）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
-| source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-
-唯一组合：除主键外无额外候选键。
-
-## 29. 成果提交（outcome）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| outcome_id | INTEGER | NN | PK1 | 成果提交标识 |
-| source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| submission_no | INTEGER | NN | — | 同一来源内的提交次序，修改新增提交 |
-| submitted_by | INTEGER | NN | FK → member.member_id | 本次提交成员 |
-| completed_note | TEXT | NN | — | 完成说明 |
-| submitted_at | TEXT | NN | — | 提交时刻 |
-
-唯一组合：outcome_id, source_id；source_id, submission_no。
-
-## 30. 成果附件（outcome_attachment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| attachment_id | INTEGER | NN | PK1 | 附件标识 |
-| outcome_id | INTEGER | NN | FK → outcome.outcome_id | 成果提交标识 |
-| file_name | TEXT | NN | — | 附件展示名 |
-| storage_ref | TEXT | NN | — | 文件存储引用；文件内容存对象存储 |
-
-唯一组合：outcome_id, storage_ref。
-
-## 31. 成果稿件版本（outcome_version）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| outcome_id | INTEGER | NN | PK1；FK → outcome.outcome_id | 成果提交标识 |
-| version_id | INTEGER | NN | PK2；FK → manuscript_version.version_id | 不可改写的稿件版本标识 |
-
-唯一组合：outcome_id, version_id。
-
-## 32. 发布成果（publication）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| publication_id | INTEGER | NN | PK1 | 发布依据标识 |
-| outcome_id | INTEGER | NN | FK → outcome_version.outcome_id；FK → outcome.outcome_id | 成果提交标识 |
-| version_id | INTEGER | NULL | FK → outcome_version.outcome_id | 不可改写的稿件版本标识 |
-| platform_id | INTEGER | NN | FK → platform.platform_id | 平台标识 |
-| result_url | TEXT | NN | — | 实际成果链接；一列一条链接 |
-
-唯一组合：outcome_id, platform_id, result_url（条件唯一，见 DDL 的 WHERE）；outcome_id, version_id, platform_id（条件唯一，见 DDL 的 WHERE）。
-
-## 33. 阶段当前送审版（stage_current_draft）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
-| outcome_id | INTEGER | NN | FK → outcome_version.outcome_id | 成果提交标识 |
-| version_id | INTEGER | NN | FK → outcome_version.outcome_id | 不可改写的稿件版本标识 |
-
-唯一组合：除主键外无额外候选键。
-
-## 34. 稿件审查结论（manuscript_review）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| review_id | INTEGER | NN | PK1 | 审核事件标识 |
-| version_id | INTEGER | NN | FK → manuscript_version.version_id | 不可改写的稿件版本标识 |
-| level | INTEGER | NN | — | 1 一审／2 二审 |
-| round_no | INTEGER | NN | — | 同一版次和审查层次内的审核轮次 |
-| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
-| decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
-| opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
-| reviewed_at | TEXT | NN | — | 审核时刻 |
-| prior_review_id | INTEGER | NULL | FK → manuscript_review.review_id | 该二审引用的同一成果前序一审；不适用时为空 |
-
-唯一组合：version_id, level, round_no。
-
-## 35. 同步审核结论（editorial_review）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_review_id | INTEGER | NN | PK1 | 整次采编同步审核标识 |
-| outcome_id | INTEGER | NN | FK → outcome.outcome_id；UQ | 成果提交标识 |
-| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
-| decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
-| opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
-| reviewed_at | TEXT | NN | — | 审核时刻 |
-
-唯一组合：outcome_id。
-
-## 36. 同步审核稿件依据（editorial_review_item）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_review_id | INTEGER | NN | PK1；FK → editorial_review.editorial_review_id | 整次采编同步审核标识 |
-| review_id | INTEGER | NN | PK2；FK → manuscript_review.review_id | 审核事件标识 |
-
-唯一组合：editorial_review_id, review_id。
-
-## 37. 来源审核岗位安排（source_review_assignment）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| source_id | INTEGER | NN | PK1；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| level | INTEGER | NN | PK2 | 1 一审／2 二审 |
-| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
-| assigned_by | INTEGER | NN | FK → member.member_id | 派发或抢单申请成员 |
-| assigned_at | TEXT | NN | — | 承接成立时刻 |
-
-唯一组合：source_id, level。
-
-## 38. 来源审核事件（source_review）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| review_id | INTEGER | NN | PK1 | 审核事件标识 |
-| source_id | INTEGER | NN | FK → outcome.source_id；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| outcome_id | INTEGER | NN | FK → outcome.outcome_id；FK → outcome.outcome_id | 成果提交标识 |
-| level | INTEGER | NN | — | 1 一审／2 二审 |
-| round_no | INTEGER | NN | — | 同一版次和审查层次内的审核轮次 |
-| reviewer_id | INTEGER | NN | FK → member.member_id | 实际审核成员 |
-| decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
-| opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
-| reviewed_at | TEXT | NN | — | 审核时刻 |
-| prior_review_id | INTEGER | NULL | FK → source_review.review_id | 该二审引用的同一成果前序一审；不适用时为空 |
-
-唯一组合：review_id, source_id, outcome_id；source_id, outcome_id, level, round_no。
-
-## 39. 来源最终归档（source_archive）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| source_id | INTEGER | NN | PK1；FK → source_review.source_id；FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| outcome_id | INTEGER | NN | FK → source_review.outcome_id；FK → outcome.outcome_id；UQ | 成果提交标识 |
-| final_review_id | INTEGER | NN | FK → source_review.review_id；UQ | 最终归档采用的审核事件 |
-| archived_by | INTEGER | NN | FK → member.member_id | 实际归档成员 |
-| archived_at | TEXT | NN | — | 归档完成时刻 |
-
-唯一组合：final_review_id；outcome_id。
-
-## 40. 采编归档完成（editorial_archive）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| editorial_id | INTEGER | NN | PK1；FK → editorial.editorial_id | 采编协同标识 |
-| editorial_review_id | INTEGER | NN | FK → editorial_review.editorial_review_id；UQ | 整次采编同步审核标识 |
-| archived_at | TEXT | NN | — | 归档完成时刻 |
-
-唯一组合：editorial_review_id。
-
-## 41. 摄制归档完成（production_archive）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| booking_id | INTEGER | NN | PK1；FK → production_booking.booking_id | 摄制预约标识 |
-| outcome_id | INTEGER | NN | FK → outcome.outcome_id；UQ | 成果提交标识 |
-| archived_by | INTEGER | NN | FK → member.member_id | 实际归档成员 |
-| archived_at | TEXT | NN | — | 归档完成时刻 |
-
-唯一组合：outcome_id。
-
-## 42. 阶段确认结论（stage_confirmation）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| confirmation_id | INTEGER | NN | PK1 | 阶段确认事件标识 |
-| stage_id | INTEGER | NN | FK → task_stage.stage_id | 任务阶段标识 |
-| outcome_id | INTEGER | NN | FK → outcome.outcome_id | 成果提交标识 |
-| confirmed_by | INTEGER | NN | FK → member.member_id | 实际确认部长 |
-| decision | TEXT | NN | — | PASS 通过／RETURN 退回 |
-| opinion | TEXT | NN | — | 审核／确认说明，退回需完整原因 |
-| confirmed_at | TEXT | NN | — | 确认时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 43. 阶段完成（stage_completion）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
-| confirmation_id | INTEGER | NN | FK → stage_confirmation.confirmation_id；UQ | 阶段确认事件标识 |
-| second_review_id | INTEGER | NULL | FK → manuscript_review.review_id | 本次阶段完成实际采信的二审结论；运营稿件必填，非稿件阶段为空 |
-
-唯一组合：confirmation_id。
-
-## 44. 任务完成（workflow_completion）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| workflow_id | INTEGER | NN | PK1；FK → workflow.workflow_id | 整体流转任务标识 |
-| completed_at | TEXT | NN | — | 整体业务完成时刻 |
-
-唯一组合：除主键外无额外候选键。
-
-## 45. 贡献类型（contribution_type）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| type_id | INTEGER | NN | PK1 | 贡献类型标识；类型集合依据会议规则维护 |
-| code | TEXT | NN | UQ | 稳定贡献类型代码 |
-| name | TEXT | NN | UQ | 业务名称／姓名，不充当稳定主键 |
-
-唯一组合：name；code。
-
-## 46. 部门津贴标准版本（allowance_standard）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| standard_id | INTEGER | NN | PK1 | 部门津贴标准不可变版本 |
-| department_id | INTEGER | NN | FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-| version_no | INTEGER | NN | — | 同一规则适用范围内的版本号 |
-| effective_from | TEXT | NN | — | 规则版本生效起点；后续版本确定后继生效边界 |
-| hourly_rate_cents | INTEGER | NN | — | 部门时薪，单位分／小时 |
-
-唯一组合：department_id, effective_from；department_id, version_no。
-
-## 47. 贡献计量规则（contribution_policy）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| policy_id | INTEGER | NN | PK1 | 某规则版本下某贡献类型的计量规则 |
-| standard_id | INTEGER | NN | FK → allowance_standard.standard_id | 部门津贴标准不可变版本 |
-| type_id | INTEGER | NN | FK → contribution_type.type_id | 贡献类型标识；类型集合依据会议规则维护 |
-| basis_rule | TEXT | NN | — | 基础工时核定规则说明 |
-| urgent_applies | INTEGER | NN | — | 是否对该类摄制贡献应用受理倍率；由会议明确 |
-
-唯一组合：standard_id, type_id。
-
-## 48. 工作贡献依据（contribution_basis）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| basis_id | INTEGER | NN | PK1 | 实际贡献依据标识；同来源＋类型＋成员唯一 |
-| source_id | INTEGER | NN | FK → business_source.source_id | 跨流程共同引用的实际业务来源标识 |
-| type_id | INTEGER | NN | FK → contribution_type.type_id | 贡献类型标识；类型集合依据会议规则维护 |
-| member_id | INTEGER | NN | FK → member.member_id | 成员标识 |
-| department_id | INTEGER | NN | FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-| occurred_at | TEXT | NN | — | 实际工作发生时刻；归档晚到不改变所属工作周 |
-| evidence | TEXT | NN | — | 可复核贡献依据 |
-
-唯一组合：source_id, type_id, member_id。
-
-## 49. 阶段贡献引用（stage_contribution）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| stage_id | INTEGER | NN | PK1；FK → task_stage.stage_id | 任务阶段标识 |
-| basis_id | INTEGER | NN | PK2；FK → contribution_basis.basis_id | 实际贡献依据标识；同来源＋类型＋成员唯一 |
-
-唯一组合：stage_id, basis_id。
-
-## 50. 已核实贡献计量（contribution_measurement）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| basis_id | INTEGER | NN | PK1；FK → contribution_basis.basis_id | 实际贡献依据标识；同来源＋类型＋成员唯一 |
-| policy_id | INTEGER | NN | FK → contribution_policy.policy_id | 某规则版本下某贡献类型的计量规则 |
-| base_hours_u | INTEGER | NN | — | 核实基础工时，万分之一小时；不得为零冒充有效贡献 |
-| assessed_at | TEXT | NN | — | 核定计量时刻；规则适用时点待会议口径明确 |
-
-唯一组合：除主键外无额外候选键。
-
-## 51. 中心周报批次（weekly_report）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| report_id | INTEGER | NN | PK1 | 一次中心周报批次；重复生成可新建批次，不增加工作量 |
-| week_start | TEXT | NN | — | 该统计周周一日期；周定义为拟设计口径 |
-| generated_by | INTEGER | NN | FK → member.member_id | 办公部部长 |
-| generated_at | TEXT | NN | — | 生成时刻 |
-| export_ref | TEXT | NULL | — | 可选导出文件引用 |
-
-唯一组合：除主键外无额外候选键。
-
-## 52. 周报部门范围（report_department）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| report_id | INTEGER | NN | PK1；FK → weekly_report.report_id | 一次中心周报批次；重复生成可新建批次，不增加工作量 |
-| department_id | INTEGER | NN | PK2；FK → department.department_id | 部门标识；贡献表中表示计量时的历史归属 |
-
-唯一组合：report_id, department_id。
-
-## 53. 周报有效明细集合（report_contribution）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| report_id | INTEGER | NN | PK1；FK → weekly_report.report_id | 一次中心周报批次；重复生成可新建批次，不增加工作量 |
-| basis_id | INTEGER | NN | PK2；FK → contribution_measurement.basis_id | 实际贡献依据标识；同来源＋类型＋成员唯一 |
-
-唯一组合：report_id, basis_id。
-
-## 54. 周报待核对项（report_pending）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| report_id | INTEGER | NN | PK1；FK → weekly_report.report_id | 一次中心周报批次；重复生成可新建批次，不增加工作量 |
-| basis_id | INTEGER | NN | PK2；FK → contribution_basis.basis_id | 实际贡献依据标识；同来源＋类型＋成员唯一 |
-| reason | TEXT | NN | — | 生成时的待核对原因 |
-
-唯一组合：report_id, basis_id。
-
-## 55. 周报封存（report_seal）
-
-| 列 | 参考类型 | 可空 | 键 | 业务含义 |
-| --- | --- | --- | --- | --- |
-| report_id | INTEGER | NN | PK1；FK → weekly_report.report_id | 一次中心周报批次；重复生成可新建批次，不增加工作量 |
-
-唯一组合：除主键外无额外候选键。
-
-## 派生视图
-
-| 视图 | 唯一粒度 | 用途 |
+| 表 | 职责 | 字段数 |
 | --- | --- | --- |
-| v_contribution_detail | basis_id | 基础工时、适用倍率、已计入工时与历史规则引用 |
-| v_contribution_money | basis_id | 已计入工时乘版本时薪后的津贴（分） |
-| v_member_weekly_summary | member_id＋week_start | 每成员每工作周一行，可逐条追溯明细 |
-| v_pending_contribution | basis_id | 缺失已核实计量子行的待核对贡献 |
-| v_report_member_summary | report_id＋member_id | 已封存周报按固定有效明细集合计算的历史结果 |
+| adjustments | 核定审计 | 7 |
+| archives | 归档事实 | 5 |
+| article_lines | 稿件站点行 | 6 |
+| assignments | 承接安排 | 5 |
+| bookings | 预约资料 | 3 |
+| departments | 部门 | 2 |
+| duty_rotation | 轮转指针 | 3 |
+| duty_rotation_members | 轮转成员 | 3 |
+| duty_slots | 历史时段表 | 6 |
+| events | 任务审计 | 6 |
+| file_payloads | 附件兼容载荷 | 2 |
+| files | 附件元数据 | 8 |
+| flow_defaults | 默认承接 | 5 |
+| jobs | 部门任务扩展 | 7 |
+| labor_rules | 工时规则 | 8 |
+| outbox | 通知发件箱 | 10 |
+| publication_defaults | 推文默认配置 | 6 |
+| publication_routing | 推文教师路由 | 4 |
+| publications | 发布事实 | 5 |
+| registration_files | 报名附件 | 2 |
+| registrations | 公开报名 | 5 |
+| reminders | 提醒去重 | 2 |
+| report_seals | 封存批次 | 6 |
+| reviews | 审核事件 | 8 |
+| rule_revisions | 规则修订 | 3 |
+| saved_views | 个人报表视图 | 4 |
+| seal_rows | 封存行快照 | 3 |
+| sessions | 会话 | 3 |
+| task_reviewers | 审校岗位安排 | 2 |
+| tasks | 任务 | 16 |
+| teacher_delivery | 教师通知路由 | 3 |
+| users | 账号 | 8 |
+| version_annotations | 选区批注 | 10 |
+| version_files | 版本附件 | 2 |
+| versions | 稿件版本 | 9 |
+| work_entries | 人工登记 | 4 |
+| workflow_policy | 政策版本 | 8 |
+| worklogs | 工时贡献 | 15 |
 
-未发生有效贡献的成员默认无汇总行；若作业展示要求显示全体成员，可用成员与指定周次左连接汇总，明确标记“无有效明细”，不生成零工时贡献。任意数组输入均拆成关联表行。
+## adjustments — 核定审计
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| log_id | text | 是 | — |
+| old_units | integer | 是 | — |
+| new_units | integer | 是 | — |
+| reason | text | 是 | — |
+| actor_id | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| adjustments_new_units_check | 检查 | CHECK ((new_units > 0)) |
+| adjustments_reason_check | 检查 | CHECK ((length(TRIM(BOTH FROM reason)) > 0)) |
+| adjustments_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| adjustments_log_id_fkey | 外键 | FOREIGN KEY (log_id) REFERENCES worklogs(id) |
+| adjustments_actor_id_not_null | n | NOT NULL actor_id |
+| adjustments_created_at_not_null | n | NOT NULL created_at |
+| adjustments_id_not_null | n | NOT NULL id |
+| adjustments_log_id_not_null | n | NOT NULL log_id |
+| adjustments_new_units_not_null | n | NOT NULL new_units |
+| adjustments_old_units_not_null | n | NOT NULL old_units |
+| adjustments_reason_not_null | n | NOT NULL reason |
+| adjustments_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| adjustments_pkey | CREATE UNIQUE INDEX adjustments_pkey ON public.adjustments USING btree (id) |
+| idx_adjustments_log_latest | CREATE INDEX idx_adjustments_log_latest ON public.adjustments USING btree (log_id, created_at DESC, id DESC) |
+
+## archives — 归档事实
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| version_id | text | 否 | — |
+| created_at | timestamp with time zone | 是 | now() |
+| reason | text | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| archives_check | 检查 | CHECK ((((reason IS NULL) AND (version_id IS NOT NULL)) OR (length(TRIM(BOTH FROM reason)) > 0))) |
+| archives_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| archives_task_id_version_id_fkey | 外键 | FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id) |
+| archives_created_at_not_null | n | NOT NULL created_at |
+| archives_id_not_null | n | NOT NULL id |
+| archives_task_id_not_null | n | NOT NULL task_id |
+| archives_pkey | 主键 | PRIMARY KEY (id) |
+| archives_task_id_key | 唯一 | UNIQUE (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| archives_pkey | CREATE UNIQUE INDEX archives_pkey ON public.archives USING btree (id) |
+| archives_task_id_key | CREATE UNIQUE INDEX archives_task_id_key ON public.archives USING btree (task_id) |
+
+## article_lines — 稿件站点行
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| position | integer | 是 | — |
+| title | text | 是 | — |
+| site | text | 是 | — |
+| original | boolean | 是 | — |
+| author_id | text | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| article_lines_check | 检查 | CHECK (((NOT original) OR (author_id IS NOT NULL))) |
+| article_lines_position_check | 检查 | CHECK (("position" > 0)) |
+| article_lines_author_id_fkey | 外键 | FOREIGN KEY (author_id) REFERENCES users(id) |
+| article_lines_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| article_lines_original_not_null | n | NOT NULL original |
+| article_lines_position_not_null | n | NOT NULL "position" |
+| article_lines_site_not_null | n | NOT NULL site |
+| article_lines_task_id_not_null | n | NOT NULL task_id |
+| article_lines_title_not_null | n | NOT NULL title |
+| article_lines_pkey | 主键 | PRIMARY KEY (task_id, "position") |
+
+| 索引 | 定义 |
+| --- | --- |
+| article_lines_pkey | CREATE UNIQUE INDEX article_lines_pkey ON public.article_lines USING btree (task_id, "position") |
+
+## assignments — 承接安排
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| assignee_id | text | 是 | — |
+| actor_id | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+| automatic | boolean | 是 | false |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| assignments_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| assignments_assignee_id_fkey | 外键 | FOREIGN KEY (assignee_id) REFERENCES users(id) |
+| assignments_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| assignments_actor_id_not_null | n | NOT NULL actor_id |
+| assignments_assignee_id_not_null | n | NOT NULL assignee_id |
+| assignments_automatic_not_null | n | NOT NULL automatic |
+| assignments_created_at_not_null | n | NOT NULL created_at |
+| assignments_task_id_not_null | n | NOT NULL task_id |
+| assignments_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| assignments_pkey | CREATE UNIQUE INDEX assignments_pkey ON public.assignments USING btree (task_id) |
+
+## bookings — 预约资料
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| location | text | 是 | — |
+| contact | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| bookings_contact_check | 检查 | CHECK ((length(TRIM(BOTH FROM contact)) > 0)) |
+| bookings_location_check | 检查 | CHECK ((length(TRIM(BOTH FROM location)) > 0)) |
+| bookings_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| bookings_contact_not_null | n | NOT NULL contact |
+| bookings_location_not_null | n | NOT NULL location |
+| bookings_task_id_not_null | n | NOT NULL task_id |
+| bookings_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| bookings_pkey | CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (task_id) |
+
+## departments — 部门
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| name | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| departments_id_not_null | n | NOT NULL id |
+| departments_name_not_null | n | NOT NULL name |
+| departments_pkey | 主键 | PRIMARY KEY (id) |
+| departments_name_key | 唯一 | UNIQUE (name) |
+
+| 索引 | 定义 |
+| --- | --- |
+| departments_name_key | CREATE UNIQUE INDEX departments_name_key ON public.departments USING btree (name) |
+| departments_pkey | CREATE UNIQUE INDEX departments_pkey ON public.departments USING btree (id) |
+
+## duty_rotation — 轮转指针
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| department_id | text | 是 | — |
+| last_user_id | text | 否 | — |
+| updated_by | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| duty_rotation_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| duty_rotation_last_user_id_fkey | 外键 | FOREIGN KEY (last_user_id) REFERENCES users(id) |
+| duty_rotation_updated_by_fkey | 外键 | FOREIGN KEY (updated_by) REFERENCES users(id) |
+| duty_rotation_department_id_not_null | n | NOT NULL department_id |
+| duty_rotation_updated_by_not_null | n | NOT NULL updated_by |
+| duty_rotation_pkey | 主键 | PRIMARY KEY (department_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| duty_rotation_pkey | CREATE UNIQUE INDEX duty_rotation_pkey ON public.duty_rotation USING btree (department_id) |
+
+## duty_rotation_members — 轮转成员
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| department_id | text | 是 | — |
+| user_id | text | 是 | — |
+| position | integer | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| duty_rotation_members_position_check | 检查 | CHECK (("position" > 0)) |
+| duty_rotation_members_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES duty_rotation(department_id) ON DELETE CASCADE |
+| duty_rotation_members_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| duty_rotation_members_department_id_not_null | n | NOT NULL department_id |
+| duty_rotation_members_position_not_null | n | NOT NULL "position" |
+| duty_rotation_members_user_id_not_null | n | NOT NULL user_id |
+| duty_rotation_members_pkey | 主键 | PRIMARY KEY (department_id, user_id) |
+| duty_rotation_members_department_id_position_key | 唯一 | UNIQUE (department_id, "position") |
+
+| 索引 | 定义 |
+| --- | --- |
+| duty_rotation_members_department_id_position_key | CREATE UNIQUE INDEX duty_rotation_members_department_id_position_key ON public.duty_rotation_members USING btree (department_id, "position") |
+| duty_rotation_members_pkey | CREATE UNIQUE INDEX duty_rotation_members_pkey ON public.duty_rotation_members USING btree (department_id, user_id) |
+
+## duty_slots — 历史时段表
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| department_id | text | 否 | — |
+| user_id | text | 是 | — |
+| start_at | timestamp with time zone | 是 | — |
+| end_at | timestamp with time zone | 是 | — |
+| created_by | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| duty_slots_check | 检查 | CHECK ((start_at < end_at)) |
+| duty_slots_created_by_fkey | 外键 | FOREIGN KEY (created_by) REFERENCES users(id) |
+| duty_slots_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| duty_slots_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| duty_slots_created_by_not_null | n | NOT NULL created_by |
+| duty_slots_end_at_not_null | n | NOT NULL end_at |
+| duty_slots_id_not_null | n | NOT NULL id |
+| duty_slots_start_at_not_null | n | NOT NULL start_at |
+| duty_slots_user_id_not_null | n | NOT NULL user_id |
+| duty_slots_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| duty_slots_pkey | CREATE UNIQUE INDEX duty_slots_pkey ON public.duty_slots USING btree (id) |
+
+## events — 任务审计
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| actor_id | text | 是 | — |
+| action | text | 是 | — |
+| detail | text | 是 | ''::text |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| events_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| events_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| events_action_not_null | n | NOT NULL action |
+| events_actor_id_not_null | n | NOT NULL actor_id |
+| events_created_at_not_null | n | NOT NULL created_at |
+| events_detail_not_null | n | NOT NULL detail |
+| events_id_not_null | n | NOT NULL id |
+| events_task_id_not_null | n | NOT NULL task_id |
+| events_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| events_pkey | CREATE UNIQUE INDEX events_pkey ON public.events USING btree (id) |
+| idx_events_task | CREATE INDEX idx_events_task ON public.events USING btree (task_id, created_at) |
+
+## file_payloads — 附件兼容载荷
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| file_id | text | 是 | — |
+| content | bytea | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| file_payloads_content_check | 检查 | CHECK (((octet_length(content) >= 1) AND (octet_length(content) <= 12582912))) |
+| file_payloads_file_id_fkey | 外键 | FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE |
+| file_payloads_content_not_null | n | NOT NULL content |
+| file_payloads_file_id_not_null | n | NOT NULL file_id |
+| file_payloads_pkey | 主键 | PRIMARY KEY (file_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| file_payloads_pkey | CREATE UNIQUE INDEX file_payloads_pkey ON public.file_payloads USING btree (file_id) |
+
+## files — 附件元数据
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| owner_id | text | 是 | — |
+| storage_name | text | 是 | — |
+| name | text | 是 | — |
+| size | integer | 是 | — |
+| sha256 | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| files_owner_id_fkey | 外键 | FOREIGN KEY (owner_id) REFERENCES users(id) |
+| files_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| files_created_at_not_null | n | NOT NULL created_at |
+| files_id_not_null | n | NOT NULL id |
+| files_name_not_null | n | NOT NULL name |
+| files_owner_id_not_null | n | NOT NULL owner_id |
+| files_sha256_not_null | n | NOT NULL sha256 |
+| files_size_not_null | n | NOT NULL size |
+| files_storage_name_not_null | n | NOT NULL storage_name |
+| files_task_id_not_null | n | NOT NULL task_id |
+| files_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| files_pkey | CREATE UNIQUE INDEX files_pkey ON public.files USING btree (id) |
+
+## flow_defaults — 默认承接
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| department_id | text | 是 | — |
+| kind | text | 是 | — |
+| assignee_id | text | 是 | — |
+| updated_by | text | 是 | — |
+| updated_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| flow_defaults_kind_check | 检查 | CHECK ((kind = ANY (ARRAY['publication'::text, 'web_article'::text, 'photo'::text, 'request'::text, 'design'::text]))) |
+| flow_defaults_assignee_id_fkey | 外键 | FOREIGN KEY (assignee_id) REFERENCES users(id) |
+| flow_defaults_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| flow_defaults_updated_by_fkey | 外键 | FOREIGN KEY (updated_by) REFERENCES users(id) |
+| flow_defaults_assignee_id_not_null | n | NOT NULL assignee_id |
+| flow_defaults_department_id_not_null | n | NOT NULL department_id |
+| flow_defaults_kind_not_null | n | NOT NULL kind |
+| flow_defaults_updated_at_not_null | n | NOT NULL updated_at |
+| flow_defaults_updated_by_not_null | n | NOT NULL updated_by |
+| flow_defaults_pkey | 主键 | PRIMARY KEY (department_id, kind) |
+
+| 索引 | 定义 |
+| --- | --- |
+| flow_defaults_pkey | CREATE UNIQUE INDEX flow_defaults_pkey ON public.flow_defaults USING btree (department_id, kind) |
+
+## jobs — 部门任务扩展
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| review_mode | boolean | 是 | false |
+| rule_id | integer | 否 | — |
+| complexity | text | 否 | — |
+| source_department | text | 否 | — |
+| teacher_id | text | 否 | — |
+| urgent_reason | text | 是 | ''::text |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| jobs_complexity_check | 检查 | CHECK ((complexity = ANY (ARRAY['basic'::text, 'complex'::text, 'large'::text]))) |
+| jobs_rule_id_fkey | 外键 | FOREIGN KEY (rule_id) REFERENCES labor_rules(id) |
+| jobs_source_department_fkey | 外键 | FOREIGN KEY (source_department) REFERENCES departments(id) |
+| jobs_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| jobs_teacher_id_fkey | 外键 | FOREIGN KEY (teacher_id) REFERENCES users(id) |
+| jobs_review_mode_not_null | n | NOT NULL review_mode |
+| jobs_task_id_not_null | n | NOT NULL task_id |
+| jobs_urgent_reason_not_null | n | NOT NULL urgent_reason |
+| jobs_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| jobs_pkey | CREATE UNIQUE INDEX jobs_pkey ON public.jobs USING btree (task_id) |
+
+## labor_rules — 工时规则
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | integer | 是 | — |
+| department_id | text | 是 | — |
+| name | text | 是 | — |
+| participant | text | 是 | — |
+| unit | text | 是 | — |
+| units | integer | 是 | — |
+| review | boolean | 是 | — |
+| source | text | 是 | 'BIZ-RULES-FULL.md §4'::text |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| labor_rules_units_check | 检查 | CHECK ((units > 0)) |
+| labor_rules_department_id_not_null | n | NOT NULL department_id |
+| labor_rules_id_not_null | n | NOT NULL id |
+| labor_rules_name_not_null | n | NOT NULL name |
+| labor_rules_participant_not_null | n | NOT NULL participant |
+| labor_rules_review_not_null | n | NOT NULL review |
+| labor_rules_source_not_null | n | NOT NULL source |
+| labor_rules_unit_not_null | n | NOT NULL unit |
+| labor_rules_units_not_null | n | NOT NULL units |
+| labor_rules_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| labor_rules_pkey | CREATE UNIQUE INDEX labor_rules_pkey ON public.labor_rules USING btree (id) |
+
+## outbox — 通知发件箱
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| event | text | 是 | — |
+| recipient_id | text | 是 | — |
+| payload | jsonb | 是 | — |
+| status | text | 是 | 'unconfigured'::text |
+| created_at | timestamp with time zone | 是 | now() |
+| attempts | integer | 是 | 0 |
+| next_attempt | timestamp with time zone | 是 | now() |
+| last_error | text | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| outbox_recipient_id_fkey | 外键 | FOREIGN KEY (recipient_id) REFERENCES users(id) |
+| outbox_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| outbox_attempts_not_null | n | NOT NULL attempts |
+| outbox_created_at_not_null | n | NOT NULL created_at |
+| outbox_event_not_null | n | NOT NULL event |
+| outbox_id_not_null | n | NOT NULL id |
+| outbox_next_attempt_not_null | n | NOT NULL next_attempt |
+| outbox_payload_not_null | n | NOT NULL payload |
+| outbox_recipient_id_not_null | n | NOT NULL recipient_id |
+| outbox_status_not_null | n | NOT NULL status |
+| outbox_task_id_not_null | n | NOT NULL task_id |
+| outbox_pkey | 主键 | PRIMARY KEY (id) |
+| outbox_task_id_event_recipient_id_key | 唯一 | UNIQUE (task_id, event, recipient_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| idx_outbox_retry | CREATE INDEX idx_outbox_retry ON public.outbox USING btree (next_attempt) WHERE (status = ANY (ARRAY['pending'::text, 'failed'::text, 'unconfigured'::text])) |
+| outbox_pkey | CREATE UNIQUE INDEX outbox_pkey ON public.outbox USING btree (id) |
+| outbox_task_id_event_recipient_id_key | CREATE UNIQUE INDEX outbox_task_id_event_recipient_id_key ON public.outbox USING btree (task_id, event, recipient_id) |
+
+## publication_defaults — 推文默认配置
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| singleton | boolean | 是 | true |
+| initialized | boolean | 是 | false |
+| teacher1_id | text | 否 | — |
+| teacher2_id | text | 否 | — |
+| reviewer1_id | text | 否 | — |
+| reviewer2_id | text | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| publication_defaults_check | 检查 | CHECK ((teacher1_id <> teacher2_id)) |
+| publication_defaults_check1 | 检查 | CHECK ((reviewer1_id <> reviewer2_id)) |
+| publication_defaults_singleton_check | 检查 | CHECK (singleton) |
+| publication_defaults_reviewer1_id_fkey | 外键 | FOREIGN KEY (reviewer1_id) REFERENCES users(id) |
+| publication_defaults_reviewer2_id_fkey | 外键 | FOREIGN KEY (reviewer2_id) REFERENCES users(id) |
+| publication_defaults_teacher1_id_fkey | 外键 | FOREIGN KEY (teacher1_id) REFERENCES users(id) |
+| publication_defaults_teacher2_id_fkey | 外键 | FOREIGN KEY (teacher2_id) REFERENCES users(id) |
+| publication_defaults_initialized_not_null | n | NOT NULL initialized |
+| publication_defaults_singleton_not_null | n | NOT NULL singleton |
+| publication_defaults_pkey | 主键 | PRIMARY KEY (singleton) |
+
+| 索引 | 定义 |
+| --- | --- |
+| publication_defaults_pkey | CREATE UNIQUE INDEX publication_defaults_pkey ON public.publication_defaults USING btree (singleton) |
+
+## publication_routing — 推文教师路由
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| source_required | boolean | 是 | false |
+| teacher1_id | text | 否 | — |
+| teacher2_id | text | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| publication_routing_check | 检查 | CHECK (((teacher1_id IS NULL) OR (teacher2_id IS NULL) OR (teacher1_id <> teacher2_id))) |
+| publication_routing_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| publication_routing_teacher1_id_fkey | 外键 | FOREIGN KEY (teacher1_id) REFERENCES users(id) |
+| publication_routing_teacher2_id_fkey | 外键 | FOREIGN KEY (teacher2_id) REFERENCES users(id) |
+| publication_routing_source_required_not_null | n | NOT NULL source_required |
+| publication_routing_task_id_not_null | n | NOT NULL task_id |
+| publication_routing_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| publication_routing_pkey | CREATE UNIQUE INDEX publication_routing_pkey ON public.publication_routing USING btree (task_id) |
+
+## publications — 发布事实
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| version_id | text | 是 | — |
+| url | text | 是 | — |
+| actor_id | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| publications_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| publications_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| publications_task_id_version_id_fkey | 外键 | FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id) |
+| publications_actor_id_not_null | n | NOT NULL actor_id |
+| publications_created_at_not_null | n | NOT NULL created_at |
+| publications_task_id_not_null | n | NOT NULL task_id |
+| publications_url_not_null | n | NOT NULL url |
+| publications_version_id_not_null | n | NOT NULL version_id |
+| publications_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| publications_pkey | CREATE UNIQUE INDEX publications_pkey ON public.publications USING btree (task_id) |
+
+## registration_files — 报名附件
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| registration_id | text | 是 | — |
+| file_id | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| registration_files_file_id_fkey | 外键 | FOREIGN KEY (file_id) REFERENCES files(id) |
+| registration_files_registration_id_fkey | 外键 | FOREIGN KEY (registration_id) REFERENCES registrations(id) |
+| registration_files_file_id_not_null | n | NOT NULL file_id |
+| registration_files_registration_id_not_null | n | NOT NULL registration_id |
+| registration_files_pkey | 主键 | PRIMARY KEY (registration_id, file_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| registration_files_pkey | CREATE UNIQUE INDEX registration_files_pkey ON public.registration_files USING btree (registration_id, file_id) |
+
+## registrations — 公开报名
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| user_id | text | 是 | — |
+| notes | text | 是 | ''::text |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| registrations_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| registrations_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| registrations_created_at_not_null | n | NOT NULL created_at |
+| registrations_id_not_null | n | NOT NULL id |
+| registrations_notes_not_null | n | NOT NULL notes |
+| registrations_task_id_not_null | n | NOT NULL task_id |
+| registrations_user_id_not_null | n | NOT NULL user_id |
+| registrations_pkey | 主键 | PRIMARY KEY (id) |
+| registrations_task_id_user_id_key | 唯一 | UNIQUE (task_id, user_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| registrations_pkey | CREATE UNIQUE INDEX registrations_pkey ON public.registrations USING btree (id) |
+| registrations_task_id_user_id_key | CREATE UNIQUE INDEX registrations_task_id_user_id_key ON public.registrations USING btree (task_id, user_id) |
+
+## reminders — 提醒去重
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| kind | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| reminders_kind_check | 检查 | CHECK ((kind = ANY (ARRAY['due'::text, 'overdue'::text]))) |
+| reminders_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| reminders_kind_not_null | n | NOT NULL kind |
+| reminders_task_id_not_null | n | NOT NULL task_id |
+| reminders_pkey | 主键 | PRIMARY KEY (task_id, kind) |
+
+| 索引 | 定义 |
+| --- | --- |
+| reminders_pkey | CREATE UNIQUE INDEX reminders_pkey ON public.reminders USING btree (task_id, kind) |
+
+## report_seals — 封存批次
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| name | text | 是 | — |
+| created_by | text | 是 | — |
+| start_date | date | 是 | — |
+| end_date | date | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| report_seals_check | 检查 | CHECK ((end_date >= start_date)) |
+| report_seals_created_by_fkey | 外键 | FOREIGN KEY (created_by) REFERENCES users(id) |
+| report_seals_created_at_not_null | n | NOT NULL created_at |
+| report_seals_created_by_not_null | n | NOT NULL created_by |
+| report_seals_end_date_not_null | n | NOT NULL end_date |
+| report_seals_id_not_null | n | NOT NULL id |
+| report_seals_name_not_null | n | NOT NULL name |
+| report_seals_start_date_not_null | n | NOT NULL start_date |
+| report_seals_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| report_seals_pkey | CREATE UNIQUE INDEX report_seals_pkey ON public.report_seals USING btree (id) |
+
+## reviews — 审核事件
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| version_id | text | 是 | — |
+| stage | text | 是 | — |
+| decision | text | 是 | — |
+| reason | text | 是 | ''::text |
+| actor_id | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| reviews_check | 检查 | CHECK (((decision <> 'reject'::text) OR (length(TRIM(BOTH FROM reason)) > 0))) |
+| reviews_decision_check | 检查 | CHECK ((decision = ANY (ARRAY['approve'::text, 'reject'::text]))) |
+| reviews_stage_check | 检查 | CHECK ((stage = ANY (ARRAY['internal'::text, 'teacher1'::text, 'teacher2'::text, 'content'::text, 'acceptance'::text, 'editorial'::text]))) |
+| reviews_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| reviews_task_id_version_id_fkey | 外键 | FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id) |
+| reviews_actor_id_not_null | n | NOT NULL actor_id |
+| reviews_created_at_not_null | n | NOT NULL created_at |
+| reviews_decision_not_null | n | NOT NULL decision |
+| reviews_id_not_null | n | NOT NULL id |
+| reviews_reason_not_null | n | NOT NULL reason |
+| reviews_stage_not_null | n | NOT NULL stage |
+| reviews_task_id_not_null | n | NOT NULL task_id |
+| reviews_version_id_not_null | n | NOT NULL version_id |
+| reviews_pkey | 主键 | PRIMARY KEY (id) |
+| reviews_version_id_stage_key | 唯一 | UNIQUE (version_id, stage) |
+
+| 索引 | 定义 |
+| --- | --- |
+| reviews_pkey | CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id) |
+| reviews_version_id_stage_key | CREATE UNIQUE INDEX reviews_version_id_stage_key ON public.reviews USING btree (version_id, stage) |
+
+## rule_revisions — 规则修订
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| policy_version | integer | 是 | — |
+| rule_id | integer | 是 | — |
+| units | integer | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| rule_revisions_units_check | 检查 | CHECK ((units > 0)) |
+| rule_revisions_policy_version_fkey | 外键 | FOREIGN KEY (policy_version) REFERENCES workflow_policy(version) |
+| rule_revisions_rule_id_fkey | 外键 | FOREIGN KEY (rule_id) REFERENCES labor_rules(id) |
+| rule_revisions_policy_version_not_null | n | NOT NULL policy_version |
+| rule_revisions_rule_id_not_null | n | NOT NULL rule_id |
+| rule_revisions_units_not_null | n | NOT NULL units |
+| rule_revisions_pkey | 主键 | PRIMARY KEY (policy_version, rule_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| rule_revisions_pkey | CREATE UNIQUE INDEX rule_revisions_pkey ON public.rule_revisions USING btree (policy_version, rule_id) |
+
+## saved_views — 个人报表视图
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| user_id | text | 是 | — |
+| name | text | 是 | — |
+| config | jsonb | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| saved_views_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| saved_views_config_not_null | n | NOT NULL config |
+| saved_views_id_not_null | n | NOT NULL id |
+| saved_views_name_not_null | n | NOT NULL name |
+| saved_views_user_id_not_null | n | NOT NULL user_id |
+| saved_views_pkey | 主键 | PRIMARY KEY (id) |
+| saved_views_user_id_name_key | 唯一 | UNIQUE (user_id, name) |
+
+| 索引 | 定义 |
+| --- | --- |
+| saved_views_pkey | CREATE UNIQUE INDEX saved_views_pkey ON public.saved_views USING btree (id) |
+| saved_views_user_id_name_key | CREATE UNIQUE INDEX saved_views_user_id_name_key ON public.saved_views USING btree (user_id, name) |
+
+## seal_rows — 封存行快照
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| seal_id | text | 是 | — |
+| source_id | text | 是 | — |
+| data | jsonb | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| seal_rows_seal_id_fkey | 外键 | FOREIGN KEY (seal_id) REFERENCES report_seals(id) |
+| seal_rows_source_id_fkey | 外键 | FOREIGN KEY (source_id) REFERENCES worklogs(id) |
+| seal_rows_data_not_null | n | NOT NULL data |
+| seal_rows_seal_id_not_null | n | NOT NULL seal_id |
+| seal_rows_source_id_not_null | n | NOT NULL source_id |
+| seal_rows_pkey | 主键 | PRIMARY KEY (seal_id, source_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| seal_rows_pkey | CREATE UNIQUE INDEX seal_rows_pkey ON public.seal_rows USING btree (seal_id, source_id) |
+
+## sessions — 会话
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| token_hash | text | 是 | — |
+| user_id | text | 是 | — |
+| expires_at | timestamp with time zone | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| sessions_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| sessions_expires_at_not_null | n | NOT NULL expires_at |
+| sessions_token_hash_not_null | n | NOT NULL token_hash |
+| sessions_user_id_not_null | n | NOT NULL user_id |
+| sessions_pkey | 主键 | PRIMARY KEY (token_hash) |
+
+| 索引 | 定义 |
+| --- | --- |
+| sessions_pkey | CREATE UNIQUE INDEX sessions_pkey ON public.sessions USING btree (token_hash) |
+
+## task_reviewers — 审校岗位安排
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| user_id | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| task_reviewers_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| task_reviewers_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| task_reviewers_task_id_not_null | n | NOT NULL task_id |
+| task_reviewers_user_id_not_null | n | NOT NULL user_id |
+| task_reviewers_pkey | 主键 | PRIMARY KEY (task_id, user_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| task_reviewers_pkey | CREATE UNIQUE INDEX task_reviewers_pkey ON public.task_reviewers USING btree (task_id, user_id) |
+
+## tasks — 任务
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| number | text | 是 | — |
+| title | text | 是 | — |
+| creator_id | text | 是 | — |
+| department_id | text | 是 | — |
+| layout_type | text | 否 | — |
+| deadline | timestamp with time zone | 否 | — |
+| notes | text | 是 | ''::text |
+| open_registration | boolean | 是 | false |
+| urgent | boolean | 是 | false |
+| created_at | timestamp with time zone | 是 | now() |
+| kind | text | 是 | 'publication'::text |
+| linked_task_id | text | 否 | — |
+| config_version | integer | 是 | 1 |
+| reminder_hours | numeric(8,2) | 否 | — |
+| report_note | text | 是 | ''::text |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| tasks_kind_check | 检查 | CHECK ((kind = ANY (ARRAY['publication'::text, 'web_article'::text, 'photo'::text, 'request'::text, 'design'::text, 'work_entry'::text]))) |
+| tasks_layout_type_check | 检查 | CHECK ((layout_type = ANY (ARRAY['basic'::text, 'photo'::text, 'repost'::text]))) |
+| tasks_reminder_hours_check | 检查 | CHECK ((reminder_hours >= (0)::numeric)) |
+| tasks_config_version_fkey | 外键 | FOREIGN KEY (config_version) REFERENCES workflow_policy(version) |
+| tasks_creator_id_fkey | 外键 | FOREIGN KEY (creator_id) REFERENCES users(id) |
+| tasks_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| tasks_linked_task_id_fkey | 外键 | FOREIGN KEY (linked_task_id) REFERENCES tasks(id) |
+| tasks_config_version_not_null | n | NOT NULL config_version |
+| tasks_created_at_not_null | n | NOT NULL created_at |
+| tasks_creator_id_not_null | n | NOT NULL creator_id |
+| tasks_department_id_not_null | n | NOT NULL department_id |
+| tasks_id_not_null | n | NOT NULL id |
+| tasks_kind_not_null | n | NOT NULL kind |
+| tasks_notes_not_null | n | NOT NULL notes |
+| tasks_number_not_null | n | NOT NULL number |
+| tasks_open_registration_not_null | n | NOT NULL open_registration |
+| tasks_report_note_not_null | n | NOT NULL report_note |
+| tasks_title_not_null | n | NOT NULL title |
+| tasks_urgent_not_null | n | NOT NULL urgent |
+| tasks_pkey | 主键 | PRIMARY KEY (id) |
+| tasks_number_key | 唯一 | UNIQUE (number) |
+
+| 索引 | 定义 |
+| --- | --- |
+| idx_reminder_deadline | CREATE INDEX idx_reminder_deadline ON public.tasks USING btree (deadline) WHERE (deadline IS NOT NULL) |
+| tasks_number_key | CREATE UNIQUE INDEX tasks_number_key ON public.tasks USING btree (number) |
+| tasks_pkey | CREATE UNIQUE INDEX tasks_pkey ON public.tasks USING btree (id) |
+
+## teacher_delivery — 教师通知路由
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| teacher_id | text | 是 | — |
+| channel | text | 是 | — |
+| mention | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| teacher_delivery_teacher_id_fkey | 外键 | FOREIGN KEY (teacher_id) REFERENCES users(id) |
+| teacher_delivery_channel_not_null | n | NOT NULL channel |
+| teacher_delivery_mention_not_null | n | NOT NULL mention |
+| teacher_delivery_teacher_id_not_null | n | NOT NULL teacher_id |
+| teacher_delivery_pkey | 主键 | PRIMARY KEY (teacher_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| teacher_delivery_pkey | CREATE UNIQUE INDEX teacher_delivery_pkey ON public.teacher_delivery USING btree (teacher_id) |
+
+## users — 账号
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| username | text | 是 | — |
+| name | text | 是 | — |
+| password_hash | text | 是 | — |
+| role | text | 是 | — |
+| department_id | text | 否 | — |
+| payable | boolean | 是 | false |
+| active | boolean | 是 | true |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| users_check | 检查 | CHECK (((NOT payable) OR ((role = ANY (ARRAY['member'::text, 'minister'::text])) AND (department_id IS NOT NULL)))) |
+| users_role_check | 检查 | CHECK ((role = ANY (ARRAY['member'::text, 'minister'::text, 'teacher'::text, 'admin'::text, 'external'::text]))) |
+| users_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| users_active_not_null | n | NOT NULL active |
+| users_id_not_null | n | NOT NULL id |
+| users_name_not_null | n | NOT NULL name |
+| users_password_hash_not_null | n | NOT NULL password_hash |
+| users_payable_not_null | n | NOT NULL payable |
+| users_role_not_null | n | NOT NULL role |
+| users_username_not_null | n | NOT NULL username |
+| users_pkey | 主键 | PRIMARY KEY (id) |
+| users_username_key | 唯一 | UNIQUE (username) |
+
+| 索引 | 定义 |
+| --- | --- |
+| users_pkey | CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id) |
+| users_username_key | CREATE UNIQUE INDEX users_username_key ON public.users USING btree (username) |
+
+## version_annotations — 选区批注
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| version_id | text | 是 | — |
+| stage | text | 是 | — |
+| actor_id | text | 是 | — |
+| start_offset | integer | 是 | — |
+| end_offset | integer | 是 | — |
+| quote | text | 是 | — |
+| body | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| version_annotations_check | 检查 | CHECK (((start_offset >= 0) AND (end_offset > start_offset))) |
+| version_annotations_stage_check | 检查 | CHECK ((stage = ANY (ARRAY['editorial'::text, 'internal'::text, 'teacher1'::text, 'teacher2'::text]))) |
+| version_annotations_actor_id_fkey | 外键 | FOREIGN KEY (actor_id) REFERENCES users(id) |
+| version_annotations_task_id_version_id_fkey | 外键 | FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id) |
+| version_annotations_actor_id_not_null | n | NOT NULL actor_id |
+| version_annotations_body_not_null | n | NOT NULL body |
+| version_annotations_created_at_not_null | n | NOT NULL created_at |
+| version_annotations_end_offset_not_null | n | NOT NULL end_offset |
+| version_annotations_id_not_null | n | NOT NULL id |
+| version_annotations_quote_not_null | n | NOT NULL quote |
+| version_annotations_stage_not_null | n | NOT NULL stage |
+| version_annotations_start_offset_not_null | n | NOT NULL start_offset |
+| version_annotations_task_id_not_null | n | NOT NULL task_id |
+| version_annotations_version_id_not_null | n | NOT NULL version_id |
+| version_annotations_pkey | 主键 | PRIMARY KEY (id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| version_annotations_pkey | CREATE UNIQUE INDEX version_annotations_pkey ON public.version_annotations USING btree (id) |
+| version_annotations_version_idx | CREATE INDEX version_annotations_version_idx ON public.version_annotations USING btree (version_id, created_at) |
+
+## version_files — 版本附件
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| version_id | text | 是 | — |
+| file_id | text | 是 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| version_files_file_id_fkey | 外键 | FOREIGN KEY (file_id) REFERENCES files(id) |
+| version_files_version_id_fkey | 外键 | FOREIGN KEY (version_id) REFERENCES versions(id) |
+| version_files_file_id_not_null | n | NOT NULL file_id |
+| version_files_version_id_not_null | n | NOT NULL version_id |
+| version_files_pkey | 主键 | PRIMARY KEY (version_id, file_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| version_files_pkey | CREATE UNIQUE INDEX version_files_pkey ON public.version_files USING btree (version_id, file_id) |
+
+## versions — 稿件版本
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| number | integer | 是 | — |
+| body | text | 是 | ''::text |
+| preview_url | text | 是 | ''::text |
+| author_id | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+| phase | text | 是 | 'delivery'::text |
+| preview_html | text | 是 | ''::text |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| versions_phase_check | 检查 | CHECK ((phase = ANY (ARRAY['content'::text, 'delivery'::text, 'source'::text]))) |
+| versions_author_id_fkey | 外键 | FOREIGN KEY (author_id) REFERENCES users(id) |
+| versions_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| versions_author_id_not_null | n | NOT NULL author_id |
+| versions_body_not_null | n | NOT NULL body |
+| versions_created_at_not_null | n | NOT NULL created_at |
+| versions_id_not_null | n | NOT NULL id |
+| versions_number_not_null | n | NOT NULL number |
+| versions_phase_not_null | n | NOT NULL phase |
+| versions_preview_html_not_null | n | NOT NULL preview_html |
+| versions_preview_url_not_null | n | NOT NULL preview_url |
+| versions_task_id_not_null | n | NOT NULL task_id |
+| versions_pkey | 主键 | PRIMARY KEY (id) |
+| versions_task_id_id_key | 唯一 | UNIQUE (task_id, id) |
+| versions_task_id_number_key | 唯一 | UNIQUE (task_id, number) |
+
+| 索引 | 定义 |
+| --- | --- |
+| idx_versions_task | CREATE INDEX idx_versions_task ON public.versions USING btree (task_id, number DESC) |
+| versions_pkey | CREATE UNIQUE INDEX versions_pkey ON public.versions USING btree (id) |
+| versions_task_id_id_key | CREATE UNIQUE INDEX versions_task_id_id_key ON public.versions USING btree (task_id, id) |
+| versions_task_id_number_key | CREATE UNIQUE INDEX versions_task_id_number_key ON public.versions USING btree (task_id, number) |
+
+## work_entries — 人工登记
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| task_id | text | 是 | — |
+| person_id | text | 是 | — |
+| week | integer | 是 | — |
+| rule_id | integer | 否 | — |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| work_entries_week_check | 检查 | CHECK (((week >= 1) AND (week <= 53))) |
+| work_entries_person_id_fkey | 外键 | FOREIGN KEY (person_id) REFERENCES users(id) |
+| work_entries_rule_id_fkey | 外键 | FOREIGN KEY (rule_id) REFERENCES labor_rules(id) |
+| work_entries_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| work_entries_person_id_not_null | n | NOT NULL person_id |
+| work_entries_task_id_not_null | n | NOT NULL task_id |
+| work_entries_week_not_null | n | NOT NULL week |
+| work_entries_pkey | 主键 | PRIMARY KEY (task_id) |
+
+| 索引 | 定义 |
+| --- | --- |
+| work_entries_pkey | CREATE UNIQUE INDEX work_entries_pkey ON public.work_entries USING btree (task_id) |
+
+## workflow_policy — 政策版本
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| version | integer | 是 | — |
+| rate_cents | integer | 是 | — |
+| urgent_factor | integer | 是 | — |
+| photo_window | integer | 是 | — |
+| publication_window | integer | 是 | — |
+| updated_by | text | 否 | — |
+| reason | text | 是 | — |
+| created_at | timestamp with time zone | 是 | now() |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| workflow_policy_photo_window_check | 检查 | CHECK ((photo_window > 0)) |
+| workflow_policy_publication_window_check | 检查 | CHECK ((publication_window > 0)) |
+| workflow_policy_rate_cents_check | 检查 | CHECK ((rate_cents > 0)) |
+| workflow_policy_urgent_factor_check | 检查 | CHECK ((urgent_factor >= 10000)) |
+| workflow_policy_updated_by_fkey | 外键 | FOREIGN KEY (updated_by) REFERENCES users(id) |
+| workflow_policy_created_at_not_null | n | NOT NULL created_at |
+| workflow_policy_photo_window_not_null | n | NOT NULL photo_window |
+| workflow_policy_publication_window_not_null | n | NOT NULL publication_window |
+| workflow_policy_rate_cents_not_null | n | NOT NULL rate_cents |
+| workflow_policy_reason_not_null | n | NOT NULL reason |
+| workflow_policy_urgent_factor_not_null | n | NOT NULL urgent_factor |
+| workflow_policy_version_not_null | n | NOT NULL version |
+| workflow_policy_pkey | 主键 | PRIMARY KEY (version) |
+
+| 索引 | 定义 |
+| --- | --- |
+| workflow_policy_pkey | CREATE UNIQUE INDEX workflow_policy_pkey ON public.workflow_policy USING btree (version) |
+
+## worklogs — 工时贡献
+
+| 字段 | PostgreSQL类型 | 非空 | 默认表达式 |
+| --- | --- | --- | --- |
+| id | text | 是 | — |
+| task_id | text | 是 | — |
+| user_id | text | 是 | — |
+| department_id | text | 是 | — |
+| kind | text | 是 | — |
+| rule_name | text | 是 | — |
+| base_units | integer | 是 | — |
+| effective_units | integer | 是 | — |
+| rate_cents | integer | 是 | — |
+| confirmed | boolean | 是 | false |
+| created_at | timestamp with time zone | 是 | now() |
+| source_key | text | 是 | ''::text |
+| rule_id | integer | 否 | — |
+| rule_version | integer | 是 | 1 |
+| multiplier | integer | 是 | 10000 |
+
+| 约束名 | 类型 | 定义 |
+| --- | --- | --- |
+| worklogs_base_units_check | 检查 | CHECK ((base_units > 0)) |
+| worklogs_effective_units_check | 检查 | CHECK ((effective_units > 0)) |
+| worklogs_multiplier_check | 检查 | CHECK ((multiplier > 0)) |
+| worklogs_rate_cents_check | 检查 | CHECK ((rate_cents > 0)) |
+| worklogs_department_id_fkey | 外键 | FOREIGN KEY (department_id) REFERENCES departments(id) |
+| worklogs_rule_id_fkey | 外键 | FOREIGN KEY (rule_id) REFERENCES labor_rules(id) |
+| worklogs_rule_version_fkey | 外键 | FOREIGN KEY (rule_version) REFERENCES workflow_policy(version) |
+| worklogs_task_id_fkey | 外键 | FOREIGN KEY (task_id) REFERENCES tasks(id) |
+| worklogs_user_id_fkey | 外键 | FOREIGN KEY (user_id) REFERENCES users(id) |
+| worklogs_base_units_not_null | n | NOT NULL base_units |
+| worklogs_confirmed_not_null | n | NOT NULL confirmed |
+| worklogs_created_at_not_null | n | NOT NULL created_at |
+| worklogs_department_id_not_null | n | NOT NULL department_id |
+| worklogs_effective_units_not_null | n | NOT NULL effective_units |
+| worklogs_id_not_null | n | NOT NULL id |
+| worklogs_kind_not_null | n | NOT NULL kind |
+| worklogs_multiplier_not_null | n | NOT NULL multiplier |
+| worklogs_rate_cents_not_null | n | NOT NULL rate_cents |
+| worklogs_rule_name_not_null | n | NOT NULL rule_name |
+| worklogs_rule_version_not_null | n | NOT NULL rule_version |
+| worklogs_source_key_not_null | n | NOT NULL source_key |
+| worklogs_task_id_not_null | n | NOT NULL task_id |
+| worklogs_user_id_not_null | n | NOT NULL user_id |
+| worklogs_pkey | 主键 | PRIMARY KEY (id) |
+| worklogs_task_id_user_id_kind_source_key_key | 唯一 | UNIQUE (task_id, user_id, kind, source_key) |
+
+| 索引 | 定义 |
+| --- | --- |
+| idx_worklogs_user | CREATE INDEX idx_worklogs_user ON public.worklogs USING btree (user_id, created_at) |
+| worklogs_pkey | CREATE UNIQUE INDEX worklogs_pkey ON public.worklogs USING btree (id) |
+| worklogs_task_id_user_id_kind_source_key_key | CREATE UNIQUE INDEX worklogs_task_id_user_id_kind_source_key_key ON public.worklogs USING btree (task_id, user_id, kind, source_key) |

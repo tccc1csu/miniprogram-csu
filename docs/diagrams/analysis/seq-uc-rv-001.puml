@@ -1,59 +1,39 @@
 @startuml
-title UC-RV-001 一审运营部推文 — 分析序列图
 skinparam defaultFontName Microsoft YaHei
-skinparam defaultFontSize 14
 skinparam shadowing false
-skinparam backgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F5FAFF
-skinparam classBorderColor #46637F
-skinparam ArrowColor #334155
-skinparam nodesep 35
-skinparam ranksep 45
-hide footbox
-autonumber
-skinparam sequenceMessageAlign center
-skinparam sequenceGroupBackgroundColor white
-actor "运营部部长" as A
-boundary "接口:部长接口" as B
-control "控制:一审运营部推文控制" as C
-participant "M:成员" as M
-participant "F:流转任务" as F
-participant "G:任务阶段" as G
-participant "V:稿件版本" as V
-participant "R:审核结论" as R
-A -> B: 一审运营部推文(业务信息)
-activate B
-B -> C: 一审运营部推文(业务信息)
-activate C
-C -> M: 验证业务资格(操作人、部门与职责)
-M --> C: 资格结论
-break 无权执行
-  C --> B: 拒绝结果及原因
-  B --> A: 拒绝结果及原因
+hide empty members
+title UC-RV-001 标注稿件意见的分析序列
+actor "当前阶段审阅人" as actor
+boundary "网页与手机页面" as page
+control "推文控制" as ctl
+entity "账号与会话" as identity
+entity "推文协作簿" as model
+actor -> page : 选中工作台预览文本并填写意见
+page -> ctl : 协调业务请求(UC-RV-001)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+有当前版本当前阶段的审阅权限
+end note
+alt 业务条件满足
+ctl -> model : 标注稿件意见()
+model -> model : 核验当前阶段审阅资格()
+model -> model : 比对UTF16选区并绑定版本()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
 end
+note over ctl,model
+成功后保留：绑定版本与阶段的选区批注。
+持久化及事务实现于D章精化。
+end note
 
-C -> F: 审查阶段稿件(审核人、阶段、一审结论、意见、版次)
-activate F
-F -> G: 审查稿件(审核人、一审结论、意见、版次)
-activate G
-G -> V: 验证送审条件(一审、前序结论、当前版次)
-V --> G: 送审条件结论
-alt 资格、版次或前序结论不符
-  G --> F: 拒绝保存审查结论
-else 审查条件满足
-  G -> V: 接受审查结论(审核人、一审结论、意见)
-  V -> R: 验证适用版本(本稿件版次)
-  R --> V: 结论关联成立
-  V --> G: 已保存的通过或退回结论
-  G --> F: 待老师二审或待修改
-end
-deactivate G
-F --> C: 审查结果
-deactivate F
-
-C --> B: 业务结果或拒绝原因
-deactivate C
-B --> A: 业务结果或拒绝原因
-deactivate B
 @enduml

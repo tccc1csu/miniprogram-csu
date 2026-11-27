@@ -1,0 +1,46 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title C 推文任务状态机
+
+[*] --> Source : 外部来稿
+[*] --> Arrange : 内部任务
+state "等待源稿" as Source
+state "采编内容审核" as Editorial
+state "等待安排" as Arrange
+state "等待排版版本" as Layout
+state "运营内审" as Internal
+state "教师一审" as Teacher1
+state "教师二审" as Teacher2
+state "待登记发布" as Publish
+state "退回修改" as Returned
+state "正常归档" as Archived
+state "强制关闭" as Forced
+Source --> Editorial : 提交源稿
+Editorial --> Source : 退回及原因
+Editorial --> Arrange : 通过
+Arrange --> Layout : 安排承接
+Layout --> Internal : 提交版本
+Internal --> Teacher1 : 指定部长任一通过
+Teacher1 --> Teacher2 : 一审老师通过
+Teacher2 --> Publish : 不同二审老师通过
+Internal --> Returned : 退回
+Teacher1 --> Returned : 退回
+Teacher2 --> Returned : 退回
+Returned --> Internal : 提交新排版版本
+Publish --> Archived : 登记发布／原子归档计时
+Arrange --> Forced : 有原因的强制关闭
+Layout --> Forced : 有原因的强制关闭
+Returned --> Forced : 有原因的强制关闭
+Archived --> [*]
+Forced --> [*]
+note bottom of Forced
+任何未归档阶段均可由有权限管理者强制关闭；
+为保持图面清楚，其余到此转换省略。零自动工时。
+end note
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title UC-JOB-006 强制关闭异常任务的分析序列
+actor "目标部门部长" as actor
+boundary "网页与手机页面" as page
+control "部门协作控制" as ctl
+entity "账号与会话" as identity
+entity "部门任务簿" as model
+actor -> page : 说明异常关闭原因
+page -> ctl : 协调业务请求(UC-JOB-006)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+任务未归档且管理范围匹配
+end note
+alt 业务条件满足
+ctl -> model : 强制关闭异常任务()
+model -> model : 验证管理范围与非空原因()
+model -> model : 保留强制关闭且不计自动工时()
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+note over ctl,model
+成功后保留：强制归档、关闭原因及审计。
+持久化及事务实现于D章精化。
+end note
+
+@enduml

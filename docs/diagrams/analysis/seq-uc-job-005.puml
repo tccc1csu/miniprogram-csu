@@ -1,0 +1,45 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title UC-JOB-005 验收并归档部门任务的分析序列
+actor "目标部门部长" as actor
+boundary "网页与手机页面" as page
+control "部门协作控制" as ctl
+entity "账号与会话" as identity
+entity "部门任务簿" as model
+entity "工时台账" as ledger
+actor -> page : 检查交付物
+page -> ctl : 协调业务请求(UC-JOB-005)
+ctl -> identity : 验证访问资格(会话、业务职责)
+identity --> ctl : 可信身份及可用范围
+ctl -> model : 核验当前条件()
+model --> ctl : 可办理结果或失败原因
+note right of model
+存在待验收交付物；采编办公由办公或采编管理人员办理
+end note
+alt 业务条件满足
+ctl -> model : 验收并归档部门任务()
+group 完成结果整体生效
+model -> model : 核验验收资格和交付版本()
+model -> model : 形成正常验收与归档事实()
+model -> ledger : 登记合格贡献(内部资格、规则版本、来源键)
+ledger --> model : 唯一贡献结果
+end
+model --> ctl : 业务结果及可用后续操作
+ctl --> page : 处理回执
+page --> actor : 展示处理结果
+else 业务条件不满足
+ctl --> page : 失败原因与可恢复条件
+page --> actor : 保留输入并显示原因
+end
+note over ctl,model
+成功后保留：验收、归档、合格贡献与通知意图。
+完成、归档及合格工时一起生效；重复不再计时。
+持久化及事务实现于D章精化。
+end note
+
+@enduml

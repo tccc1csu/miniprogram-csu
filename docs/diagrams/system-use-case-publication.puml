@@ -1,0 +1,45 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+title 推文审校与发布
+left to right direction
+actor "推文发起人" as a0
+actor "外部来稿人" as a1
+actor "采编部长" as a2
+actor "运营部长" as a3
+actor "排版承接人" as a4
+actor "指定运营审校部长" as a5
+actor "一审指导老师" as a6
+actor "二审指导老师" as a7
+actor "运营管理人员" as a8
+actor "外部组织" as a9
+actor "当前阶段审阅人" as a10
+rectangle "青年传媒中心统一工作台" {
+usecase "UC-OL-001\n提出推文任务" as u0
+usecase "UC-OL-002\n提交或修订源稿" as u1
+usecase "UC-OL-003\n审阅外部源稿内容" as u2
+usecase "UC-OL-004\n安排推文承接" as u3
+usecase "UC-OL-005\n提交排版版本" as u4
+usecase "UC-OL-006\n确认运营内部审校" as u5
+usecase "UC-OL-007\n完成教师一审" as u6
+usecase "UC-OL-008\n完成教师二审" as u7
+usecase "UC-OL-009\n登记推文发布" as u8
+usecase "UC-OL-010\n报名公开征集" as u9
+usecase "UC-RV-001\n标注稿件意见" as u10
+}
+a0 -- u0
+a1 -- u1
+a2 -- u2
+a3 -- u3
+a4 -- u4
+a5 -- u5
+a6 -- u6
+a7 -- u7
+a8 -- u8
+a9 -- u9
+a10 -- u10
+@enduml
