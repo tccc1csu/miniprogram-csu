@@ -36,3 +36,10 @@ Language: Markdown、PlantUML、Python 生成脚本。Runtime: Node.js 24、Post
 ## Validation
 
 Run the schema export and document builders, then `python -X utf8 docs/tools/render_course_diagrams.py --jar <local-jar> --scope all`, `python -X utf8 docs/tools/check_current_documents.py`, `npm --prefix workbench test`, and `npm --prefix workbench run build`.
+
+## Revision plan
+
+1. 复用并整理本地PlantUML业务符号库；图源明确业务实体与软件边界。
+2. 以两张黑盒系统序列说明系统事件；33张分析序列保留BCE职责但统一激活、消息编号、返回和分支版式。
+3. 从同一runtime-schema.json生成完整ERD，表卡含所有字段与实际FK，着色分区，复合外键保持整体；生成大幅单页矢量PDF并检查文字和细节。
+4. 更新文档生成器和覆盖校验器，重建合并稿，逐类视检；本轮仅文档与工具变更，不重复运行未受影响的应用回归。

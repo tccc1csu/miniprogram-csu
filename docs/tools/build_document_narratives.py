@@ -27,6 +27,8 @@ write('analysis/02-business-modeling.md','''
 
 业务边界是整个青年传媒中心。校内其他组织或活动需求方从边界外提出宣传、拍摄或设计需求，结算核对方关注可信工作量结果。中心内部的部长、干事和指导老师作为业务工人在序列中协作；他们操作软件时，又是软件边界外的系统参与者。业务执行者与系统参与者不能混用。
 
+图形约定：业务序列使用PlantUML自定义业务工人（带斜线的人形圆标）和业务实体（带斜线的圆标）；任务档案、稿件清单、工时台账是业务实体。图中的记录操作由改进后的工作台支持，软件整体不充当业务实体。系统序列与分析序列另采用软件边界及BCE符号。
+
 | 部门 | 核心工作 | 跨部门联系 |
 | --- | --- | --- |
 | 办公部 | 稿件对接、活动工作、工时核对及封存 | 与采编逐稿逐站点对接，与全中心结算 |
@@ -90,15 +92,21 @@ end note
 ''','A 青年传媒中心业务用例')
 diagram('current-business-sequence-publication',r'''
 actor "需求方" as D
-participant "部长" as M
-participant "排版干事" as W
-participant "一审老师" as T1
-participant "二审老师" as T2
+participant "<$worker>\n部长" as M
+participant "<$worker>\n排版干事" as W
+participant "<$worker>\n一审老师" as T1
+participant "<$worker>\n二审老师" as T2
+participant "<$entity>\n稿件材料" as A
 D -> M : 在群里说明需求并发送素材
 M -> W : 转述需求并安排排版
-W -> M : 发送排版链接与附件
+W -> A : 制作排版稿与附件
+activate A
+A --> W : 排版链接
+deactivate A
+W -> M : 提交排版链接
 M -> T1 : 向一审群转发稿件
 T1 -> W : 在群聊中说明修改要求
+W -> A : 修订稿件
 W -> T2 : 修改后转二审群
 T2 -> W : 在另一群确认或要求修改
 W -> M : 发出发布结果
@@ -107,102 +115,244 @@ note over M,T2
 完成材料与后续工时表需再次人工关联。
 end note
 ''','A 现状业务序列：推文协作')
+
 diagram('current-business-sequence-accounting',r'''
-participant "各部门干事" as W
-participant "部门部长" as M
-participant "办公统计人员" as O
+participant "<$worker>\n各部门干事" as W
+participant "<$worker>\n部门部长" as M
+participant "<$worker>\n办公统计人员" as O
+participant "<$entity>\n工作统计表" as R
 W -> M : 报送本周工作记录
 M -> O : 汇总部门工作表
 O -> M : 询问重复项、缺失项及工时差异
 M -> W : 核实实际贡献
-W --> O : 提供补充说明
-O -> O : 人工合并表格并核算金额
+W --> M : 提供补充说明
+M --> O : 返回核实结果
+O -> R : 人工合并记录并核算金额
+activate R
+R --> O : 结算汇总
+deactivate R
 O --> M : 提交结算汇总供核对
 ''','A 现状业务序列：周期统计')
+
 diagram('improved-business-sequence-publication',r'''
 actor "需求方" as D
-participant "统一工作台" as S
-participant "采编部长" as E
-participant "运营部长" as M
-participant "排版干事" as W
-participant "一审老师" as T1
-participant "二审老师" as T2
-D -> S : 提交需求与源稿
+participant "<$worker>\n采编部长" as E
+participant "<$worker>\n运营部长" as M
+participant "<$worker>\n排版干事" as W
+participant "<$worker>\n一审老师" as T1
+participant "<$worker>\n二审老师" as T2
+participant "<$entity>\n推文协作档案" as S
+D -> S : 登记需求与源稿
 opt 外部来稿
-S -> E : 提供待内容审核稿件
-E -> S : 审核源稿内容
+E -> S : 阅读源稿并登记内容审核结论
 end
-M -> S : 安排承接
-S -> W : 提供任务与材料
+M -> S : 登记承接安排
+W -> S : 读取任务与材料
+S --> W : 排版要求与源稿
 W -> S : 提交排版版本
-M -> S : 两位指定部长任一确认内部审校
-S -> T1 : 提供一审待办
-T1 -> S : 提交一审结论
-S -> T2 : 提供二审待办
-T2 -> S : 提交二审结论
-M -> S : 登记发布地址
-S -> S : 原子保存发布、归档和合格内部贡献
-S --> D : 提供可追溯发布结果
-note over S,T2
-退回由承接人新版本重走排版审核链。
-群机器人尚未连接，现为站内待办。
-end note
+M -> S : 两位指定部长任一登记内审通过
+T1 -> S : 阅读当前稿件并登记一审结论
+T2 -> S : 一审通过后登记二审结论
+M -> S : 登记公开发布地址
+activate S
+S -> S : 一并保留发布、归档与内部贡献
+S --> M : 发布与归档回执
+deactivate S
+D -> S : 查询发布结果
+activate S
+S --> D : 可追溯的发布结果
+deactivate S
+legend bottom
+业务工人：带斜线的人形圆标；业务实体：带斜线的圆标。
+本图表达各岗位对业务档案的操作；自动保存由工作台实现。
+退回后由承接人提交新版本，重新经过内审及教师两审。
+教师一审、二审为不同人员；群机器人尚未接通。
+endlegend
 ''','B 改进业务序列：推文闭环')
+
 diagram('improved-business-sequence-editorial',r'''
-participant "采编人员" as E
-participant "办公承接人" as O
-participant "指定内容老师" as T
-participant "验收管理者" as M
-participant "统一工作台" as S
-E -> S : 提交稿件站点与原创作者清单
-S -> O : 按默认承接或任务轮转分配
+participant "<$worker>\n采编人员" as E
+participant "<$worker>\n办公承接人" as O
+participant "<$worker>\n指定内容老师" as T
+participant "<$worker>\n验收管理者" as M
+participant "<$entity>\n稿件站点清单" as S
+E -> S : 登记站点、稿件与原创作者
+O -> S : 查询本人承接待办
+S --> O : 默认承接或任务轮转后的任务
 opt 配置了内容老师
 O -> S : 提交内容版本
-T -> S : 完成内容审核
+T -> S : 阅读内容并登记审核结论
 end
 O -> S : 提交最终交付版本
-M -> S : 验收稿件交付
-S -> S : 归档并按行记录创作和对接贡献
-E -> S : 另行提出关联该归档稿件的推文任务
+M -> S : 检查交付物并登记验收通过
+activate S
+S -> S : 保留归档及逐行创作、对接贡献
+deactivate S
+E -> S : 查询已正常归档的稿件
+activate S
+S --> E : 可关联的归档稿件编号
+deactivate S
+E -> S : 登记后续推文的来源关联
 ''','B 改进业务序列：采编办公对接')
+
 diagram('improved-business-sequence-jobs',r'''
 actor "需求方" as D
-participant "目标部门部长" as M
-participant "承接干事" as W
-participant "统一工作台" as S
-D -> S : 提交摄影预约、设计或部门需求
+participant "<$worker>\n目标部门部长" as M
+participant "<$worker>\n承接干事" as W
+participant "<$entity>\n部门任务档案" as S
+D -> S : 登记摄影预约、设计或部门需求
 alt 摄影任务公开领取
 W -> S : 领取未来且未分配任务
 else 部门安排
-M -> S : 安排或采用默认承接／轮转
+M -> S : 登记承接人或采用默认／轮转安排
 end
 W -> S : 提交完整交付物
-M -> S : 验收或说明退回原因
+M -> S : 检查交付物
 alt 正常验收通过
-S -> S : 同事务归档并生成一次工时
-else 强制关闭
-M -> S : 说明强制关闭原因
-S -> S : 保留关闭事实且不自动计时
+M -> S : 登记验收结论
+activate S
+S -> S : 一并保留归档与一次工时
+S --> W : 完成回执
+deactivate S
+else 退回修改
+M -> S : 登记退回原因
+S --> W : 修改要求
+else 异常强制关闭
+M -> S : 登记强制关闭原因
+S -> S : 保留关闭事实，不生成自动工时
 end
 ''','B 改进业务序列：部门协作')
+
 diagram('improved-business-sequence-accounting',r'''
-participant "内部成员" as W
-participant "部门部长" as M
-participant "办公部长" as O
-participant "统一工作台" as S
-S -> S : 正常任务完成后生成规则贡献
+participant "<$worker>\n内部成员" as W
+participant "<$worker>\n部门部长" as M
+participant "<$worker>\n办公部长" as O
+participant "<$entity>\n工时与结算台账" as S
+note over S
+正常完成的任务已生成规则贡献。
+end note
 W -> S : 登记例外工作或查询个人明细
 M -> S : 提交核定值及原因
+activate S
 S -> S : 保留原值、新值、操作者和时间
+S --> M : 核定回执
+deactivate S
 O -> S : 按日期与人员筛选结算明细
-S --> O : 导出含任务备注和调整原因的Excel
+S --> O : 含任务备注、调整原因的Excel
 O -> S : 确认结算范围并封存
+activate S
 S -> S : 保存不可变行快照
-note over O,S
+S --> O : 封存批次与快照明细
+deactivate S
+legend bottom
 后续实时工时可调整，已封存快照不变。
 教师与外部只保留业务记录，不进入计酬明细。
-end note
+endlegend
 ''','B 改进业务序列：工时结算')
+
+write('requirements/system-sequences.md','''
+# 系统事件与黑盒序列
+
+本节将青年传媒中心工作台视为一个软件整体。参与者在边界外，系统生命线表示已经建立的工作台实例；这里的矩形是软件对象的标准生命线头，不是业务工人或业务实体。消息采用用户可观察的系统事件，不展开控制、数据库或网络实现。系统事件与前述用例编号对应；C章再以边界、控制、实体展开内部协作。
+
+## 推文协作的系统事件
+
+图示以外部来稿的成功主线为例。源稿退回须修订并重新提交；任何排版审核退回均由承接人提交新版本，重新从运营内部审校开始。两位指定内审部长任一确认即可送教师，一审和二审老师不同。
+
+![推文黑盒系统序列](../diagrams/system-sequence-publication.svg)
+
+## 核定与封存的系统事件
+
+核定实时工时和生成结算快照是两个独立用例。封存后仍允许调整实时值，但旧快照不变。失败返回不构成业务完成，教师和外部人员不进入计酬明细。
+
+![结算黑盒系统序列](../diagrams/system-sequence-accounting.svg)
+''')
+
+diagram('system-sequence-publication',r'''
+actor "外部来稿人" as D
+actor "采编部长" as E
+actor "运营部长" as M
+actor "排版承接人" as W
+actor "一审老师" as T1
+actor "二审老师" as T2
+participant ":青年传媒中心工作台" as S
+D -> S : 提出推文任务(标题、期限、来源)\nUC-OL-001
+activate S
+S --> D : 任务编号、待提交源稿
+deactivate S
+D -> S : 提交源稿(任务、正文、材料)\nUC-OL-002
+activate S
+S --> D : 源稿版本、待内容审核
+deactivate S
+E -> S : 审核源稿(版本、通过)\nUC-OL-003
+activate S
+S --> E : 可以安排承接
+deactivate S
+M -> S : 安排承接(任务、干事)\nUC-OL-004
+activate S
+S --> M : 承接安排、干事待办
+deactivate S
+loop 排版版本尚未全部通过（初稿或退回重提）
+W -> S : 提交排版(任务、正文、预览、材料)\nUC-OL-005
+activate S
+S --> W : 当前版本、待运营内审
+deactivate S
+M -> S : 确认内审(当前版本、结论)\nUC-OL-006
+activate S
+S --> M : 通过则待教师一审；退回则待修改
+deactivate S
+opt 运营内审通过
+T1 -> S : 完成一审(当前版本、结论)\nUC-OL-007
+activate S
+S --> T1 : 通过则待二审；退回则待修改
+deactivate S
+opt 教师一审通过
+T2 -> S : 完成二审(当前版本、结论)\nUC-OL-008
+activate S
+S --> T2 : 通过则待发布；退回则待修改
+deactivate S
+end
+end
+end
+M -> S : 登记发布(已全部通过的版本、公开地址)\nUC-OL-009
+activate S
+alt 版本、审核和权限均有效
+S --> M : 发布结果、归档编号、合格内部贡献
+else 条件失效或重复冲突
+S --> M : 失败原因；不重复归档计时
+end
+deactivate S
+''','B 推文协作 · 黑盒系统序列')
+
+diagram('system-sequence-accounting',r'''
+actor "工时管理人员" as M
+actor "办公部长" as O
+participant ":青年传媒中心工作台" as S
+M -> S : 核定工时(记录、新值、原因)\nUC-REC-002
+activate S
+alt 管理范围及输入有效
+S --> M : 新核定值、调整前后审计
+else 无权限、空原因或无效数值
+S --> M : 失败原因；原工时不变
+end
+deactivate S
+O -> S : 查询结算明细(日期、人员、列配置)\nUC-STAT-001
+activate S
+S --> O : 规则工时、核定工时、任务备注、调整原因
+deactivate S
+O -> S : 封存结算(名称、起止日期)\nUC-STAT-002
+activate S
+alt 有权限且存在有效结算行
+S --> O : 封存批次、不可变行快照
+else 范围无效或没有明细
+S --> O : 失败原因；不创建空封存
+end
+deactivate S
+M -> S : 再次核定工时(记录、新值、原因)\nUC-REC-002
+activate S
+S --> M : 实时值已更新、旧封存快照保持原值
+deactivate S
+''','B 工时核定与封存 · 黑盒系统序列')
 
 write('SRS.md','''
 # 软件需求规格说明书（SRS）
@@ -309,7 +459,7 @@ flowchart LR
 
 ## 3 持久化设计
 
-以迁移001–005为业务结构基准，38张业务表、214字段、79外键；[数据字典](database/data-dictionary.md)完整列出PK/FK/UNIQUE/CHECK及索引，[总览](diagrams/database/db-overview.svg)与分区ER图共同描述关系。生产schema为youth_workbench，额外_state、_requests、_uploads不计入业务表。
+以迁移001–005为业务结构基准，38张业务表、214字段、79外键；[数据字典](database/data-dictionary.md)完整列出PK/FK/UNIQUE/CHECK及索引，[完整ERD大图](diagrams/database/db-full.svg)列出全部表、字段和外键，可下载[单页矢量PDF](diagrams/database/db-full.pdf)；[外键索引](database/full-erd.md)逐项对应F编号。分区导航及分区ER图提供局部视图。生产schema为youth_workbench，额外_state、_requests、_uploads不计入业务表。
 
 任务没有可随意改写的status列。当前状态从任务类型、承接、最新阶段版本、审核及归档推导。版本与审核不可混成单一“审核状态”；两位审校岗位和实际审核事件分别持久化。工时保存规则与费率快照，封存行保留当时JSON结果。
 
@@ -383,7 +533,7 @@ Node测试使用PGlite内存库重放实际迁移，HTTP层由supertest调用；
 | T-15 | 有序轮转与固定默认优先 | 按任务顺序轮转，默认覆盖并可清除 | center.test.js | REQ-08 |
 | T-16 | 办公默认、手工改派和取消 | 默认可选、改派合法、撤销后回轮转 | center.test.js | REQ-08 |
 | T-17 | 手机身份、六类创建、推文闭环、会话和附件协议 | 与Web同身份同状态，非法网关路径拒绝 | mobile-unification.mjs | REQ-01至13 |
-| T-18 | 38表214字段79外键、用例及图链接检查 | 字典与实际迁移一致，课程引用无缺失 | docs/tools/check_current_documents.py | 文档FR-001至010 |
+| T-18 | 38表214字段79外键、用例及图链接检查 | 字典与实际迁移一致，课程引用无缺失 | docs/tools/check_current_documents.py | 文档FR-001至014 |
 | T-19 | 既有云端身份与私有附件只读联调 | 两端同身份，下载字节一致；仅引用既有证据 | 007/validation.md | REQ-01、13、14 |
 
 ## 3 本轮执行记录
@@ -425,7 +575,7 @@ write('README.md','''
 | 架构、数据与接口设计 | [SDD](SDD.md) |
 | 测试方案、追踪及结果入口 | [STD](STD.md) |
 | 用例与路径 | [系统用例规约](requirements/system-use-case-specifications.md) |
-| 实际数据库 | [字段字典](database/data-dictionary.md) · [79项外键](database/foreign-key-relations.md) |
+| 实际数据库 | [完整ERD大图与索引](database/full-erd.md) · [单页PDF](diagrams/database/db-full.pdf) · [字段字典](database/data-dictionary.md) · [79项外键](database/foreign-key-relations.md) |
 | UML图源与可读图 | [diagrams](diagrams/) |
 | 本次审查与验证 | [008规格与验证](../workbench/specs/008-course-documentation/) |
 | 部署及两端接入 | [部署说明](../workbench/deployment/mini-unification.md) |
@@ -441,10 +591,12 @@ node docs/tools/export_runtime_schema.mjs
 python -X utf8 docs/tools/build_current_documents.py
 python -X utf8 docs/tools/build_document_narratives.py
 python -X utf8 docs/tools/build_course_assignment.py
+python -X utf8 docs/tools/render_course_diagrams.py --jar <PlantUML-JAR路径> --graphviz-dot <完整Graphviz的dot路径> --scope all
+python -X utf8 docs/tools/export_erd_pdf.py
 python -X utf8 docs/tools/check_current_documents.py
 ~~~
 
-图渲染需要Java与PlantUML，运行render_course_diagrams.py --jar 本机JAR路径 --scope all。输出含PNG和SVG，提交时同时更新图源和产物。首次生成后应先渲染，再执行完整校验；重建不连接生产数据库。
+图渲染需要Java、PlantUML和完整Graphviz；大图使用PlantUML的DOT模式，内置的精简dot不包含neato布局插件。PDF导出需要Python的reportlab与svglib，检查需要PyMuPDF；可用pip安装reportlab<5、svglib、pymupdf。Windows默认嵌入微软雅黑；其他平台向export_erd_pdf.py传入--font及--bold-font中文TrueType字体。输出含PNG、SVG及单页矢量PDF，提交时同时更新图源和产物。首次生成后应先渲染并导出PDF，再执行完整校验；重建不连接生产数据库。
 ''')
 
 write('analysis/03-course-checklist.md','''
@@ -453,9 +605,9 @@ write('analysis/03-course-checklist.md','''
 | 阶段 | 交付 | 核对结论 |
 | --- | --- | --- |
 | A | 七要素愿景、组织边界、业务用例与现状序列 | 完整；访谈估计不伪装实测 |
-| B | 改进业务序列、软件边界、系统用例规约 | 六部门、角色、前后置和扩展路径已覆盖 |
-| C | 边界控制实体、类职责、逐用例序列、状态机 | 状态由事实推导；区分岗位安排与审核事件 |
-| D | 当前数据层、业务层与表示层精化 | 来自真实迁移，包含HTTP/RPC与私有存储边界 |
+| B | 改进业务序列、软件边界、用例规约、黑盒系统序列 | 业务工人/实体使用图形符号；黑盒序列只表达用户与软件整体 |
+| C | 边界控制实体、类职责、逐用例序列、状态机 | BCE符号、生命线、激活条和返回明确；状态由事实推导 |
+| D | 当前数据层、业务层与表示层精化 | 完整ERD含38表214字段79外键，附PNG/SVG/PDF；包含HTTP/RPC与私有存储边界 |
 
 图源、用例编号与链接由自动检查验证。多参与者关联同一用例合法，分图用于改善可读性，不作为UML语法纠错。
 ''')
@@ -478,14 +630,14 @@ write('analysis/04-business-review.md','''
 write('analysis/06-analysis-review.md','''
 # 分析模型审查
 
-边界、控制、实体职责已区分；逐用例序列具有成功与失败路径。类模型和状态机不把运行时派生状态误当数据库status列。稿件版本保留历史，退回新版本重走适用审核链。
+黑盒系统序列只含参与者与软件整体；白盒分析序列使用边界、控制、实体图形和激活条。业务序列使用业务工人及业务实体图标，软件整体不冒充业务实体。逐用例分析序列具有成功与失败路径。类模型和状态机不把运行时派生状态误当数据库status列。稿件版本保留历史，退回新版本重走适用审核链。
 
 正常完成同时归档计时，强制关闭不自动计时，工作登记单独建模；结算快照与可变实时工时分开。模型编号、图源可渲染性和本地引用由文档检查器核对；验证结果见008/validation.md。
 ''')
 write('design/02-database-review.md','''
 # 数据设计审查
 
-从实际001–005迁移构建隔离空库，读取pg_catalog并生成38表214字段79外键字典。所有业务表至少出现于一个分区ER图；复合外键、唯一约束、检查及索引保留在机器结构与字典中。
+从实际001–005迁移构建隔离空库，读取pg_catalog并生成38表214字段79外键字典。完整ERD同画布包含38表214字段79外键，各表只出现一次；七张分区图方便局部阅读。完整大图使用PlantUML的DOT模式固定表卡位置并绘制全部外键；复合外键仍为一项关系，唯一约束、检查及索引保留在机器结构与字典中。
 
 没有把旧SQLite教学模型、旧文档库或云支持表混入业务表计数。duty_slots兼容保留但不用作当前轮值；file_payloads兼容载荷与云私有对象区分。JSONB快照有明确历史目的，不替代实体关系。
 ''')
@@ -552,6 +704,6 @@ SRS的14项需求映射到33个系统用例、实际模块与STD中的验证设�
 
 T-01至T-08：[workflow.test.js](../../workbench/tests/workflow.test.js)；T-09至T-16：[center.test.js](../../workbench/tests/center.test.js)；T-17：[mobile-unification.mjs](../../workbench/tests/mobile-unification.mjs)；T-18：[文档检查器](../tools/check_current_documents.py)；T-19：[007既有云端验证](../../workbench/specs/007-mini-unification/validation.md)。
 
-本轮执行及未验证项见[008验证](../../workbench/specs/008-course-documentation/validation.md)。文档FR-001至010由T-18与本轮人工审查共同核对。
+本轮执行及未验证项见[008验证](../../workbench/specs/008-course-documentation/validation.md)。文档FR-001至014由T-18与本轮人工审查共同核对。
 ''')
 print('Generated course narratives, API index, traceability and SRS/SDD/STD.')

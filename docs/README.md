@@ -9,7 +9,7 @@
 | 架构、数据与接口设计 | [SDD](SDD.md) |
 | 测试方案、追踪及结果入口 | [STD](STD.md) |
 | 用例与路径 | [系统用例规约](requirements/system-use-case-specifications.md) |
-| 实际数据库 | [字段字典](database/data-dictionary.md) · [79项外键](database/foreign-key-relations.md) |
+| 实际数据库 | [完整ERD大图与索引](database/full-erd.md) · [单页PDF](diagrams/database/db-full.pdf) · [字段字典](database/data-dictionary.md) · [79项外键](database/foreign-key-relations.md) |
 | UML图源与可读图 | [diagrams](diagrams/) |
 | 本次审查与验证 | [008规格与验证](../workbench/specs/008-course-documentation/) |
 | 部署及两端接入 | [部署说明](../workbench/deployment/mini-unification.md) |
@@ -25,7 +25,9 @@ node docs/tools/export_runtime_schema.mjs
 python -X utf8 docs/tools/build_current_documents.py
 python -X utf8 docs/tools/build_document_narratives.py
 python -X utf8 docs/tools/build_course_assignment.py
+python -X utf8 docs/tools/render_course_diagrams.py --jar <PlantUML-JAR路径> --graphviz-dot <完整Graphviz的dot路径> --scope all
+python -X utf8 docs/tools/export_erd_pdf.py
 python -X utf8 docs/tools/check_current_documents.py
 ~~~
 
-图渲染需要Java与PlantUML，运行render_course_diagrams.py --jar 本机JAR路径 --scope all。输出含PNG和SVG，提交时同时更新图源和产物。首次生成后应先渲染，再执行完整校验；重建不连接生产数据库。
+图渲染需要Java、PlantUML和完整Graphviz；大图使用PlantUML的DOT模式，内置的精简dot不包含neato布局插件。PDF导出需要Python的reportlab与svglib，检查需要PyMuPDF；可用pip安装reportlab<5、svglib、pymupdf。Windows默认嵌入微软雅黑；其他平台向export_erd_pdf.py传入--font及--bold-font中文TrueType字体。输出含PNG、SVG及单页矢量PDF，提交时同时更新图源和产物。首次生成后应先渲染并导出PDF，再执行完整校验；重建不连接生产数据库。

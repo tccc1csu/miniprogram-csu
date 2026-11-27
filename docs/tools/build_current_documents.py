@@ -138,7 +138,21 @@ def write(name, content):
     p.write_text(content.strip()+'\n',encoding='utf-8',newline='\n')
 
 def diagram(name, body, title):
-    write('diagrams/'+name+'.puml','@startuml\nskinparam defaultFontName Microsoft YaHei\nskinparam shadowing false\nskinparam backgroundColor #FFFFFF\nskinparam ArrowColor #466482\nskinparam classAttributeIconSize 0\nhide empty members\ntitle '+title+'\n'+body+'\n@enduml')
+    style=''
+    if 'business-sequence' in name or name.startswith('analysis/seq-') or name.startswith('system-sequence-'):
+        style='''skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+'''
+    if 'business-sequence' in name:
+        style+='!include course-notation.iuml\nskinparam sequenceParticipantBorderColor transparent\nskinparam sequenceParticipantBackgroundColor transparent\n'
+    write('diagrams/'+name+'.puml','@startuml\nskinparam defaultFontName Microsoft YaHei\nskinparam shadowing false\nskinparam backgroundColor #FFFFFF\nskinparam ArrowColor #466482\nskinparam classAttributeIconSize 0\nhide empty members\n'+style+'title '+title+'\n'+body+'\n@enduml')
 
 def table(headers, rows):
     return '| '+' | '.join(headers)+' |\n| '+' | '.join('---' for _ in headers)+' |\n'+''.join('| '+' | '.join(str(x).replace('|','／').replace('\n',' ') for x in row)+' |\n' for row in rows)
@@ -270,31 +284,33 @@ def build_analysis():
         control = ('身份控制' if key.startswith('AUTH-') else
                    {'publication':'推文控制','jobs':'部门协作控制','accounting':'结算控制','support':'公共访问控制'}[u['group']])
         controls.setdefault(control,set()).update([aggregate,'账号与会话'])
-        body='actor "'+u['actor']+'" as actor\nboundary "网页与手机页面" as page\ncontrol "'+control+'" as ctl\n'
+        body='actor "'+u['actor']+'" as actor\nboundary "业务页面" as page\ncontrol "'+control+'" as ctl\n'
         if aggregate!='账号与会话': body+='entity "账号与会话" as identity\n'
         body+='entity "'+aggregate+'" as model\n'
         complete=key in ['OL-009','JOB-005']
         if complete: body+='entity "工时台账" as ledger\n'
-        body+='actor -> page : '+u['steps'][0]+'\npage -> ctl : 协调业务请求('+u['id']+')\n'
+        body+='actor -> page : '+u['name']+r'\n'+u['fields']+'\nactivate page\npage -> ctl : 协调业务请求('+u['id']+')\nactivate ctl\n'
         if aggregate!='账号与会话':
-            body+='ctl -> identity : 验证访问资格(会话、业务职责)\nidentity --> ctl : 可信身份及可用范围\n'
-        body+='ctl -> model : 核验当前条件()\nmodel --> ctl : 可办理结果或失败原因\n'
-        import textwrap
-        body+='note right of model\n'+'\n'.join(textwrap.wrap(u['pre'],28))+'\nend note\n'
-        body+='alt 业务条件满足\nctl -> model : '+u['name']+'()\n'
-        if complete: body+='group 完成结果整体生效\n'
-        for operation in operations: body+='model -> model : '+operation+'()\n'
+            body+='ctl -> identity : 验证访问资格(会话、业务职责)\nactivate identity\nidentity --> ctl : 可信身份与可用范围\ndeactivate identity\n'
+        body+='ctl -> model : 核验当前条件(输入、身份)\nactivate model\n'
+        for operation in operations[:-1]: body+='model -> model : '+operation+'()\n'
+        body+='model --> ctl : 可办理结果／失败原因\ndeactivate model\n'
+        body+='alt 业务条件满足\nctl -> model : '+u['name']+'()\nactivate model\n'
+        if complete: body+='group 完成、归档与贡献整体生效\n'
+        for operation in operations[-1:]: body+='model -> model : '+operation+'()\n'
         if complete:
-            body+='model -> ledger : 登记合格贡献(内部资格、规则版本、来源键)\nledger --> model : 唯一贡献结果\nend\n'
-        body+='model --> ctl : 业务结果及可用后续操作\nctl --> page : 处理回执\npage --> actor : 展示处理结果\n'
-        body+='else 业务条件不满足\nctl --> page : 失败原因与可恢复条件\npage --> actor : 保留输入并显示原因\nend\n'
+            body+='model -> ledger : 登记合格贡献(内部资格、规则版本、来源键)\nactivate ledger\nledger --> model : 唯一贡献结果\ndeactivate ledger\nend\n'
+        body+='model --> ctl : 业务结果与后续操作\ndeactivate model\nctl --> page : 成功回执\npage --> actor : 展示结果\n'
+        body+='else 业务条件不满足\nctl --> page : 失败原因与可恢复条件\npage --> actor : 保留输入并显示原因\nend\ndeactivate ctl\ndeactivate page\n'
+        import textwrap
+        body+='legend bottom left\n前置条件：\n'+'\n'.join(textwrap.wrap(u['pre'],38))+'\n'
         if key in EFFECTS:
-            body+='note over ctl,model\n成功后保留：'+EFFECTS[key]+'。\n'
-            if complete: body+='完成、归档及合格工时一起生效；重复不再计时。\n'
-            if key in ['OL-003','OL-006','OL-007','OL-008','JOB-004']:
-                body+='通过才开放下一环节；退回留原因，不生成完成贡献。\n'
-            body+='持久化及事务实现于D章精化。\nend note\n'
-        diagram('analysis/seq-'+u['id'].lower(),body,u['id']+' '+u['name']+'的分析序列')
+            body+='成功事实：\n'+'\n'.join(textwrap.wrap(EFFECTS[key],38))+'\n'
+        if complete: body+='完成、归档、合格贡献一起生效；重复不再计时。\n'
+        if key in ['OL-003','OL-006','OL-007','OL-008','JOB-004']:
+            body+='审核退回须留原因；仅通过才开放下一环节。\n'
+        body+='endlegend\n'
+        diagram('analysis/seq-'+u['id'].lower(),body,u['id']+' '+u['name']+' · 分析序列')
     aggregate_ops['账号与会话']+=['验证访问资格']
     aggregate_ops['工时台账']+=['登记合格贡献']
     diagram('analysis/class-domain',r'''
@@ -371,7 +387,7 @@ note bottom of Review
 任一确认可送教师，不能伪造另一人的点击。
 end note
 ''','C 领域分析类及职责')
-    body='top to bottom direction\nclass "网页与手机页面" as UI <<boundary>> {\n收集完整业务信息()\n展示处理回执()\n}\n'
+    body='top to bottom direction\nclass "业务页面" as UI <<boundary>> {\n收集完整业务信息()\n展示处理回执()\n}\n'
     for i,(control,aggregates) in enumerate(controls.items()):
         body+='class "'+control+'" as C'+str(i)+' <<control>> {\n协调业务请求()\n传递可信身份与领域结果()\n}\nUI --> C'+str(i)+'\n'
     aliases={name:'E'+str(i) for i,name in enumerate(aggregate_ops)}
@@ -489,7 +505,7 @@ end note
 
 ## 用例实现序列
 
-下面每个系统用例均有独立序列视图。推文协作簿、部门任务簿、工时台账等是领域聚合，不是数据库表；创建请求先交集合实体受理。序列中的具体动作与职责类图对应，控制不通过读取属性替代实体核验规则。条件失败不改变既有事实；发布和验收整体生效，D章再说明SQL事务与HTTP持久化方式。
+下列是白盒分析序列，不是黑盒系统序列。每个系统用例均有独立实现视图，使用boundary（边界）、control（控制）、entity（实体）的图形符号；激活条表示执行，实线为调用，虚线为返回，alt区分成功和条件失败。推文协作簿、部门任务簿、工时台账等是领域聚合，不是数据库表；创建请求先交集合实体受理。序列中的具体动作与职责类图对应，控制不通过读取属性替代实体核验规则。条件失败不改变既有事实；发布和验收整体生效，D章再说明SQL事务与HTTP持久化方式。
 '''
     for u in CAT:
         text+='\n### '+u['id']+' '+u['name']+'\n\n![用例实现](../diagrams/analysis/seq-'+u['id'].lower()+'.svg)\n'
@@ -522,6 +538,8 @@ def build_database():
     write('database/data-dictionary.md',text)
     write('database/foreign-key-relations.md','# 当前外键关系\n\n以下79项来自实际迁移后的pg_constraint。复合外键保持列顺序，不能拆成无约束的普通关联。\n\n'+table(['来源表','目标表','完整约束'],relations))
     byname={t['name']:t for t in tables}
+    from build_full_erd import build_full_erd
+    build_full_erd(tables, labels, write, table)
     for slug,(label,names) in groups.items():
         body='left to right direction\n'
         for name in names:
@@ -555,7 +573,19 @@ def build_database():
 
 业务层实际有38张表、214字段、79外键。结构化关系、复合唯一键、外键和检查约束负责底层一致性；岗位资格、当前审核阶段与计时规则由服务端协调验证。用例与表是多对多关系，不能把每个业务用例直接变成一张表。
 
-![关系库总览](../diagrams/database/db-overview.svg)
+### 完整物理关系大图
+
+下图在同一画布列出38张实际业务表、214字段及79项外键。每表只出现一次，按业务领域着色，跨区域外键和复合外键均保留。F编号对应字段与关系线，精确定义见[大图外键索引](../database/full-erd.md)。
+
+[打开SVG原图](../diagrams/database/db-full.svg) · [单页矢量PDF](../diagrams/database/db-full.pdf) · [PNG](../diagrams/database/db-full.png) · [PlantUML源](../diagrams/database/db-full.puml)
+
+![完整数据库关系大图](../diagrams/database/db-full.svg)
+
+### 分区导航
+
+下面仅保留主干关系作导航；完整物理关系以大图为准，后续分区图便于局部阅读。
+
+![关系库分区导航](../diagrams/database/db-overview.svg)
 
 ### 规范化与必要快照
 

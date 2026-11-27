@@ -1,0 +1,47 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam ArrowColor #466482
+skinparam classAttributeIconSize 0
+hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+title B 工时核定与封存 · 黑盒系统序列
+
+actor "工时管理人员" as M
+actor "办公部长" as O
+participant ":青年传媒中心工作台" as S
+M -> S : 核定工时(记录、新值、原因)\nUC-REC-002
+activate S
+alt 管理范围及输入有效
+S --> M : 新核定值、调整前后审计
+else 无权限、空原因或无效数值
+S --> M : 失败原因；原工时不变
+end
+deactivate S
+O -> S : 查询结算明细(日期、人员、列配置)\nUC-STAT-001
+activate S
+S --> O : 规则工时、核定工时、任务备注、调整原因
+deactivate S
+O -> S : 封存结算(名称、起止日期)\nUC-STAT-002
+activate S
+alt 有权限且存在有效结算行
+S --> O : 封存批次、不可变行快照
+else 范围无效或没有明细
+S --> O : 失败原因；不创建空封存
+end
+deactivate S
+M -> S : 再次核定工时(记录、新值、原因)\nUC-REC-002
+activate S
+S --> M : 实时值已更新、旧封存快照保持原值
+deactivate S
+
+@enduml

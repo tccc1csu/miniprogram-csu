@@ -1,0 +1,1038 @@
+{
+  "areas": {
+    "organization": [
+      "组织与身份",
+      "#EAF2F8",
+      [
+        "departments",
+        "users",
+        "sessions"
+      ]
+    ],
+    "publication": [
+      "任务与推文闭环",
+      "#E4F2F1",
+      [
+        "tasks",
+        "assignments",
+        "task_reviewers",
+        "versions",
+        "reviews",
+        "publication_routing",
+        "publications",
+        "archives"
+      ]
+    ],
+    "materials": [
+      "材料、报名与批注",
+      "#F0EAF8",
+      [
+        "files",
+        "file_payloads",
+        "version_files",
+        "version_annotations",
+        "registrations",
+        "registration_files"
+      ]
+    ],
+    "jobs": [
+      "六部门任务扩展",
+      "#FFF1D6",
+      [
+        "jobs",
+        "bookings",
+        "article_lines",
+        "work_entries"
+      ]
+    ],
+    "accounting": [
+      "工时、核定与封存",
+      "#EAF3E3",
+      [
+        "worklogs",
+        "adjustments",
+        "report_seals",
+        "seal_rows",
+        "saved_views"
+      ]
+    ],
+    "policy": [
+      "政策与默认配置",
+      "#FBE8E5",
+      [
+        "workflow_policy",
+        "labor_rules",
+        "rule_revisions",
+        "publication_defaults",
+        "teacher_delivery",
+        "flow_defaults"
+      ]
+    ],
+    "rotation": [
+      "轮转、审计与通知",
+      "#E8ECFA",
+      [
+        "duty_rotation",
+        "duty_rotation_members",
+        "duty_slots",
+        "events",
+        "outbox",
+        "reminders"
+      ]
+    ]
+  },
+  "foreignKeys": [
+    {
+      "id": "F001",
+      "source": "adjustments",
+      "target": "users",
+      "name": "adjustments_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F002",
+      "source": "adjustments",
+      "target": "worklogs",
+      "name": "adjustments_log_id_fkey",
+      "columns": [
+        "log_id"
+      ],
+      "definition": "FOREIGN KEY (log_id) REFERENCES worklogs(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F003",
+      "source": "archives",
+      "target": "tasks",
+      "name": "archives_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F004",
+      "source": "archives",
+      "target": "versions",
+      "name": "archives_task_id_version_id_fkey",
+      "columns": [
+        "task_id",
+        "version_id"
+      ],
+      "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+      "optional": true,
+      "unique": true
+    },
+    {
+      "id": "F005",
+      "source": "article_lines",
+      "target": "users",
+      "name": "article_lines_author_id_fkey",
+      "columns": [
+        "author_id"
+      ],
+      "definition": "FOREIGN KEY (author_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F006",
+      "source": "article_lines",
+      "target": "tasks",
+      "name": "article_lines_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F007",
+      "source": "assignments",
+      "target": "users",
+      "name": "assignments_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F008",
+      "source": "assignments",
+      "target": "users",
+      "name": "assignments_assignee_id_fkey",
+      "columns": [
+        "assignee_id"
+      ],
+      "definition": "FOREIGN KEY (assignee_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F009",
+      "source": "assignments",
+      "target": "tasks",
+      "name": "assignments_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F010",
+      "source": "bookings",
+      "target": "tasks",
+      "name": "bookings_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F011",
+      "source": "duty_rotation",
+      "target": "departments",
+      "name": "duty_rotation_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F012",
+      "source": "duty_rotation",
+      "target": "users",
+      "name": "duty_rotation_last_user_id_fkey",
+      "columns": [
+        "last_user_id"
+      ],
+      "definition": "FOREIGN KEY (last_user_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F013",
+      "source": "duty_rotation",
+      "target": "users",
+      "name": "duty_rotation_updated_by_fkey",
+      "columns": [
+        "updated_by"
+      ],
+      "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F014",
+      "source": "duty_rotation_members",
+      "target": "duty_rotation",
+      "name": "duty_rotation_members_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES duty_rotation(department_id) ON DELETE CASCADE",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F015",
+      "source": "duty_rotation_members",
+      "target": "users",
+      "name": "duty_rotation_members_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F016",
+      "source": "duty_slots",
+      "target": "users",
+      "name": "duty_slots_created_by_fkey",
+      "columns": [
+        "created_by"
+      ],
+      "definition": "FOREIGN KEY (created_by) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F017",
+      "source": "duty_slots",
+      "target": "departments",
+      "name": "duty_slots_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F018",
+      "source": "duty_slots",
+      "target": "users",
+      "name": "duty_slots_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F019",
+      "source": "events",
+      "target": "users",
+      "name": "events_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F020",
+      "source": "events",
+      "target": "tasks",
+      "name": "events_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F021",
+      "source": "file_payloads",
+      "target": "files",
+      "name": "file_payloads_file_id_fkey",
+      "columns": [
+        "file_id"
+      ],
+      "definition": "FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F022",
+      "source": "files",
+      "target": "users",
+      "name": "files_owner_id_fkey",
+      "columns": [
+        "owner_id"
+      ],
+      "definition": "FOREIGN KEY (owner_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F023",
+      "source": "files",
+      "target": "tasks",
+      "name": "files_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F024",
+      "source": "flow_defaults",
+      "target": "users",
+      "name": "flow_defaults_assignee_id_fkey",
+      "columns": [
+        "assignee_id"
+      ],
+      "definition": "FOREIGN KEY (assignee_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F025",
+      "source": "flow_defaults",
+      "target": "departments",
+      "name": "flow_defaults_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F026",
+      "source": "flow_defaults",
+      "target": "users",
+      "name": "flow_defaults_updated_by_fkey",
+      "columns": [
+        "updated_by"
+      ],
+      "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F027",
+      "source": "jobs",
+      "target": "labor_rules",
+      "name": "jobs_rule_id_fkey",
+      "columns": [
+        "rule_id"
+      ],
+      "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F028",
+      "source": "jobs",
+      "target": "departments",
+      "name": "jobs_source_department_fkey",
+      "columns": [
+        "source_department"
+      ],
+      "definition": "FOREIGN KEY (source_department) REFERENCES departments(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F029",
+      "source": "jobs",
+      "target": "tasks",
+      "name": "jobs_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F030",
+      "source": "jobs",
+      "target": "users",
+      "name": "jobs_teacher_id_fkey",
+      "columns": [
+        "teacher_id"
+      ],
+      "definition": "FOREIGN KEY (teacher_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F031",
+      "source": "outbox",
+      "target": "users",
+      "name": "outbox_recipient_id_fkey",
+      "columns": [
+        "recipient_id"
+      ],
+      "definition": "FOREIGN KEY (recipient_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F032",
+      "source": "outbox",
+      "target": "tasks",
+      "name": "outbox_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F033",
+      "source": "publication_defaults",
+      "target": "users",
+      "name": "publication_defaults_reviewer1_id_fkey",
+      "columns": [
+        "reviewer1_id"
+      ],
+      "definition": "FOREIGN KEY (reviewer1_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F034",
+      "source": "publication_defaults",
+      "target": "users",
+      "name": "publication_defaults_reviewer2_id_fkey",
+      "columns": [
+        "reviewer2_id"
+      ],
+      "definition": "FOREIGN KEY (reviewer2_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F035",
+      "source": "publication_defaults",
+      "target": "users",
+      "name": "publication_defaults_teacher1_id_fkey",
+      "columns": [
+        "teacher1_id"
+      ],
+      "definition": "FOREIGN KEY (teacher1_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F036",
+      "source": "publication_defaults",
+      "target": "users",
+      "name": "publication_defaults_teacher2_id_fkey",
+      "columns": [
+        "teacher2_id"
+      ],
+      "definition": "FOREIGN KEY (teacher2_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F037",
+      "source": "publication_routing",
+      "target": "tasks",
+      "name": "publication_routing_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F038",
+      "source": "publication_routing",
+      "target": "users",
+      "name": "publication_routing_teacher1_id_fkey",
+      "columns": [
+        "teacher1_id"
+      ],
+      "definition": "FOREIGN KEY (teacher1_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F039",
+      "source": "publication_routing",
+      "target": "users",
+      "name": "publication_routing_teacher2_id_fkey",
+      "columns": [
+        "teacher2_id"
+      ],
+      "definition": "FOREIGN KEY (teacher2_id) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F040",
+      "source": "publications",
+      "target": "users",
+      "name": "publications_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F041",
+      "source": "publications",
+      "target": "tasks",
+      "name": "publications_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F042",
+      "source": "publications",
+      "target": "versions",
+      "name": "publications_task_id_version_id_fkey",
+      "columns": [
+        "task_id",
+        "version_id"
+      ],
+      "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F043",
+      "source": "registration_files",
+      "target": "files",
+      "name": "registration_files_file_id_fkey",
+      "columns": [
+        "file_id"
+      ],
+      "definition": "FOREIGN KEY (file_id) REFERENCES files(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F044",
+      "source": "registration_files",
+      "target": "registrations",
+      "name": "registration_files_registration_id_fkey",
+      "columns": [
+        "registration_id"
+      ],
+      "definition": "FOREIGN KEY (registration_id) REFERENCES registrations(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F045",
+      "source": "registrations",
+      "target": "tasks",
+      "name": "registrations_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F046",
+      "source": "registrations",
+      "target": "users",
+      "name": "registrations_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F047",
+      "source": "reminders",
+      "target": "tasks",
+      "name": "reminders_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F048",
+      "source": "report_seals",
+      "target": "users",
+      "name": "report_seals_created_by_fkey",
+      "columns": [
+        "created_by"
+      ],
+      "definition": "FOREIGN KEY (created_by) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F049",
+      "source": "reviews",
+      "target": "users",
+      "name": "reviews_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F050",
+      "source": "reviews",
+      "target": "versions",
+      "name": "reviews_task_id_version_id_fkey",
+      "columns": [
+        "task_id",
+        "version_id"
+      ],
+      "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F051",
+      "source": "rule_revisions",
+      "target": "workflow_policy",
+      "name": "rule_revisions_policy_version_fkey",
+      "columns": [
+        "policy_version"
+      ],
+      "definition": "FOREIGN KEY (policy_version) REFERENCES workflow_policy(version)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F052",
+      "source": "rule_revisions",
+      "target": "labor_rules",
+      "name": "rule_revisions_rule_id_fkey",
+      "columns": [
+        "rule_id"
+      ],
+      "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F053",
+      "source": "saved_views",
+      "target": "users",
+      "name": "saved_views_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F054",
+      "source": "seal_rows",
+      "target": "report_seals",
+      "name": "seal_rows_seal_id_fkey",
+      "columns": [
+        "seal_id"
+      ],
+      "definition": "FOREIGN KEY (seal_id) REFERENCES report_seals(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F055",
+      "source": "seal_rows",
+      "target": "worklogs",
+      "name": "seal_rows_source_id_fkey",
+      "columns": [
+        "source_id"
+      ],
+      "definition": "FOREIGN KEY (source_id) REFERENCES worklogs(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F056",
+      "source": "sessions",
+      "target": "users",
+      "name": "sessions_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F057",
+      "source": "task_reviewers",
+      "target": "tasks",
+      "name": "task_reviewers_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F058",
+      "source": "task_reviewers",
+      "target": "users",
+      "name": "task_reviewers_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F059",
+      "source": "tasks",
+      "target": "workflow_policy",
+      "name": "tasks_config_version_fkey",
+      "columns": [
+        "config_version"
+      ],
+      "definition": "FOREIGN KEY (config_version) REFERENCES workflow_policy(version)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F060",
+      "source": "tasks",
+      "target": "users",
+      "name": "tasks_creator_id_fkey",
+      "columns": [
+        "creator_id"
+      ],
+      "definition": "FOREIGN KEY (creator_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F061",
+      "source": "tasks",
+      "target": "departments",
+      "name": "tasks_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F062",
+      "source": "tasks",
+      "target": "tasks",
+      "name": "tasks_linked_task_id_fkey",
+      "columns": [
+        "linked_task_id"
+      ],
+      "definition": "FOREIGN KEY (linked_task_id) REFERENCES tasks(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F063",
+      "source": "teacher_delivery",
+      "target": "users",
+      "name": "teacher_delivery_teacher_id_fkey",
+      "columns": [
+        "teacher_id"
+      ],
+      "definition": "FOREIGN KEY (teacher_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F064",
+      "source": "users",
+      "target": "departments",
+      "name": "users_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F065",
+      "source": "version_annotations",
+      "target": "users",
+      "name": "version_annotations_actor_id_fkey",
+      "columns": [
+        "actor_id"
+      ],
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F066",
+      "source": "version_annotations",
+      "target": "versions",
+      "name": "version_annotations_task_id_version_id_fkey",
+      "columns": [
+        "task_id",
+        "version_id"
+      ],
+      "definition": "FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F067",
+      "source": "version_files",
+      "target": "files",
+      "name": "version_files_file_id_fkey",
+      "columns": [
+        "file_id"
+      ],
+      "definition": "FOREIGN KEY (file_id) REFERENCES files(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F068",
+      "source": "version_files",
+      "target": "versions",
+      "name": "version_files_version_id_fkey",
+      "columns": [
+        "version_id"
+      ],
+      "definition": "FOREIGN KEY (version_id) REFERENCES versions(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F069",
+      "source": "versions",
+      "target": "users",
+      "name": "versions_author_id_fkey",
+      "columns": [
+        "author_id"
+      ],
+      "definition": "FOREIGN KEY (author_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F070",
+      "source": "versions",
+      "target": "tasks",
+      "name": "versions_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F071",
+      "source": "work_entries",
+      "target": "users",
+      "name": "work_entries_person_id_fkey",
+      "columns": [
+        "person_id"
+      ],
+      "definition": "FOREIGN KEY (person_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F072",
+      "source": "work_entries",
+      "target": "labor_rules",
+      "name": "work_entries_rule_id_fkey",
+      "columns": [
+        "rule_id"
+      ],
+      "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F073",
+      "source": "work_entries",
+      "target": "tasks",
+      "name": "work_entries_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": true
+    },
+    {
+      "id": "F074",
+      "source": "workflow_policy",
+      "target": "users",
+      "name": "workflow_policy_updated_by_fkey",
+      "columns": [
+        "updated_by"
+      ],
+      "definition": "FOREIGN KEY (updated_by) REFERENCES users(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F075",
+      "source": "worklogs",
+      "target": "departments",
+      "name": "worklogs_department_id_fkey",
+      "columns": [
+        "department_id"
+      ],
+      "definition": "FOREIGN KEY (department_id) REFERENCES departments(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F076",
+      "source": "worklogs",
+      "target": "labor_rules",
+      "name": "worklogs_rule_id_fkey",
+      "columns": [
+        "rule_id"
+      ],
+      "definition": "FOREIGN KEY (rule_id) REFERENCES labor_rules(id)",
+      "optional": true,
+      "unique": false
+    },
+    {
+      "id": "F077",
+      "source": "worklogs",
+      "target": "workflow_policy",
+      "name": "worklogs_rule_version_fkey",
+      "columns": [
+        "rule_version"
+      ],
+      "definition": "FOREIGN KEY (rule_version) REFERENCES workflow_policy(version)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F078",
+      "source": "worklogs",
+      "target": "tasks",
+      "name": "worklogs_task_id_fkey",
+      "columns": [
+        "task_id"
+      ],
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id)",
+      "optional": false,
+      "unique": false
+    },
+    {
+      "id": "F079",
+      "source": "worklogs",
+      "target": "users",
+      "name": "worklogs_user_id_fkey",
+      "columns": [
+        "user_id"
+      ],
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)",
+      "optional": false,
+      "unique": false
+    }
+  ]
+}

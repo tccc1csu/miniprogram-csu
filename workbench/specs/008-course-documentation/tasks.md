@@ -36,3 +36,12 @@ T001→T002→T003/T004/T005→T006/T007→T008→T009/T010/T011→T012→T013�
 ## MVP
 
 The minimum useful delivery is T003–T010: a coherent course package and current engineering documents. README and push are release completion tasks.
+
+## Phase 6: User review corrections
+
+- [x] T015 Correct all six business sequence diagrams with PlantUML business-worker/entity icons and explicit notation guidance.
+- [x] T016 Add clear black-box system sequences and improve all 33 BCE analysis sequences with activations, returns, message numbering and readable branches.
+- [x] T017 Generate one complete color-grouped ERD with 38 tables, 214 columns and all 79 foreign keys; export PNG, SVG and single-sheet vector PDF.
+- [x] T018 Extend document/ERD coverage validation, rebuild the course and SDD, visually inspect representative diagrams and the PDF, then commit and push the correction.
+
+Dependencies: T015/T016 → T017 → T018. FR-011→T015; FR-012→T016; FR-013→T017; FR-014→T017/T018.

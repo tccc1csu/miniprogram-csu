@@ -5,34 +5,52 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+!include course-notation.iuml
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
 title B 改进业务序列：推文闭环
 
 actor "需求方" as D
-participant "统一工作台" as S
-participant "采编部长" as E
-participant "运营部长" as M
-participant "排版干事" as W
-participant "一审老师" as T1
-participant "二审老师" as T2
-D -> S : 提交需求与源稿
+participant "<$worker>\n采编部长" as E
+participant "<$worker>\n运营部长" as M
+participant "<$worker>\n排版干事" as W
+participant "<$worker>\n一审老师" as T1
+participant "<$worker>\n二审老师" as T2
+participant "<$entity>\n推文协作档案" as S
+D -> S : 登记需求与源稿
 opt 外部来稿
-S -> E : 提供待内容审核稿件
-E -> S : 审核源稿内容
+E -> S : 阅读源稿并登记内容审核结论
 end
-M -> S : 安排承接
-S -> W : 提供任务与材料
+M -> S : 登记承接安排
+W -> S : 读取任务与材料
+S --> W : 排版要求与源稿
 W -> S : 提交排版版本
-M -> S : 两位指定部长任一确认内部审校
-S -> T1 : 提供一审待办
-T1 -> S : 提交一审结论
-S -> T2 : 提供二审待办
-T2 -> S : 提交二审结论
-M -> S : 登记发布地址
-S -> S : 原子保存发布、归档和合格内部贡献
-S --> D : 提供可追溯发布结果
-note over S,T2
-退回由承接人新版本重走排版审核链。
-群机器人尚未连接，现为站内待办。
-end note
+M -> S : 两位指定部长任一登记内审通过
+T1 -> S : 阅读当前稿件并登记一审结论
+T2 -> S : 一审通过后登记二审结论
+M -> S : 登记公开发布地址
+activate S
+S -> S : 一并保留发布、归档与内部贡献
+S --> M : 发布与归档回执
+deactivate S
+D -> S : 查询发布结果
+activate S
+S --> D : 可追溯的发布结果
+deactivate S
+legend bottom
+业务工人：带斜线的人形圆标；业务实体：带斜线的圆标。
+本图表达各岗位对业务档案的操作；自动保存由工作台实现。
+退回后由承接人提交新版本，重新经过内审及教师两审。
+教师一审、二审为不同人员；群机器人尚未接通。
+endlegend
 
 @enduml

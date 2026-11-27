@@ -5,35 +5,53 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
-title UC-CFG-001 配置教师与承接规则的分析序列
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+title UC-CFG-001 配置教师与承接规则 · 分析序列
 actor "部门管理人员" as actor
-boundary "网页与手机页面" as page
+boundary "业务页面" as page
 control "公共访问控制" as ctl
 entity "账号与会话" as identity
 entity "承接与政策配置" as model
-actor -> page : 选择配置范围
+actor -> page : 配置教师与承接规则\n两位教师、审校人、群路由、提及值、队列、默认人
+activate page
 page -> ctl : 协调业务请求(UC-CFG-001)
+activate ctl
 ctl -> identity : 验证访问资格(会话、业务职责)
-identity --> ctl : 可信身份及可用范围
-ctl -> model : 核验当前条件()
-model --> ctl : 可办理结果或失败原因
-note right of model
-有对应部门的配置权限
-end note
+activate identity
+identity --> ctl : 可信身份与可用范围
+deactivate identity
+ctl -> model : 核验当前条件(输入、身份)
+activate model
+model -> model : 核验配置部门与教师互异()
+model --> ctl : 可办理结果／失败原因
+deactivate model
 alt 业务条件满足
 ctl -> model : 配置教师与承接规则()
-model -> model : 核验配置部门与教师互异()
+activate model
 model -> model : 保存后续任务默认配置()
-model --> ctl : 业务结果及可用后续操作
-ctl --> page : 处理回执
-page --> actor : 展示处理结果
+model --> ctl : 业务结果与后续操作
+deactivate model
+ctl --> page : 成功回执
+page --> actor : 展示结果
 else 业务条件不满足
 ctl --> page : 失败原因与可恢复条件
 page --> actor : 保留输入并显示原因
 end
-note over ctl,model
-成功后保留：教师路由、默认承接或轮转配置。
-持久化及事务实现于D章精化。
-end note
+deactivate ctl
+deactivate page
+legend bottom left
+前置条件：
+有对应部门的配置权限
+成功事实：
+教师路由、默认承接或轮转配置
+endlegend
 
 @enduml

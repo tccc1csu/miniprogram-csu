@@ -5,32 +5,48 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
-title UC-AUTH-001 登录工作台的分析序列
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+title UC-AUTH-001 登录工作台 · 分析序列
 actor "使用者" as actor
-boundary "网页与手机页面" as page
+boundary "业务页面" as page
 control "身份控制" as ctl
 entity "账号与会话" as model
-actor -> page : 提交账号和密码
+actor -> page : 登录工作台\n账号、密码
+activate page
 page -> ctl : 协调业务请求(UC-AUTH-001)
-ctl -> model : 核验当前条件()
-model --> ctl : 可办理结果或失败原因
-note right of model
-账号有效且启用
-end note
+activate ctl
+ctl -> model : 核验当前条件(输入、身份)
+activate model
+model -> model : 验证密码与启用状态()
+model --> ctl : 可办理结果／失败原因
+deactivate model
 alt 业务条件满足
 ctl -> model : 登录工作台()
-model -> model : 验证密码与启用状态()
+activate model
 model -> model : 建立有时限的可信会话()
-model --> ctl : 业务结果及可用后续操作
-ctl --> page : 处理回执
-page --> actor : 展示处理结果
+model --> ctl : 业务结果与后续操作
+deactivate model
+ctl --> page : 成功回执
+page --> actor : 展示结果
 else 业务条件不满足
 ctl --> page : 失败原因与可恢复条件
 page --> actor : 保留输入并显示原因
 end
-note over ctl,model
-成功后保留：会话令牌摘要与失效时刻。
-持久化及事务实现于D章精化。
-end note
+deactivate ctl
+deactivate page
+legend bottom left
+前置条件：
+账号有效且启用
+成功事实：
+会话令牌摘要与失效时刻
+endlegend
 
 @enduml

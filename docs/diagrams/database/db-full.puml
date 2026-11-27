@@ -1,0 +1,449 @@
+@startdot
+digraph YouthMedia {
+// Generated from runtime-schema.json by build_full_erd.py; no business data.
+graph [layout=neato, overlap=true, splines=ortho, outputorder=edgesfirst, bgcolor="#FFFFFF", pad="0.5", fontname="Microsoft YaHei"];
+node [shape=plain, pin=true, fontname="Microsoft YaHei", fontsize=12];
+edge [color="#8A9AAF", penwidth=0.75, arrowsize=0.55, fontname="Microsoft YaHei", fontsize=9, fontcolor="#54677E"];
+subgraph cluster_organization {
+bgcolor="#EAF2F8"; color="#EAF2F8"; style="rounded"; margin=28;
+area_organization_header [pos="5.174,-0.250!", width=10.347, height=0.5, label=<<B>组织与身份</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD departments.id : text
+// FIELD departments.name : text
+departments [pos="2.361,-1.625!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF2F8" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>部门</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">departments</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD users.id : text
+// FIELD users.username : text
+// FIELD users.name : text
+// FIELD users.password_hash : text
+// FIELD users.role : text
+// FIELD users.department_id : text
+// FIELD users.payable : boolean
+// FIELD users.active : boolean
+users [pos="7.986,-2.583!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF2F8" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>账号</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">users</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="username" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* username <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="password_hash" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* password_hash <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="role" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* role <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F064</FONT></TD></TR><TR><TD PORT="payable" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* payable <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="active" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* active <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD sessions.token_hash : text
+// FIELD sessions.user_id : text
+// FIELD sessions.expires_at : timestamp with time zone
+sessions [pos="2.361,-5.840!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF2F8" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>会话</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">sessions</FONT></TD></TR><TR><TD PORT="token_hash" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* token_hash <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F056</FONT></TD></TR><TR><TD PORT="expires_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* expires_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_jobs {
+bgcolor="#FFF1D6"; color="#FFF1D6"; style="rounded"; margin=28;
+area_jobs_header [pos="5.174,-8.847!", width=10.347, height=0.5, label=<<B>六部门任务扩展</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD jobs.task_id : text
+// FIELD jobs.review_mode : boolean
+// FIELD jobs.rule_id : integer
+// FIELD jobs.complexity : text
+// FIELD jobs.source_department : text
+// FIELD jobs.teacher_id : text
+// FIELD jobs.urgent_reason : text
+jobs [pos="2.361,-11.021!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FFF1D6" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>部门任务扩展</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">jobs</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F029</FONT></TD></TR><TR><TD PORT="review_mode" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* review_mode <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="rule_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  rule_id <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F027</FONT></TD></TR><TR><TD PORT="complexity" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  complexity <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="source_department" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  source_department <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F028</FONT></TD></TR><TR><TD PORT="teacher_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  teacher_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F030</FONT></TD></TR><TR><TD PORT="urgent_reason" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* urgent_reason <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD bookings.task_id : text
+// FIELD bookings.location : text
+// FIELD bookings.contact : text
+bookings [pos="7.986,-10.382!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FFF1D6" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>预约资料</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">bookings</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F010</FONT></TD></TR><TR><TD PORT="location" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* location <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="contact" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* contact <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD article_lines.task_id : text
+// FIELD article_lines.position : integer
+// FIELD article_lines.title : text
+// FIELD article_lines.site : text
+// FIELD article_lines.original : boolean
+// FIELD article_lines.author_id : text
+article_lines [pos="2.361,-14.597!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FFF1D6" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>稿件站点行</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">article_lines</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F006</FONT></TD></TR><TR><TD PORT="position" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* position <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="title" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* title <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="site" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* site <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="original" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* original <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="author_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  author_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F005</FONT></TD></TR></TABLE>>];
+// FIELD work_entries.task_id : text
+// FIELD work_entries.person_id : text
+// FIELD work_entries.week : integer
+// FIELD work_entries.rule_id : integer
+work_entries [pos="7.986,-14.278!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FFF1D6" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>人工登记</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">work_entries</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F073</FONT></TD></TR><TR><TD PORT="person_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* person_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F071</FONT></TD></TR><TR><TD PORT="week" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* week <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="rule_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  rule_id <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F072</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_materials {
+bgcolor="#F0EAF8"; color="#F0EAF8"; style="rounded"; margin=28;
+area_materials_header [pos="6.319,-18.083!", width=12.639, height=0.5, label=<<B>材料、报名与批注</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD files.id : text
+// FIELD files.task_id : text
+// FIELD files.owner_id : text
+// FIELD files.storage_name : text
+// FIELD files.name : text
+// FIELD files.size : integer
+// FIELD files.sha256 : text
+// FIELD files.created_at : timestamp with time zone
+files [pos="1.806,-20.417!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>附件元数据</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">files</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F023</FONT></TD></TR><TR><TD PORT="owner_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* owner_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F022</FONT></TD></TR><TR><TD PORT="storage_name" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* storage_name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="size" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* size <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="sha256" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* sha256 <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD file_payloads.file_id : text
+// FIELD file_payloads.content : bytea
+file_payloads [pos="6.319,-19.458!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>附件兼容载荷</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">file_payloads</FONT></TD></TR><TR><TD PORT="file_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* file_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F021</FONT></TD></TR><TR><TD PORT="content" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* content <FONT COLOR="#68798D" POINT-SIZE="10">: bytea</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD version_files.version_id : text
+// FIELD version_files.file_id : text
+version_files [pos="10.833,-19.458!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>版本附件</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">version_files</FONT></TD></TR><TR><TD PORT="version_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* version_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F068</FONT></TD></TR><TR><TD PORT="file_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* file_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F067</FONT></TD></TR></TABLE>>];
+// FIELD version_annotations.id : text
+// FIELD version_annotations.task_id : text
+// FIELD version_annotations.version_id : text
+// FIELD version_annotations.stage : text
+// FIELD version_annotations.actor_id : text
+// FIELD version_annotations.start_offset : integer
+// FIELD version_annotations.end_offset : integer
+// FIELD version_annotations.quote : text
+// FIELD version_annotations.body : text
+// FIELD version_annotations.created_at : timestamp with time zone
+version_annotations [pos="1.806,-24.792!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>选区批注</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">version_annotations</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F066</FONT></TD></TR><TR><TD PORT="version_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* version_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F066</FONT></TD></TR><TR><TD PORT="stage" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* stage <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F065</FONT></TD></TR><TR><TD PORT="start_offset" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* start_offset <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="end_offset" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* end_offset <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="quote" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* quote <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="body" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* body <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD registrations.id : text
+// FIELD registrations.task_id : text
+// FIELD registrations.user_id : text
+// FIELD registrations.notes : text
+// FIELD registrations.created_at : timestamp with time zone
+registrations [pos="6.319,-23.993!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>公开报名</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">registrations</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F045</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F046</FONT></TD></TR><TR><TD PORT="notes" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* notes <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD registration_files.registration_id : text
+// FIELD registration_files.file_id : text
+registration_files [pos="10.833,-23.514!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="260"><TR><TD BGCOLOR="#F0EAF8" ALIGN="LEFT" HEIGHT="43" WIDTH="260"><FONT POINT-SIZE="14"><B>报名附件</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">registration_files</FONT></TD></TR><TR><TD PORT="registration_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* registration_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F044</FONT></TD></TR><TR><TD PORT="file_id" ALIGN="LEFT" HEIGHT="23" WIDTH="260">* file_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F043</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_publication {
+bgcolor="#E4F2F1"; color="#E4F2F1"; style="rounded"; margin=28;
+area_publication_header [pos="24.410,-0.250!", width=21.597, height=0.5, label=<<B>任务与推文闭环</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD tasks.id : text
+// FIELD tasks.number : text
+// FIELD tasks.title : text
+// FIELD tasks.creator_id : text
+// FIELD tasks.department_id : text
+// FIELD tasks.layout_type : text
+// FIELD tasks.deadline : timestamp with time zone
+// FIELD tasks.notes : text
+// FIELD tasks.open_registration : boolean
+// FIELD tasks.urgent : boolean
+// FIELD tasks.created_at : timestamp with time zone
+// FIELD tasks.kind : text
+// FIELD tasks.linked_task_id : text
+// FIELD tasks.config_version : integer
+// FIELD tasks.reminder_hours : numeric(8,2)
+// FIELD tasks.report_note : text
+tasks [pos="15.972,-3.861!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>任务</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">tasks</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="number" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* number <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="title" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* title <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="creator_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* creator_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F060</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F061</FONT></TD></TR><TR><TD PORT="layout_type" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  layout_type <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="deadline" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  deadline <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="notes" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* notes <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="open_registration" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* open_registration <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="urgent" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* urgent <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="kind" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* kind <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="linked_task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  linked_task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F062</FONT></TD></TR><TR><TD PORT="config_version" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* config_version <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F059</FONT></TD></TR><TR><TD PORT="reminder_hours" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  reminder_hours <FONT COLOR="#68798D" POINT-SIZE="10">: numeric(8,2)</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="report_note" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* report_note <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD assignments.task_id : text
+// FIELD assignments.assignee_id : text
+// FIELD assignments.actor_id : text
+// FIELD assignments.created_at : timestamp with time zone
+// FIELD assignments.automatic : boolean
+assignments [pos="21.597,-2.104!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>承接安排</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">assignments</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F009</FONT></TD></TR><TR><TD PORT="assignee_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* assignee_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F008</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F007</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="automatic" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* automatic <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD task_reviewers.task_id : text
+// FIELD task_reviewers.user_id : text
+task_reviewers [pos="27.222,-1.625!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>审校岗位安排</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">task_reviewers</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F057</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F058</FONT></TD></TR></TABLE>>];
+// FIELD versions.id : text
+// FIELD versions.task_id : text
+// FIELD versions.number : integer
+// FIELD versions.body : text
+// FIELD versions.preview_url : text
+// FIELD versions.author_id : text
+// FIELD versions.created_at : timestamp with time zone
+// FIELD versions.phase : text
+// FIELD versions.preview_html : text
+versions [pos="32.847,-2.743!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>稿件版本</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">versions</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F070</FONT></TD></TR><TR><TD PORT="number" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* number <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="body" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* body <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="preview_url" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* preview_url <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="author_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* author_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F069</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="phase" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* phase <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="preview_html" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* preview_html <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD reviews.id : text
+// FIELD reviews.task_id : text
+// FIELD reviews.version_id : text
+// FIELD reviews.stage : text
+// FIELD reviews.decision : text
+// FIELD reviews.reason : text
+// FIELD reviews.actor_id : text
+// FIELD reviews.created_at : timestamp with time zone
+reviews [pos="15.972,-9.194!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>审核事件</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">reviews</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F050</FONT></TD></TR><TR><TD PORT="version_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* version_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F050</FONT></TD></TR><TR><TD PORT="stage" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* stage <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="decision" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* decision <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="reason" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* reason <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F049</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD publication_routing.task_id : text
+// FIELD publication_routing.source_required : boolean
+// FIELD publication_routing.teacher1_id : text
+// FIELD publication_routing.teacher2_id : text
+publication_routing [pos="21.597,-8.556!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>推文教师路由</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">publication_routing</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F037</FONT></TD></TR><TR><TD PORT="source_required" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* source_required <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="teacher1_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  teacher1_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F038</FONT></TD></TR><TR><TD PORT="teacher2_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  teacher2_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F039</FONT></TD></TR></TABLE>>];
+// FIELD publications.task_id : text
+// FIELD publications.version_id : text
+// FIELD publications.url : text
+// FIELD publications.actor_id : text
+// FIELD publications.created_at : timestamp with time zone
+publications [pos="27.222,-8.715!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>发布事实</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">publications</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F041,F042</FONT></TD></TR><TR><TD PORT="version_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* version_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F042</FONT></TD></TR><TR><TD PORT="url" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* url <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F040</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD archives.id : text
+// FIELD archives.task_id : text
+// FIELD archives.version_id : text
+// FIELD archives.created_at : timestamp with time zone
+// FIELD archives.reason : text
+archives [pos="32.847,-8.715!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E4F2F1" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>归档事实</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">archives</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F003,F004</FONT></TD></TR><TR><TD PORT="version_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  version_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F004</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="reason" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  reason <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_accounting {
+bgcolor="#EAF3E3"; color="#EAF3E3"; style="rounded"; margin=28;
+area_accounting_header [pos="21.597,-13.000!", width=15.972, height=0.5, label=<<B>工时、核定与封存</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD worklogs.id : text
+// FIELD worklogs.task_id : text
+// FIELD worklogs.user_id : text
+// FIELD worklogs.department_id : text
+// FIELD worklogs.kind : text
+// FIELD worklogs.rule_name : text
+// FIELD worklogs.base_units : integer
+// FIELD worklogs.effective_units : integer
+// FIELD worklogs.rate_cents : integer
+// FIELD worklogs.confirmed : boolean
+// FIELD worklogs.created_at : timestamp with time zone
+// FIELD worklogs.source_key : text
+// FIELD worklogs.rule_id : integer
+// FIELD worklogs.rule_version : integer
+// FIELD worklogs.multiplier : integer
+worklogs [pos="15.972,-16.451!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF3E3" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>工时贡献</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">worklogs</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F078</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F079</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F075</FONT></TD></TR><TR><TD PORT="kind" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* kind <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="rule_name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* rule_name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="base_units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* base_units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="effective_units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* effective_units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="rate_cents" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* rate_cents <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="confirmed" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* confirmed <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="source_key" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* source_key <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="rule_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  rule_id <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F076</FONT></TD></TR><TR><TD PORT="rule_version" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* rule_version <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F077</FONT></TD></TR><TR><TD PORT="multiplier" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* multiplier <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD adjustments.id : text
+// FIELD adjustments.log_id : text
+// FIELD adjustments.old_units : integer
+// FIELD adjustments.new_units : integer
+// FIELD adjustments.reason : text
+// FIELD adjustments.actor_id : text
+// FIELD adjustments.created_at : timestamp with time zone
+adjustments [pos="21.597,-15.174!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF3E3" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>核定审计</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">adjustments</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="log_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* log_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F002</FONT></TD></TR><TR><TD PORT="old_units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* old_units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="new_units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* new_units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="reason" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* reason <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F001</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD report_seals.id : text
+// FIELD report_seals.name : text
+// FIELD report_seals.created_by : text
+// FIELD report_seals.start_date : date
+// FIELD report_seals.end_date : date
+// FIELD report_seals.created_at : timestamp with time zone
+report_seals [pos="27.222,-15.014!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF3E3" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>封存批次</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">report_seals</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_by" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_by <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F048</FONT></TD></TR><TR><TD PORT="start_date" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* start_date <FONT COLOR="#68798D" POINT-SIZE="10">: date</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="end_date" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* end_date <FONT COLOR="#68798D" POINT-SIZE="10">: date</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD seal_rows.seal_id : text
+// FIELD seal_rows.source_id : text
+// FIELD seal_rows.data : jsonb
+seal_rows [pos="15.972,-20.826!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF3E3" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>封存行快照</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">seal_rows</FONT></TD></TR><TR><TD PORT="seal_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* seal_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F054</FONT></TD></TR><TR><TD PORT="source_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* source_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F055</FONT></TD></TR><TR><TD PORT="data" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* data <FONT COLOR="#68798D" POINT-SIZE="10">: jsonb</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD saved_views.id : text
+// FIELD saved_views.user_id : text
+// FIELD saved_views.name : text
+// FIELD saved_views.config : jsonb
+saved_views [pos="21.597,-20.986!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#EAF3E3" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>个人报表视图</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">saved_views</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F053</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="config" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* config <FONT COLOR="#68798D" POINT-SIZE="10">: jsonb</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_policy {
+bgcolor="#FBE8E5"; color="#FBE8E5"; style="rounded"; margin=28;
+area_policy_header [pos="43.229,-0.250!", width=10.347, height=0.5, label=<<B>政策与默认配置</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD workflow_policy.version : integer
+// FIELD workflow_policy.rate_cents : integer
+// FIELD workflow_policy.urgent_factor : integer
+// FIELD workflow_policy.photo_window : integer
+// FIELD workflow_policy.publication_window : integer
+// FIELD workflow_policy.updated_by : text
+// FIELD workflow_policy.reason : text
+// FIELD workflow_policy.created_at : timestamp with time zone
+workflow_policy [pos="40.417,-2.583!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>政策版本</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">workflow_policy</FONT></TD></TR><TR><TD PORT="version" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* version <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="rate_cents" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* rate_cents <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="urgent_factor" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* urgent_factor <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="photo_window" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* photo_window <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="publication_window" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* publication_window <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="updated_by" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  updated_by <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F074</FONT></TD></TR><TR><TD PORT="reason" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* reason <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD labor_rules.id : integer
+// FIELD labor_rules.department_id : text
+// FIELD labor_rules.name : text
+// FIELD labor_rules.participant : text
+// FIELD labor_rules.unit : text
+// FIELD labor_rules.units : integer
+// FIELD labor_rules.review : boolean
+// FIELD labor_rules.source : text
+labor_rules [pos="46.042,-2.583!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>工时规则</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">labor_rules</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="name" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* name <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="participant" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* participant <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="unit" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* unit <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="review" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* review <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="source" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* source <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD rule_revisions.policy_version : integer
+// FIELD rule_revisions.rule_id : integer
+// FIELD rule_revisions.units : integer
+rule_revisions [pos="40.417,-5.840!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>规则修订</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">rule_revisions</FONT></TD></TR><TR><TD PORT="policy_version" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* policy_version <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F051</FONT></TD></TR><TR><TD PORT="rule_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* rule_id <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F052</FONT></TD></TR><TR><TD PORT="units" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* units <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD publication_defaults.singleton : boolean
+// FIELD publication_defaults.initialized : boolean
+// FIELD publication_defaults.teacher1_id : text
+// FIELD publication_defaults.teacher2_id : text
+// FIELD publication_defaults.reviewer1_id : text
+// FIELD publication_defaults.reviewer2_id : text
+publication_defaults [pos="46.042,-6.319!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>推文默认配置</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">publication_defaults</FONT></TD></TR><TR><TD PORT="singleton" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* singleton <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="initialized" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* initialized <FONT COLOR="#68798D" POINT-SIZE="10">: boolean</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="teacher1_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  teacher1_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F035</FONT></TD></TR><TR><TD PORT="teacher2_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  teacher2_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F036</FONT></TD></TR><TR><TD PORT="reviewer1_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  reviewer1_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F033</FONT></TD></TR><TR><TD PORT="reviewer2_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  reviewer2_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F034</FONT></TD></TR></TABLE>>];
+// FIELD teacher_delivery.teacher_id : text
+// FIELD teacher_delivery.channel : text
+// FIELD teacher_delivery.mention : text
+teacher_delivery [pos="40.417,-9.257!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>教师通知路由</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">teacher_delivery</FONT></TD></TR><TR><TD PORT="teacher_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* teacher_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F063</FONT></TD></TR><TR><TD PORT="channel" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* channel <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="mention" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* mention <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD flow_defaults.department_id : text
+// FIELD flow_defaults.kind : text
+// FIELD flow_defaults.assignee_id : text
+// FIELD flow_defaults.updated_by : text
+// FIELD flow_defaults.updated_at : timestamp with time zone
+flow_defaults [pos="46.042,-9.576!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#FBE8E5" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>默认承接</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">flow_defaults</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F025</FONT></TD></TR><TR><TD PORT="kind" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* kind <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="assignee_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* assignee_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F024</FONT></TD></TR><TR><TD PORT="updated_by" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* updated_by <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F026</FONT></TD></TR><TR><TD PORT="updated_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* updated_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+}
+subgraph cluster_rotation {
+bgcolor="#E8ECFA"; color="#E8ECFA"; style="rounded"; margin=28;
+area_rotation_header [pos="43.229,-12.903!", width=10.347, height=0.5, label=<<B>轮转、审计与通知</B>>, fontsize=20, fontcolor="#22374B"];
+// FIELD duty_rotation.department_id : text
+// FIELD duty_rotation.last_user_id : text
+// FIELD duty_rotation.updated_by : text
+duty_rotation [pos="40.417,-14.438!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>轮转指针</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">duty_rotation</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F011</FONT></TD></TR><TR><TD PORT="last_user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  last_user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F012</FONT></TD></TR><TR><TD PORT="updated_by" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* updated_by <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F013</FONT></TD></TR></TABLE>>];
+// FIELD duty_rotation_members.department_id : text
+// FIELD duty_rotation_members.user_id : text
+// FIELD duty_rotation_members.position : integer
+duty_rotation_members [pos="46.042,-14.438!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>轮转成员</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">duty_rotation_members</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F014</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F015</FONT></TD></TR><TR><TD PORT="position" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* position <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD duty_slots.id : text
+// FIELD duty_slots.department_id : text
+// FIELD duty_slots.user_id : text
+// FIELD duty_slots.start_at : timestamp with time zone
+// FIELD duty_slots.end_at : timestamp with time zone
+// FIELD duty_slots.created_by : text
+duty_slots [pos="40.417,-17.375!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>历史时段表</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">duty_slots</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="department_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  department_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F017</FONT></TD></TR><TR><TD PORT="user_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* user_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F018</FONT></TD></TR><TR><TD PORT="start_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* start_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="end_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* end_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_by" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_by <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F016</FONT></TD></TR></TABLE>>];
+// FIELD events.id : text
+// FIELD events.task_id : text
+// FIELD events.actor_id : text
+// FIELD events.action : text
+// FIELD events.detail : text
+// FIELD events.created_at : timestamp with time zone
+events [pos="46.042,-17.375!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>任务审计</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">events</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F020</FONT></TD></TR><TR><TD PORT="actor_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* actor_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F019</FONT></TD></TR><TR><TD PORT="action" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* action <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="detail" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* detail <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD outbox.id : text
+// FIELD outbox.task_id : text
+// FIELD outbox.event : text
+// FIELD outbox.recipient_id : text
+// FIELD outbox.payload : jsonb
+// FIELD outbox.status : text
+// FIELD outbox.created_at : timestamp with time zone
+// FIELD outbox.attempts : integer
+// FIELD outbox.next_attempt : timestamp with time zone
+// FIELD outbox.last_error : text
+outbox [pos="40.417,-21.431!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>通知发件箱</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">outbox</FONT></TD></TR><TR><TD PORT="id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F032</FONT></TD></TR><TR><TD PORT="event" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* event <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="recipient_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* recipient_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">FK F031</FONT></TD></TR><TR><TD PORT="payload" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* payload <FONT COLOR="#68798D" POINT-SIZE="10">: jsonb</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="status" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* status <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="created_at" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* created_at <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="attempts" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* attempts <FONT COLOR="#68798D" POINT-SIZE="10">: integer</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="next_attempt" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* next_attempt <FONT COLOR="#68798D" POINT-SIZE="10">: timestamp with time zone</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR><TR><TD PORT="last_error" ALIGN="LEFT" HEIGHT="23" WIDTH="340">  last_error <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">&#160;</FONT></TD></TR></TABLE>>];
+// FIELD reminders.task_id : text
+// FIELD reminders.kind : text
+reminders [pos="46.042,-20.153!", label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#93A3B5" BGCOLOR="white" WIDTH="340"><TR><TD BGCOLOR="#E8ECFA" ALIGN="LEFT" HEIGHT="43" WIDTH="340"><FONT POINT-SIZE="14"><B>提醒去重</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="10">reminders</FONT></TD></TR><TR><TD PORT="task_id" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* task_id <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK / FK F047</FONT></TD></TR><TR><TD PORT="kind" ALIGN="LEFT" HEIGHT="23" WIDTH="340">* kind <FONT COLOR="#68798D" POINT-SIZE="10">: text</FONT> <FONT COLOR="#326595" POINT-SIZE="9">PK</FONT></TD></TR></TABLE>>];
+}
+// F001 adjustments.adjustments_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+adjustments -> users [xlabel="F001"];
+// F002 adjustments.adjustments_log_id_fkey: FOREIGN KEY (log_id) REFERENCES worklogs(id)
+adjustments -> worklogs [xlabel="F002"];
+// F003 archives.archives_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+archives -> tasks [xlabel="F003"];
+// F004 archives.archives_task_id_version_id_fkey: FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)
+archives -> versions [xlabel="F004"];
+// F005 article_lines.article_lines_author_id_fkey: FOREIGN KEY (author_id) REFERENCES users(id)
+article_lines -> users [xlabel="F005"];
+// F006 article_lines.article_lines_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+article_lines -> tasks [xlabel="F006"];
+// F007 assignments.assignments_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+assignments -> users [xlabel="F007"];
+// F008 assignments.assignments_assignee_id_fkey: FOREIGN KEY (assignee_id) REFERENCES users(id)
+assignments -> users [xlabel="F008"];
+// F009 assignments.assignments_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+assignments -> tasks [xlabel="F009"];
+// F010 bookings.bookings_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+bookings -> tasks [xlabel="F010"];
+// F011 duty_rotation.duty_rotation_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+duty_rotation -> departments [xlabel="F011"];
+// F012 duty_rotation.duty_rotation_last_user_id_fkey: FOREIGN KEY (last_user_id) REFERENCES users(id)
+duty_rotation -> users [xlabel="F012"];
+// F013 duty_rotation.duty_rotation_updated_by_fkey: FOREIGN KEY (updated_by) REFERENCES users(id)
+duty_rotation -> users [xlabel="F013"];
+// F014 duty_rotation_members.duty_rotation_members_department_id_fkey: FOREIGN KEY (department_id) REFERENCES duty_rotation(department_id) ON DELETE CASCADE
+duty_rotation_members -> duty_rotation [xlabel="F014"];
+// F015 duty_rotation_members.duty_rotation_members_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+duty_rotation_members -> users [xlabel="F015"];
+// F016 duty_slots.duty_slots_created_by_fkey: FOREIGN KEY (created_by) REFERENCES users(id)
+duty_slots -> users [xlabel="F016"];
+// F017 duty_slots.duty_slots_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+duty_slots -> departments [xlabel="F017"];
+// F018 duty_slots.duty_slots_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+duty_slots -> users [xlabel="F018"];
+// F019 events.events_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+events -> users [xlabel="F019"];
+// F020 events.events_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+events -> tasks [xlabel="F020"];
+// F021 file_payloads.file_payloads_file_id_fkey: FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+file_payloads -> files [xlabel="F021"];
+// F022 files.files_owner_id_fkey: FOREIGN KEY (owner_id) REFERENCES users(id)
+files -> users [xlabel="F022"];
+// F023 files.files_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+files -> tasks [xlabel="F023"];
+// F024 flow_defaults.flow_defaults_assignee_id_fkey: FOREIGN KEY (assignee_id) REFERENCES users(id)
+flow_defaults -> users [xlabel="F024"];
+// F025 flow_defaults.flow_defaults_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+flow_defaults -> departments [xlabel="F025"];
+// F026 flow_defaults.flow_defaults_updated_by_fkey: FOREIGN KEY (updated_by) REFERENCES users(id)
+flow_defaults -> users [xlabel="F026"];
+// F027 jobs.jobs_rule_id_fkey: FOREIGN KEY (rule_id) REFERENCES labor_rules(id)
+jobs -> labor_rules [xlabel="F027"];
+// F028 jobs.jobs_source_department_fkey: FOREIGN KEY (source_department) REFERENCES departments(id)
+jobs -> departments [xlabel="F028"];
+// F029 jobs.jobs_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+jobs -> tasks [xlabel="F029"];
+// F030 jobs.jobs_teacher_id_fkey: FOREIGN KEY (teacher_id) REFERENCES users(id)
+jobs -> users [xlabel="F030"];
+// F031 outbox.outbox_recipient_id_fkey: FOREIGN KEY (recipient_id) REFERENCES users(id)
+outbox -> users [xlabel="F031"];
+// F032 outbox.outbox_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+outbox -> tasks [xlabel="F032"];
+// F033 publication_defaults.publication_defaults_reviewer1_id_fkey: FOREIGN KEY (reviewer1_id) REFERENCES users(id)
+publication_defaults -> users [xlabel="F033"];
+// F034 publication_defaults.publication_defaults_reviewer2_id_fkey: FOREIGN KEY (reviewer2_id) REFERENCES users(id)
+publication_defaults -> users [xlabel="F034"];
+// F035 publication_defaults.publication_defaults_teacher1_id_fkey: FOREIGN KEY (teacher1_id) REFERENCES users(id)
+publication_defaults -> users [xlabel="F035"];
+// F036 publication_defaults.publication_defaults_teacher2_id_fkey: FOREIGN KEY (teacher2_id) REFERENCES users(id)
+publication_defaults -> users [xlabel="F036"];
+// F037 publication_routing.publication_routing_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+publication_routing -> tasks [xlabel="F037"];
+// F038 publication_routing.publication_routing_teacher1_id_fkey: FOREIGN KEY (teacher1_id) REFERENCES users(id)
+publication_routing -> users [xlabel="F038"];
+// F039 publication_routing.publication_routing_teacher2_id_fkey: FOREIGN KEY (teacher2_id) REFERENCES users(id)
+publication_routing -> users [xlabel="F039"];
+// F040 publications.publications_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+publications -> users [xlabel="F040"];
+// F041 publications.publications_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+publications -> tasks [xlabel="F041"];
+// F042 publications.publications_task_id_version_id_fkey: FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)
+publications -> versions [xlabel="F042"];
+// F043 registration_files.registration_files_file_id_fkey: FOREIGN KEY (file_id) REFERENCES files(id)
+registration_files -> files [xlabel="F043"];
+// F044 registration_files.registration_files_registration_id_fkey: FOREIGN KEY (registration_id) REFERENCES registrations(id)
+registration_files -> registrations [xlabel="F044"];
+// F045 registrations.registrations_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+registrations -> tasks [xlabel="F045"];
+// F046 registrations.registrations_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+registrations -> users [xlabel="F046"];
+// F047 reminders.reminders_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+reminders -> tasks [xlabel="F047"];
+// F048 report_seals.report_seals_created_by_fkey: FOREIGN KEY (created_by) REFERENCES users(id)
+report_seals -> users [xlabel="F048"];
+// F049 reviews.reviews_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+reviews -> users [xlabel="F049"];
+// F050 reviews.reviews_task_id_version_id_fkey: FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)
+reviews -> versions [xlabel="F050"];
+// F051 rule_revisions.rule_revisions_policy_version_fkey: FOREIGN KEY (policy_version) REFERENCES workflow_policy(version)
+rule_revisions -> workflow_policy [xlabel="F051"];
+// F052 rule_revisions.rule_revisions_rule_id_fkey: FOREIGN KEY (rule_id) REFERENCES labor_rules(id)
+rule_revisions -> labor_rules [xlabel="F052"];
+// F053 saved_views.saved_views_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+saved_views -> users [xlabel="F053"];
+// F054 seal_rows.seal_rows_seal_id_fkey: FOREIGN KEY (seal_id) REFERENCES report_seals(id)
+seal_rows -> report_seals [xlabel="F054"];
+// F055 seal_rows.seal_rows_source_id_fkey: FOREIGN KEY (source_id) REFERENCES worklogs(id)
+seal_rows -> worklogs [xlabel="F055"];
+// F056 sessions.sessions_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+sessions -> users [xlabel="F056"];
+// F057 task_reviewers.task_reviewers_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+task_reviewers -> tasks [xlabel="F057"];
+// F058 task_reviewers.task_reviewers_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+task_reviewers -> users [xlabel="F058"];
+// F059 tasks.tasks_config_version_fkey: FOREIGN KEY (config_version) REFERENCES workflow_policy(version)
+tasks -> workflow_policy [xlabel="F059"];
+// F060 tasks.tasks_creator_id_fkey: FOREIGN KEY (creator_id) REFERENCES users(id)
+tasks -> users [xlabel="F060"];
+// F061 tasks.tasks_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+tasks -> departments [xlabel="F061"];
+// F062 tasks.tasks_linked_task_id_fkey: FOREIGN KEY (linked_task_id) REFERENCES tasks(id)
+tasks -> tasks [xlabel="F062"];
+// F063 teacher_delivery.teacher_delivery_teacher_id_fkey: FOREIGN KEY (teacher_id) REFERENCES users(id)
+teacher_delivery -> users [xlabel="F063"];
+// F064 users.users_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+users -> departments [xlabel="F064"];
+// F065 version_annotations.version_annotations_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES users(id)
+version_annotations -> users [xlabel="F065"];
+// F066 version_annotations.version_annotations_task_id_version_id_fkey: FOREIGN KEY (task_id, version_id) REFERENCES versions(task_id, id)
+version_annotations -> versions [xlabel="F066"];
+// F067 version_files.version_files_file_id_fkey: FOREIGN KEY (file_id) REFERENCES files(id)
+version_files -> files [xlabel="F067"];
+// F068 version_files.version_files_version_id_fkey: FOREIGN KEY (version_id) REFERENCES versions(id)
+version_files -> versions [xlabel="F068"];
+// F069 versions.versions_author_id_fkey: FOREIGN KEY (author_id) REFERENCES users(id)
+versions -> users [xlabel="F069"];
+// F070 versions.versions_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+versions -> tasks [xlabel="F070"];
+// F071 work_entries.work_entries_person_id_fkey: FOREIGN KEY (person_id) REFERENCES users(id)
+work_entries -> users [xlabel="F071"];
+// F072 work_entries.work_entries_rule_id_fkey: FOREIGN KEY (rule_id) REFERENCES labor_rules(id)
+work_entries -> labor_rules [xlabel="F072"];
+// F073 work_entries.work_entries_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+work_entries -> tasks [xlabel="F073"];
+// F074 workflow_policy.workflow_policy_updated_by_fkey: FOREIGN KEY (updated_by) REFERENCES users(id)
+workflow_policy -> users [xlabel="F074"];
+// F075 worklogs.worklogs_department_id_fkey: FOREIGN KEY (department_id) REFERENCES departments(id)
+worklogs -> departments [xlabel="F075"];
+// F076 worklogs.worklogs_rule_id_fkey: FOREIGN KEY (rule_id) REFERENCES labor_rules(id)
+worklogs -> labor_rules [xlabel="F076"];
+// F077 worklogs.worklogs_rule_version_fkey: FOREIGN KEY (rule_version) REFERENCES workflow_policy(version)
+worklogs -> workflow_policy [xlabel="F077"];
+// F078 worklogs.worklogs_task_id_fkey: FOREIGN KEY (task_id) REFERENCES tasks(id)
+worklogs -> tasks [xlabel="F078"];
+// F079 worklogs.worklogs_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id)
+worklogs -> users [xlabel="F079"];
+diagram_title [pos="24,1.5!", label=<<B>青年传媒中心工作台 · 完整数据库关系图</B>>, fontsize=28, fontcolor="#22374B"];
+diagram_subtitle [pos="24,0.9!", label="38张业务表 · 214字段 · 79项外键", fontsize=15, fontcolor="#54677E"];
+diagram_legend [pos="24,-28.875!", label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5"><TR><TD ALIGN="LEFT"><B>读图约定</B>　PK 主键　FK 外键　* 非空　F001–F079 约束编号（字段与关系线对应）</TD></TR><TR><TD ALIGN="LEFT">箭头为表级依赖，端点不定位字段；复合外键整体保留。精确源列、目标列与删除规则见《完整ERD与外键索引》。</TD></TR><TR><TD ALIGN="LEFT">数据源：实际001–005迁移；schema youth_workbench。duty_slots为历史兼容表。图中不含账号密码或业务数据。</TD></TR><TR><TD ALIGN="LEFT">CloudBase技术支持表_state、_requests、_uploads不计入38张业务表。所有表卡和连线由PlantUML DOT模式渲染。</TD></TR></TABLE>>, fontsize=14];
+}
+@enddot

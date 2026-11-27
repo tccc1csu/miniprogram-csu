@@ -6,7 +6,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 SECTIONS = [
     ('a', 'A 业务建模', ['analysis/01-vision.md', 'analysis/02-business-modeling.md']),
-    ('b', 'B 系统需求', ['diagrams/system-use-case-notes.md', 'requirements/system-use-case-specifications.md']),
+    ('b', 'B 系统需求', ['diagrams/system-use-case-notes.md', 'requirements/system-use-case-specifications.md', 'requirements/system-sequences.md']),
     ('c', 'C 分析模型', ['analysis/05-analysis-models.md']),
     ('d', 'D 设计模型', ['design/01-database-design.md']),
 ]
@@ -54,8 +54,8 @@ def main():
 
 ## 附录：工程与审查资料
 
-本稿已包含33个系统用例规约、33个分析序列、领域与职责类图、3个状态机、
-数据库总览及7张分区关系图。214个字段及完整约束另附于[数据字典](database/data-dictionary.md)，
+本稿已包含33个系统用例规约、2个黑盒系统序列、33个BCE分析序列、领域与职责类图、3个状态机、
+数据库完整大图、分区总览及7张分区关系图。214个字段及完整约束另附于[数据字典](database/data-dictionary.md)，
 79项外键另附于[外键关系表](database/foreign-key-relations.md)。
 
 - [课程要求核对](analysis/03-course-checklist.md)

@@ -34,7 +34,7 @@ flowchart LR
 
 ## 3 持久化设计
 
-以迁移001–005为业务结构基准，38张业务表、214字段、79外键；[数据字典](database/data-dictionary.md)完整列出PK/FK/UNIQUE/CHECK及索引，[总览](diagrams/database/db-overview.svg)与分区ER图共同描述关系。生产schema为youth_workbench，额外_state、_requests、_uploads不计入业务表。
+以迁移001–005为业务结构基准，38张业务表、214字段、79外键；[数据字典](database/data-dictionary.md)完整列出PK/FK/UNIQUE/CHECK及索引，[完整ERD大图](diagrams/database/db-full.svg)列出全部表、字段和外键，可下载[单页矢量PDF](diagrams/database/db-full.pdf)；[外键索引](database/full-erd.md)逐项对应F编号。分区导航及分区ER图提供局部视图。生产schema为youth_workbench，额外_state、_requests、_uploads不计入业务表。
 
 任务没有可随意改写的status列。当前状态从任务类型、承接、最新阶段版本、审核及归档推导。版本与审核不可混成单一“审核状态”；两位审校岗位和实际审核事件分别持久化。工时保存规则与费率快照，封存行保留当时JSON结果。
 

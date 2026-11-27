@@ -5,35 +5,53 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
-title UC-JOB-002 领取摄制任务的分析序列
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+title UC-JOB-002 领取摄制任务 · 分析序列
 actor "摄制干事" as actor
-boundary "网页与手机页面" as page
+boundary "业务页面" as page
 control "部门协作控制" as ctl
 entity "账号与会话" as identity
 entity "部门任务簿" as model
-actor -> page : 选择可领取任务
+actor -> page : 领取摄制任务\n任务编号
+activate page
 page -> ctl : 协调业务请求(UC-JOB-002)
+activate ctl
 ctl -> identity : 验证访问资格(会话、业务职责)
-identity --> ctl : 可信身份及可用范围
-ctl -> model : 核验当前条件()
-model --> ctl : 可办理结果或失败原因
-note right of model
-未来预约尚无人承接，本人为有效摄制干事
-end note
+activate identity
+identity --> ctl : 可信身份与可用范围
+deactivate identity
+ctl -> model : 核验当前条件(输入、身份)
+activate model
+model -> model : 检查未来预约尚未承接()
+model --> ctl : 可办理结果／失败原因
+deactivate model
 alt 业务条件满足
 ctl -> model : 领取摄制任务()
-model -> model : 检查未来预约尚未承接()
+activate model
 model -> model : 确定唯一当前承接人()
-model --> ctl : 业务结果及可用后续操作
-ctl --> page : 处理回执
-page --> actor : 展示处理结果
+model --> ctl : 业务结果与后续操作
+deactivate model
+ctl --> page : 成功回执
+page --> actor : 展示结果
 else 业务条件不满足
 ctl --> page : 失败原因与可恢复条件
 page --> actor : 保留输入并显示原因
 end
-note over ctl,model
-成功后保留：唯一摄制承接安排。
-持久化及事务实现于D章精化。
-end note
+deactivate ctl
+deactivate page
+legend bottom left
+前置条件：
+未来预约尚无人承接，本人为有效摄制干事
+成功事实：
+唯一摄制承接安排
+endlegend
 
 @enduml

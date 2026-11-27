@@ -6,6 +6,7 @@ from pathlib import Path
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
@@ -19,6 +20,10 @@ def source_labels(path):
     if '\ufffd' in text:
         raise ValueError(f'{path}: replacement character in UTF-8 source')
     labels = []
+    if text.startswith('@startdot'):
+        labels += [n for n in re.findall(r'^([a-z_]+) \[pos=.*label=<<TABLE', text, re.M) if not n.startswith('diagram_')]
+        labels += re.findall(r'^// FIELD \w+\.(\w+) : ', text, re.M)
+        labels += re.findall(r'\[xlabel="(F\d{3})"\]', text)
     for line in text.splitlines():
         if line.startswith('title '):
             labels.append(line[6:].strip())
@@ -43,6 +48,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--jar', default=os.environ.get('PLANTUML_JAR'), help='Path to plantuml.jar (or set PLANTUML_JAR)')
     parser.add_argument('--scope', choices=['course', 'database', 'all'], default='course')
+    parser.add_argument('--java', default='java', help='Java executable')
+    parser.add_argument('--graphviz-dot', default=os.environ.get('GRAPHVIZ_DOT'), help='Full Graphviz dot executable (required for fixed-layout DOT poster)')
     parser.add_argument('--audit-only', action='store_true', help='Check existing SVG text without Java or rendering')
     args = parser.parse_args()
     sources = []
@@ -59,17 +66,27 @@ def main():
         return
     if not args.jar or not Path(args.jar).is_file():
         parser.error('Provide an existing plantuml.jar using --jar or PLANTUML_JAR.')
-    command = ['java', '-Dfile.encoding=UTF-8', '-DPLANTUML_LIMIT_SIZE=24000', '-jar', str(Path(args.jar).resolve()), '-charset', 'UTF-8']
-    paths = [str(path) for path in sources]
-    subprocess.run(command + ['-checkonly'] + paths, check=True)
+    command = [args.java, '-Dfile.encoding=UTF-8', '-DPLANTUML_LIMIT_SIZE=24000', '-jar', str(Path(args.jar).resolve()), '-charset', 'UTF-8']
+    regular = [p for p in sources if not p.read_text(encoding='utf-8').startswith('@startdot')]
+    dot = [p for p in sources if p not in regular]
+    commands = [(command, regular)] if regular else []
+    if dot:
+        graphviz = args.graphviz_dot or shutil.which('dot')
+        if not graphviz or not Path(graphviz).is_file():
+            parser.error('The full ERD needs a full Graphviz installation; provide --graphviz-dot <dot executable>.')
+        commands.append((command + ['-graphvizdot', str(Path(graphviz).resolve())], dot))
+    for renderer, paths in commands:
+        subprocess.run(renderer + ['-checkonly'] + [str(p) for p in paths], check=True)
     changed = 0
     with tempfile.TemporaryDirectory(prefix='qcmc-plantuml-') as folder:
         for kind in ['png', 'svg']:
-            subprocess.run(command + [f'-t{kind}', '-o', folder] + paths, check=True)
+            for renderer, paths in commands:
+                subprocess.run(renderer + [f'-t{kind}', '-o', folder] + [str(p) for p in paths], check=True)
         # Validate every render before copying any output back to the project.
         for source in sources:
             verify_svg(source, Path(folder) / (source.stem + '.svg'))
-            if not (Path(folder) / (source.stem + '.png')).is_file():
+            png = Path(folder) / (source.stem + '.png')
+            if not png.is_file() or not png.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'):
                 raise ValueError(f'Missing generated PNG: {source}')
         for source in sources:
             for extension in ['.png', '.svg']:

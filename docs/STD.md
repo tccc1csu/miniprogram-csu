@@ -36,7 +36,7 @@ Node测试使用PGlite内存库重放实际迁移，HTTP层由supertest调用；
 | T-15 | 有序轮转与固定默认优先 | 按任务顺序轮转，默认覆盖并可清除 | center.test.js | REQ-08 |
 | T-16 | 办公默认、手工改派和取消 | 默认可选、改派合法、撤销后回轮转 | center.test.js | REQ-08 |
 | T-17 | 手机身份、六类创建、推文闭环、会话和附件协议 | 与Web同身份同状态，非法网关路径拒绝 | mobile-unification.mjs | REQ-01至13 |
-| T-18 | 38表214字段79外键、用例及图链接检查 | 字典与实际迁移一致，课程引用无缺失 | docs/tools/check_current_documents.py | 文档FR-001至010 |
+| T-18 | 38表214字段79外键、用例及图链接检查 | 字典与实际迁移一致，课程引用无缺失 | docs/tools/check_current_documents.py | 文档FR-001至014 |
 | T-19 | 既有云端身份与私有附件只读联调 | 两端同身份，下载字节一致；仅引用既有证据 | 007/validation.md | REQ-01、13、14 |
 
 ## 3 本轮执行记录

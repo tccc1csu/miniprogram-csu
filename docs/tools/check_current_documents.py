@@ -6,6 +6,7 @@ import re
 import sys
 from urllib.parse import unquote
 from render_course_diagrams import verify_svg
+import xml.etree.ElementTree as ET
 
 ROOT=Path(__file__).resolve().parents[1]
 REPO=ROOT.parent
@@ -39,12 +40,25 @@ class_operations={name:set(re.findall(r'^([^()\n]+)\(\)',body,re.M))
 for p in seq:
     src=read(p)
     check('alt 业务条件满足' in src and 'else 业务条件不满足' in src,p.name+': missing success/failure branch')
+    check('activate ctl' in src and 'deactivate ctl' in src and 'activate model' in src,p.name+': missing execution activations')
+    check('hide footbox' in src and 'autonumber' in src,p.name+': inconsistent sequence layout')
     aliases={alias:name for name,alias in re.findall(r'^(?:control|entity) "([^"]+)" as (\w+)',src,re.M)}
     check('关系事实仓库' not in src,p.name+': analysis replaced by storage calls')
     check(not re.search(r'^actor\s*(?:->|-->)\s*(?:model|identity|ledger)',src,re.M),p.name+': actor directly writes entity')
     for receiver,op in re.findall(r'^\w+ -> (\w+) : ([^(\n]+)\(',src,re.M):
         if receiver in aliases:
             check(op in class_operations.get(aliases[receiver],set()),p.name+': receiver responsibility absent: '+aliases[receiver]+'.'+op)
+
+business=list((ROOT/'diagrams').glob('*business-sequence-*.puml'))
+check(len(business)==6,'Expected six business sequences')
+for p in business:
+    src=read(p)
+    check('!include course-notation.iuml' in src and '<$worker>' in src and '<$entity>' in src,p.name+': missing business notation')
+    check(not re.search(r'^participant "(?!<\$)',src,re.M),p.name+': ordinary box used as business worker/entity')
+for p in (ROOT/'diagrams').glob('system-sequence-*.puml'):
+    src=read(p)
+    check(len(re.findall(r'^participant ',src,re.M))==1,p.name+': black-box system must have one software lifeline')
+    check(not re.search(r'^(?:boundary|control|entity) ',src,re.M),p.name+': internal analysis object in black-box sequence')
 
 schema=json.loads(read(ROOT/'database/runtime-schema.json'))
 tables=schema['tables']; names={t['name'] for t in tables}
@@ -72,6 +86,49 @@ for group,(_,group_names) in dbindex['groups'].items():
     covered.update(group_names)
 check(covered==names,'ER partitions do not cover all tables')
 
+full=read(ROOT/'diagrams/database/db-full.puml')
+fullindex=json.loads(read(ROOT/'diagrams/database/full-model-index.json'))
+actual_fks={(t['name'],c['name'],c['definition']) for t in tables for c in t['constraints'] if c['type']=='f'}
+check({(r['source'],r['name'],r['definition']) for r in fullindex['foreignKeys']}==actual_fks,'Complete ERD FK index differs from runtime constraints')
+full_tables=[n for n in re.findall(r'^([a-z_]+) \[pos=.*label=<<TABLE',full,re.M) if not n.startswith('diagram_')]
+check(set(full_tables)==names,'Complete ERD omits physical tables')
+check(len(full_tables)==38,'Complete ERD repeats a physical table')
+check(set(re.findall(r'^// FIELD (\w+\.\w+) : ',full,re.M))=={t['name']+'.'+c['name'] for t in tables for c in t['columns']},'Complete ERD field coverage differs')
+check(len(re.findall(r'\[xlabel="F\d{3}"\]',full))==79,'Complete ERD must draw all 79 FK constraints')
+for r in fullindex['foreignKeys']:
+    check('// '+r['id']+' '+r['source']+'.'+r['name']+': '+r['definition'] in full,'Complete ERD FK definition missing '+r['id'])
+fullsvg=ROOT/'diagrams/database/db-full.svg'
+if fullsvg.is_file():
+    elements=ET.parse(fullsvg).getroot()
+    nodes={}
+    edges=[]
+    for g in elements.iter('{http://www.w3.org/2000/svg}g'):
+        if g.get('class')=='node':
+            title=g.find('{http://www.w3.org/2000/svg}title')
+            if title is not None: nodes[title.text]='\n'.join(''.join(n.itertext()) for n in g.iter('{http://www.w3.org/2000/svg}text'))
+        if g.get('class')=='edge': edges.append(g)
+    check(names<=nodes.keys(),'Complete ERD rendered SVG omits tables')
+    for t in tables:
+        visible=nodes.get(t['name'],'')
+        for c in t['columns']:
+            check(c['name'] in visible and c['type'] in visible,'Complete ERD rendered field missing '+t['name']+'.'+c['name'])
+        for r in fullindex['foreignKeys']:
+            if r['source']==t['name']: check(r['id'] in visible,'Complete ERD table FK marker missing '+r['id'])
+    check(len(edges)==79,'Complete ERD SVG must contain 79 relation paths')
+    for r in fullindex['foreignKeys']:
+        check(any(r['id'] in ''.join(g.itertext()) for g in edges),'Complete ERD rendered relation missing '+r['id'])
+pdf=ROOT/'diagrams/database/db-full.pdf'
+check(pdf.is_file(),'Complete ERD single-sheet PDF missing')
+if pdf.is_file():
+    import pymupdf
+    with pymupdf.open(pdf) as doc:
+        check(len(doc)==1,'Complete ERD PDF must be a single large sheet')
+        text='\n'.join(page.get_text() for page in doc)
+        for name in names: check(name in text,'PDF missing readable table '+name)
+        for r in fullindex['foreignKeys']: check(r['id'] in text,'PDF missing readable FK identifier '+r['id'])
+        check('青年传媒中心工作台' in text,'PDF Chinese text is missing')
+        check(not doc[0].get_images(),'Complete ERD PDF must preserve vector text and paths')
+
 trace=read(ROOT/'requirements/traceability.md')
 check({*re.findall(r'REQ-\d{2}',trace)}=={'REQ-'+str(i).zfill(2) for i in range(1,15)},'Traceability must cover REQ-01 to REQ-14')
 check(set(ids)<=set(re.findall(r'UC-[A-Z]+-\d+',trace)),'Traceability omits use cases')
@@ -85,7 +142,7 @@ for m,p in routes: check('| '+m.upper()+' | /api/v1'+p+' |' in api,'API inventor
 current=[REPO/'README.md',ROOT/'README.md',ROOT/'course-assignment.md',ROOT/'SRS.md',ROOT/'SDD.md',ROOT/'STD.md']
 for folder in ['analysis','requirements','design']:
     current+=sorted((ROOT/folder).glob('*.md'))
-current+=[ROOT/'database/data-dictionary.md',ROOT/'database/foreign-key-relations.md',ROOT/'diagrams/system-use-case-notes.md']
+current+=[ROOT/'database/data-dictionary.md',ROOT/'database/foreign-key-relations.md',ROOT/'database/full-erd.md',ROOT/'diagrams/system-use-case-notes.md']
 current+=list((REPO/'workbench/specs/008-course-documentation').rglob('*.md'))
 current+=list(ROOT.glob('*-framework.md'))
 links=0
@@ -106,7 +163,7 @@ for p in current:
             check('id="'+frag+'"' in text or re.search(r'^#+ '+re.escape(frag)+r'\s*$',text,re.M|re.I),str(p.relative_to(REPO))+': missing fragment '+frag)
         links+=1
 sources=sorted((ROOT/'diagrams').rglob('*.puml'))
-check(len(sources)==58,'Expected 58 maintained diagram sources')
+check(len(sources)==61,'Expected 61 maintained diagram sources')
 for p in sources:
     for ext in ['.png','.svg']: check(p.with_suffix(ext).is_file(),p.name+': missing '+ext)
     if p.with_suffix('.svg').exists():

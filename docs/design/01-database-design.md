@@ -6,7 +6,19 @@
 
 业务层实际有38张表、214字段、79外键。结构化关系、复合唯一键、外键和检查约束负责底层一致性；岗位资格、当前审核阶段与计时规则由服务端协调验证。用例与表是多对多关系，不能把每个业务用例直接变成一张表。
 
-![关系库总览](../diagrams/database/db-overview.svg)
+### 完整物理关系大图
+
+下图在同一画布列出38张实际业务表、214字段及79项外键。每表只出现一次，按业务领域着色，跨区域外键和复合外键均保留。F编号对应字段与关系线，精确定义见[大图外键索引](../database/full-erd.md)。
+
+[打开SVG原图](../diagrams/database/db-full.svg) · [单页矢量PDF](../diagrams/database/db-full.pdf) · [PNG](../diagrams/database/db-full.png) · [PlantUML源](../diagrams/database/db-full.puml)
+
+![完整数据库关系大图](../diagrams/database/db-full.svg)
+
+### 分区导航
+
+下面仅保留主干关系作导航；完整物理关系以大图为准，后续分区图便于局部阅读。
+
+![关系库分区导航](../diagrams/database/db-overview.svg)
 
 ### 规范化与必要快照
 

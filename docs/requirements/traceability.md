@@ -24,4 +24,4 @@ SRS的14项需求映射到33个系统用例、实际模块与STD中的验证设�
 
 T-01至T-08：[workflow.test.js](../../workbench/tests/workflow.test.js)；T-09至T-16：[center.test.js](../../workbench/tests/center.test.js)；T-17：[mobile-unification.mjs](../../workbench/tests/mobile-unification.mjs)；T-18：[文档检查器](../tools/check_current_documents.py)；T-19：[007既有云端验证](../../workbench/specs/007-mini-unification/validation.md)。
 
-本轮执行及未验证项见[008验证](../../workbench/specs/008-course-documentation/validation.md)。文档FR-001至010由T-18与本轮人工审查共同核对。
+本轮执行及未验证项见[008验证](../../workbench/specs/008-course-documentation/validation.md)。文档FR-001至014由T-18与本轮人工审查共同核对。

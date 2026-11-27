@@ -5,18 +5,36 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+!include course-notation.iuml
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
 title A 现状业务序列：推文协作
 
 actor "需求方" as D
-participant "部长" as M
-participant "排版干事" as W
-participant "一审老师" as T1
-participant "二审老师" as T2
+participant "<$worker>\n部长" as M
+participant "<$worker>\n排版干事" as W
+participant "<$worker>\n一审老师" as T1
+participant "<$worker>\n二审老师" as T2
+participant "<$entity>\n稿件材料" as A
 D -> M : 在群里说明需求并发送素材
 M -> W : 转述需求并安排排版
-W -> M : 发送排版链接与附件
+W -> A : 制作排版稿与附件
+activate A
+A --> W : 排版链接
+deactivate A
+W -> M : 提交排版链接
 M -> T1 : 向一审群转发稿件
 T1 -> W : 在群聊中说明修改要求
+W -> A : 修订稿件
 W -> T2 : 修改后转二审群
 T2 -> W : 在另一群确认或要求修改
 W -> M : 发出发布结果

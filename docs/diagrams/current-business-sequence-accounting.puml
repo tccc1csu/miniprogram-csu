@@ -5,17 +5,34 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+!include course-notation.iuml
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
 title A 现状业务序列：周期统计
 
-participant "各部门干事" as W
-participant "部门部长" as M
-participant "办公统计人员" as O
+participant "<$worker>\n各部门干事" as W
+participant "<$worker>\n部门部长" as M
+participant "<$worker>\n办公统计人员" as O
+participant "<$entity>\n工作统计表" as R
 W -> M : 报送本周工作记录
 M -> O : 汇总部门工作表
 O -> M : 询问重复项、缺失项及工时差异
 M -> W : 核实实际贡献
-W --> O : 提供补充说明
-O -> O : 人工合并表格并核算金额
+W --> M : 提供补充说明
+M --> O : 返回核实结果
+O -> R : 人工合并记录并核算金额
+activate R
+R --> O : 结算汇总
+deactivate R
 O --> M : 提交结算汇总供核对
 
 @enduml

@@ -5,23 +5,43 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+!include course-notation.iuml
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
 title B 改进业务序列：工时结算
 
-participant "内部成员" as W
-participant "部门部长" as M
-participant "办公部长" as O
-participant "统一工作台" as S
-S -> S : 正常任务完成后生成规则贡献
+participant "<$worker>\n内部成员" as W
+participant "<$worker>\n部门部长" as M
+participant "<$worker>\n办公部长" as O
+participant "<$entity>\n工时与结算台账" as S
+note over S
+正常完成的任务已生成规则贡献。
+end note
 W -> S : 登记例外工作或查询个人明细
 M -> S : 提交核定值及原因
+activate S
 S -> S : 保留原值、新值、操作者和时间
+S --> M : 核定回执
+deactivate S
 O -> S : 按日期与人员筛选结算明细
-S --> O : 导出含任务备注和调整原因的Excel
+S --> O : 含任务备注、调整原因的Excel
 O -> S : 确认结算范围并封存
+activate S
 S -> S : 保存不可变行快照
-note over O,S
+S --> O : 封存批次与快照明细
+deactivate S
+legend bottom
 后续实时工时可调整，已封存快照不变。
 教师与外部只保留业务记录，不进入计酬明细。
-end note
+endlegend
 
 @enduml

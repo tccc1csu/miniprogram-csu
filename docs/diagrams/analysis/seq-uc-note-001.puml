@@ -5,35 +5,53 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
-title UC-NOTE-001 维护任务报表备注的分析序列
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+title UC-NOTE-001 维护任务报表备注 · 分析序列
 actor "任务相关人员" as actor
-boundary "网页与手机页面" as page
+boundary "业务页面" as page
 control "公共访问控制" as ctl
 entity "账号与会话" as identity
 entity "任务工作簿" as model
-actor -> page : 填写业务备注
+actor -> page : 维护任务报表备注\n任务、报表备注
+activate page
 page -> ctl : 协调业务请求(UC-NOTE-001)
+activate ctl
 ctl -> identity : 验证访问资格(会话、业务职责)
-identity --> ctl : 可信身份及可用范围
-ctl -> model : 核验当前条件()
-model --> ctl : 可办理结果或失败原因
-note right of model
-创建人承接人或部门管理人员具有修改资格
-end note
+activate identity
+identity --> ctl : 可信身份与可用范围
+deactivate identity
+ctl -> model : 核验当前条件(输入、身份)
+activate model
+model -> model : 核验任务相关身份()
+model --> ctl : 可办理结果／失败原因
+deactivate model
 alt 业务条件满足
 ctl -> model : 维护任务报表备注()
-model -> model : 核验任务相关身份()
+activate model
 model -> model : 更新备注并保留变更事件()
-model --> ctl : 业务结果及可用后续操作
-ctl --> page : 处理回执
-page --> actor : 展示处理结果
+model --> ctl : 业务结果与后续操作
+deactivate model
+ctl --> page : 成功回执
+page --> actor : 展示结果
 else 业务条件不满足
 ctl --> page : 失败原因与可恢复条件
 page --> actor : 保留输入并显示原因
 end
-note over ctl,model
-成功后保留：任务报表备注及变更事件。
-持久化及事务实现于D章精化。
-end note
+deactivate ctl
+deactivate page
+legend bottom left
+前置条件：
+创建人承接人或部门管理人员具有修改资格
+成功事实：
+任务报表备注及变更事件
+endlegend
 
 @enduml

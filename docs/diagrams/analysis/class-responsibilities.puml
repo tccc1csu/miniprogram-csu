@@ -7,7 +7,7 @@ skinparam classAttributeIconSize 0
 hide empty members
 title C 边界控制实体职责分配
 top to bottom direction
-class "网页与手机页面" as UI <<boundary>> {
+class "业务页面" as UI <<boundary>> {
 收集完整业务信息()
 展示处理回执()
 }

@@ -5,22 +5,41 @@ skinparam backgroundColor #FFFFFF
 skinparam ArrowColor #466482
 skinparam classAttributeIconSize 0
 hide empty members
+skinparam defaultFontSize 14
+skinparam sequenceLifeLineBorderColor #9AA8B8
+skinparam sequenceArrowColor #334155
+skinparam sequenceGroupBorderColor #94A3B8
+skinparam sequenceGroupBackgroundColor #F8FAFC
+skinparam sequenceParticipantPadding 18
+skinparam maxMessageSize 240
+hide footbox
+autonumber
+!include course-notation.iuml
+skinparam sequenceParticipantBorderColor transparent
+skinparam sequenceParticipantBackgroundColor transparent
 title B 改进业务序列：采编办公对接
 
-participant "采编人员" as E
-participant "办公承接人" as O
-participant "指定内容老师" as T
-participant "验收管理者" as M
-participant "统一工作台" as S
-E -> S : 提交稿件站点与原创作者清单
-S -> O : 按默认承接或任务轮转分配
+participant "<$worker>\n采编人员" as E
+participant "<$worker>\n办公承接人" as O
+participant "<$worker>\n指定内容老师" as T
+participant "<$worker>\n验收管理者" as M
+participant "<$entity>\n稿件站点清单" as S
+E -> S : 登记站点、稿件与原创作者
+O -> S : 查询本人承接待办
+S --> O : 默认承接或任务轮转后的任务
 opt 配置了内容老师
 O -> S : 提交内容版本
-T -> S : 完成内容审核
+T -> S : 阅读内容并登记审核结论
 end
 O -> S : 提交最终交付版本
-M -> S : 验收稿件交付
-S -> S : 归档并按行记录创作和对接贡献
-E -> S : 另行提出关联该归档稿件的推文任务
+M -> S : 检查交付物并登记验收通过
+activate S
+S -> S : 保留归档及逐行创作、对接贡献
+deactivate S
+E -> S : 查询已正常归档的稿件
+activate S
+S --> E : 可关联的归档稿件编号
+deactivate S
+E -> S : 登记后续推文的来源关联
 
 @enduml
