@@ -2,9 +2,9 @@
 
 **在线网站：[打开工作台](https://youth-media-workbench-352447-7-1459171011.sh.run.tcloudbase.com)**
 
-微信扫码进入小程序（沿用原体验码，访问资格以微信体验成员配置为准）：
+微信扫码进入小程序（访问资格以小程序成员配置为准）：
 
-<img src="docs/assets/experience-qrcode.png" alt="青年传媒中心小程序体验码" width="180" />
+<img src="docs/assets/experience-qrcode.png" alt="青年传媒中心小程序码" width="180" />
 
 网页集中管理，手机随手办理。两端共用账号、任务、版本、审校、附件、自动归档和工时；本机关闭后，云端仍独立运行。
 
